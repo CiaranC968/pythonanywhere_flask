@@ -1,0 +1,149 @@
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- 1. Navigation & Sidebar Toggle ---
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        const toggleSidebar = () => {
+            sidebar.classList.toggle('active');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+            document.body.classList.toggle('overflow-hidden');
+        };
+
+        if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
+        if (overlay) overlay.addEventListener('click', toggleSidebar);
+
+        document.querySelectorAll('#sidebar nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) toggleSidebar();
+            });
+        });
+
+        // --- 2. CV Modal Logic ---
+        const cvModal = document.getElementById('cvModal');
+        const openCv = document.getElementById('openCvModal');
+        const closeCv = document.getElementById('closeCvModal');
+
+        if (openCv) openCv.onclick = () => cvModal.classList.remove('hidden');
+        if (closeCv) closeCv.onclick = () => cvModal.classList.add('hidden');
+
+        // --- 3. PROJECT POPUP MODAL ---
+        const projectModal = document.getElementById('projectModal');
+        const closeProject = document.getElementById('closeProjectModal');
+        
+        const projects = {
+            laochra: {
+                title: "Laochra 2D Game",
+                stack: ["Python", "Pygame"],
+                desc: "Laochra is a Viking-themed adventure game. I developed this using Python and the Pygame library to handle collision detection, sprite animations, and complex state management.",
+                link: "https://github.com/CiaranC968/laochra_2d"
+            },
+            tacocloud: {
+                title: "TacoCloud Order System",
+                stack: ["Java", "Spring Boot", "MVC"],
+                desc: "TacoCloud is a full-stack Spring application. It utilizes Spring Boot for the backend and Spring Security for user authentication.",
+                link: "https://github.com/CiaranC968/TacoCloud"
+            }
+        };
+
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const id = this.getAttribute('data-project');
+                const data = projects[id];
+                if (!data) return;
+
+                document.getElementById('modalTitle').innerText = data.title;
+                document.getElementById('modalDescription').innerText = data.desc;
+                document.getElementById('modalLink').href = data.link;
+                
+                const stackContainer = document.getElementById('modalStack');
+                stackContainer.innerHTML = data.stack.map(tech => 
+                    `<span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-500">${tech}</span>`
+                ).join('');
+                
+                projectModal.classList.remove('hidden');
+            });
+        });
+
+        if (closeProject) closeProject.onclick = () => projectModal.classList.add('hidden');
+
+        window.addEventListener('click', (e) => {
+            if (e.target === projectModal) projectModal.classList.add('hidden');
+            if (e.target === cvModal) cvModal.classList.add('hidden');
+        });
+
+        // --- 4. Scroll To Top ---
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 500) scrollTopBtn.classList.remove('hidden');
+            else scrollTopBtn.classList.add('hidden');
+        });
+        if (scrollTopBtn) scrollTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // --- 5. DARK MODE LOGIC (Hybrid: Button + Slide Switch) ---
+        const html = document.documentElement;
+        const mobileBtn = document.getElementById('theme-btn-mobile');
+        const desktopSwitch = document.getElementById('theme-toggle-slide');
+
+        // Helper: Update Mobile Icon based on theme
+        const updateMobileIcon = (isDark) => {
+            if (!mobileBtn) return;
+            const icon = mobileBtn.querySelector('i');
+            if (isDark) {
+                icon.className = 'fas fa-sun text-xl';
+            } else {
+                icon.className = 'fas fa-moon text-xl';
+            }
+        };
+
+        // 1. Initialize State
+        const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isLocalDark = localStorage.theme === 'dark';
+        
+        if (isLocalDark || (!('theme' in localStorage) && isSystemDark)) {
+            html.classList.add('dark');
+            if (desktopSwitch) desktopSwitch.checked = true; // Slide ON
+            updateMobileIcon(true);
+        } else {
+            html.classList.remove('dark');
+            if (desktopSwitch) desktopSwitch.checked = false; // Slide OFF
+            updateMobileIcon(false);
+        }
+
+        // 2. Handle Desktop Switch (Change Event)
+        if (desktopSwitch) {
+            desktopSwitch.addEventListener('change', function() {
+                if (this.checked) {
+                    html.classList.add('dark');
+                    localStorage.theme = 'dark';
+                    updateMobileIcon(true);
+                } else {
+                    html.classList.remove('dark');
+                    localStorage.theme = 'light';
+                    updateMobileIcon(false);
+                }
+            });
+        }
+
+        // 3. Handle Mobile Button (Click Event)
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', function() {
+                if (html.classList.contains('dark')) {
+                    html.classList.remove('dark');
+                    localStorage.theme = 'light';
+                    if (desktopSwitch) desktopSwitch.checked = false; // Sync Switch
+                    updateMobileIcon(false);
+                } else {
+                    html.classList.add('dark');
+                    localStorage.theme = 'dark';
+                    if (desktopSwitch) desktopSwitch.checked = true; // Sync Switch
+                    updateMobileIcon(true);
+                }
+            });
+        }
+
+    });
+})();
