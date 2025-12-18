@@ -1,135 +1,77 @@
 /* =========================================
-
    1) Global Variables & Smoothness
-
    ========================================= */
 
 :root {
-
     --sidebar-width: 264px; /* Matches md:ml-64 */
-
     --color-accent: #facc15; /* brand-accent */
-
 }
-
 
 html {
-
     scroll-behavior: smooth;
-
 }
-
 
 /* Offset for fixed mobile header so content isn't hidden when clicking links */
-
 section {
-
     scroll-margin-top: 5rem;
-
 }
 
-
 /* =========================================
-
    2) Sidebar Styling (JS Controlled)
-
    ========================================= */
 
 #sidebar {
-
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
 }
-
 
 /* The class JS toggles on mobile */
-
 #sidebar.active {
-
     transform: translateX(0) !important;
-
 }
-
 
 /* ScrollSpy Highlight: When a section is active, the sidebar link glows */
-
 #sidebar a.active {
-
     background-color: rgba(250, 204, 21, 0.1);
-
     color: var(--color-accent);
-
     font-weight: 600;
-
     border-right: 4px solid var(--color-accent);
-
 }
 
-
 /* =========================================
-
    3) Card & Tech Stack Polish
-
    ========================================= */
 
-
 /* Adds a subtle lift effect to your Project and Skill cards */
-
-article, .bg-gray-50.rounded-3xl {
-
+article,
+.bg-gray-50.rounded-3xl {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-
 }
-
 
 article:hover {
-
     transform: translateY(-4px);
-
 }
-
 
 /* Animation for your "Wee Circles" so they fade in nicely */
-
-.flex.gap-1
-
-.5
-.rounded-full {
-
+/* Note: The dot in .gap-1.5 must be escaped as \. in CSS */
+.flex.gap-1\.5 .rounded-full {
     transition: transform 0.2s ease;
-
 }
 
-
-.group:hover .flex.gap-1
-
-.5
-.rounded-full {
-
+.group:hover .flex.gap-1\.5 .rounded-full {
     transform: scale(1.2);
-
 }
-
 
 /* =========================================
-
    4) Scroll To Top Button Logic
-
    ========================================= */
 
 #scrollTopBtn {
-
     transition: all 0.3s ease;
-
     z-index: 99;
-
 }
 
-
 /* =========================================
-
    5) Utilities & HTMX
-
    ========================================= */
 
 .no-scrollbar::-webkit-scrollbar {
@@ -141,9 +83,7 @@ article:hover {
     scrollbar-width: none;
 }
 
-
 /* HTMX Loading Spinner Logic */
-
 .htmx-indicator {
     display: none;
 }
@@ -156,19 +96,11 @@ article:hover {
     display: none;
 }
 
-
 /* Accessibility: Respect users who prefer reduced motion */
-
 @media (prefers-reduced-motion: reduce) {
-
     * {
-
         animation: none !important;
-
         transition: none !important;
-
         scroll-behavior: auto !important;
-
     }
-
 }
