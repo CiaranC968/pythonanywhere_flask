@@ -5,6 +5,9 @@
 :root {
     --sidebar-width: 264px; /* Matches md:ml-64 */
     --color-accent: #facc15; /* brand-accent */
+
+    /* New Cream Colour for Sidebar */
+    --color-cream: #fffdf5;
 }
 
 html {
@@ -21,6 +24,8 @@ section {
    ========================================= */
 
 #sidebar {
+    /* Sets the sidebar to the new cream colour */
+    background-color: var(--color-cream);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -52,7 +57,6 @@ article:hover {
 }
 
 /* Animation for your "Wee Circles" so they fade in nicely */
-/* Note: The dot in .gap-1.5 must be escaped as \. in CSS */
 .flex.gap-1\.5 .rounded-full {
     transition: transform 0.2s ease;
 }
@@ -62,7 +66,22 @@ article:hover {
 }
 
 /* =========================================
-   4) Scroll To Top Button Logic
+   4) Contact Form Specifics
+   ========================================= */
+
+/* Overrides the default gray card style for the Contact section
+   so it blends with the main white background.
+   Note: Ensure your contact section or form wrapper has the ID="contact"
+*/
+#contact article,
+#contact .bg-gray-50 {
+    background-color: transparent !important; /* Removes gray background */
+    box-shadow: none !important;              /* Removes shadow/lift */
+    border: 1px solid #f3f4f6;                /* Optional: adds a very faint border instead */
+}
+
+/* =========================================
+   5) Scroll To Top Button Logic
    ========================================= */
 
 #scrollTopBtn {
@@ -71,7 +90,7 @@ article:hover {
 }
 
 /* =========================================
-   5) Utilities & HTMX
+   6) Utilities & HTMX
    ========================================= */
 
 .no-scrollbar::-webkit-scrollbar {
