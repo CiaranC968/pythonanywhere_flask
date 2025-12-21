@@ -1,372 +1,78 @@
 /* ==========================================================================
-   1. Data Objects (Experience & Projects)
-   ========================================================================== */
-
-const experienceData = {
-    wineflair: {
-        company: "Wineflair",
-        overallPeriod: "May 2018 – Present",
-        roles: [
-            {
-                title: "Assistant Manager",
-                date: "Sept 2023 – Present",
-                location: "Various Locations",
-                desc: "Leading operations, staff management, and ensuring operational excellence across multiple locations. Responsible for KPI tracking and team development."
-            },
-            {
-                title: "Assistant Manager",
-                date: "April 2019 – April 2023",
-                location: "Portadown",
-                desc: "Managed store operations across 10 locations, overseeing cash operations, inventory control, and shift scheduling. Reduced wastage by 15% through better stock management."
-            },
-            {
-                title: "Sales Assistant",
-                date: "May 2018 – June 2019",
-                location: "Coalisland",
-                desc: "Provided exceptional customer service, managed inventory in diverse locations, and assisted with visual merchandising."
-            }
-        ]
-    },
-    trailstone: {
-        company: "TrailStone",
-        overallPeriod: "April 2023 – Aug 2023",
-        roles: [
-            {
-                title: "Software Engineering Intern",
-                date: "April 2023 – Aug 2023",
-                location: "Sligo",
-                desc: "Rewrote legacy UI tools using FastAPI and React. Integrated real-time market data visualization for traders, improving decision-making speed. Collaborated with senior engineers on backend microservices."
-            }
-        ]
-    }
-};
-
-const projectData = {
-    laochra: {
-        title: "Laochra 2D Game",
-        stack: ["Python", "Pygame"],
-        description: "A Viking-themed 2D adventure game built with Pygame. Features include custom sprite animation, collision detection, and a state-management system for game levels.",
-        link: "https://github.com/CiaranC968/Laochra"
-    },
-    tacocloud: {
-        title: "TacoCloud",
-        stack: ["Java", "Spring Boot", "H2 Database"],
-        description: "A full-stack application allowing users to design custom tacos. Built with Spring Boot for the backend and Thymeleaf for templating, featuring secure login and order persistence.",
-        link: "https://github.com/CiaranC968/TacoCloud"
-    }
-};
-
-
-/* ==========================================================================
-   2. Theme Toggling Logic (Dark Mode)
-   ========================================================================== */
-
-const fixedToggle = document.getElementById('theme-toggle-fixed'); // Top right
-const slideToggle = document.getElementById('theme-toggle-slide'); // Mobile sidebar
-const html = document.documentElement;
-
-function applyTheme(isDark) {
-    if (isDark) {
-        html.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    } else {
-        html.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-    }
-    // Sync both checkboxes
-    if(fixedToggle) fixedToggle.checked = isDark;
-    if(slideToggle) slideToggle.checked = isDark;
-}
-
-// Event Listeners for Theme
-if(fixedToggle) {
-    fixedToggle.addEventListener('change', (e) => applyTheme(e.target.checked));
-}
-if(slideToggle) {
-    slideToggle.addEventListener('change', (e) => applyTheme(e.target.checked));
-}
-
-// Initialize Theme on Load
-const savedTheme = localStorage.getItem('theme');
-const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-applyTheme(savedTheme === 'dark' || (!savedTheme && systemDark));
-
-
-/* ==========================================================================
-   3. Mobile Sidebar Logic
-   ========================================================================== */
-
-const menuToggle = document.getElementById('menu-toggle');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('sidebar-overlay');
-const navLinks = document.querySelectorAll('#sidebar nav a');
-
-function toggleSidebar() {
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
-}
-
-if(menuToggle) {
-    menuToggle.addEventListener('click', toggleSidebar);
-    overlay.addEventListener('click', toggleSidebar);
-    
-    // Close sidebar when a link is clicked
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            if (!sidebar.classList.contains('-translate-x-full')) {
-                toggleSidebar();
-            }
-        });
-    });
-}
-
-
-/* ==========================================================================
-   4. Experience Modal Logic
-   ========================================================================== */
-
-const expModal = document.getElementById('experienceModal');
-const expTitle = document.getElementById('expModalCompany');
-const expPeriod = document.getElementById('expModalPeriod');
-const expTimeline = document.getElementById('expModalTimeline');
-
-// Exposed to global scope for HTML onclick
-window.openExpModal = function(companyKey) {
-    const data = experienceData[companyKey];
-    if(!data) return;
-
-    // Set Header Info
-    expTitle.textContent = data.company;
-    expPeriod.textContent = data.overallPeriod;
-
-    // Build Timeline HTML
-    let htmlContent = '';
-    data.roles.forEach(role => {
-        htmlContent += `
-            <div class="relative">
-                <span class="absolute -left-[39px] top-1 h-4 w-4 rounded-full border-4 border-white dark:border-gray-800 bg-brand-accent"></span>
-                <h4 class="text-xl font-bold text-gray-900 dark:text-white">${role.title}</h4>
-                <div class="flex flex-col sm:flex-row sm:justify-between text-sm text-gray-500 mb-3 italic">
-                    <span>${role.date}</span>
-                    <span>${role.location}</span>
-                </div>
-                <p class="text-gray-600 dark:text-gray-300 leading-relaxed">${role.desc}</p>
-            </div>
-        `;
-    });
-
-    expTimeline.innerHTML = htmlContent;
-    expModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
-};
-
-window.closeExpModal = function() {
-    expModal.classList.add('hidden');
-    document.body.style.overflow = '';
-};
-
-// Close on outside click
-if(expModal) {
-    expModal.addEventListener('click', (e) => {
-        if (e.target === expModal) window.closeExpModal();
-    });
-}
-
-
-/* ==========================================================================
-   5. Project Modal Logic
-   ========================================================================== */
-
-const projectModal = document.getElementById('projectModal');
-const closeProjectBtn = document.getElementById('closeProjectModal');
-const projectCards = document.querySelectorAll('.project-card');
-
-projectCards.forEach(card => {
-    card.addEventListener('click', () => {
-        const projectId = card.dataset.project;
-        const data = projectData[projectId];
-
-        if (data) {
-            document.getElementById('modalTitle').innerText = data.title;
-            document.getElementById('modalDescription').innerText = data.description;
-            document.getElementById('modalLink').href = data.link;
-
-            // Generate tech badges
-            const stackContainer = document.getElementById('modalStack');
-            stackContainer.innerHTML = data.stack.map(tech => 
-                `<span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-lg text-sm font-semibold">${tech}</span>`
-            ).join('');
-
-            projectModal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-    });
-});
-
-if(closeProjectBtn) {
-    closeProjectBtn.addEventListener('click', () => {
-        projectModal.classList.add('hidden');
-        document.body.style.overflow = '';
-    });
-    
-    projectModal.addEventListener('click', (e) => {
-        if (e.target === projectModal) {
-            projectModal.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-    });
-}
-
-
-/* ==========================================================================
-   6. CV Modal Logic
-   ========================================================================== */
-
-const cvModal = document.getElementById('cvModal');
-const openCvBtn = document.getElementById('openCvModal'); // The button in "About" section
-const closeCvBtn = document.getElementById('closeCvModal'); // The 'X' inside the modal
-
-if (openCvBtn && cvModal) {
-    openCvBtn.addEventListener('click', (e) => {
-        e.preventDefault(); // Stop it from following the link if you used an <a> tag
-        cvModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    });
-}
-
-if (closeCvBtn && cvModal) {
-    closeCvBtn.addEventListener('click', () => {
-        cvModal.classList.add('hidden');
-        document.body.style.overflow = '';
-    });
-
-    // Close when clicking the dark background
-    cvModal.addEventListener('click', (e) => {
-        if (e.target === cvModal) {
-            cvModal.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-    });
-}
-
-
-/* ==========================================================================
-   7. Scroll to Top Logic
-   ========================================================================== */
-
-const scrollTopBtn = document.getElementById('scrollTopBtn');
-
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-        scrollTopBtn.classList.remove('hidden');
-    } else {
-        scrollTopBtn.classList.add('hidden');
-    }
-});
-
-if(scrollTopBtn) {
-    scrollTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-}
-
-/* ==========================================================================
-   8. Skill Modal Logic (New)
+   1. DATA OBJECTS
    ========================================================================== */
 
 const skillData = {
-    python: {
-        title: "Python Ecosystem",
-        icon: '<i class="fab fa-python text-blue-500"></i>',
-        desc: "My primary language for backend logic and data processing.",
-        core: ["Python 3.10+", "FastAPI", "Flask", "Django"],
-        tools: ["Pandas", "NumPy", "SQLAlchemy", "Pytest", "Poetry", "Celery", "Jupyter"]
+    backend: {
+        id: "backend",
+        title: "Backend Engineering",
+        iconClass: "fas fa-server text-blue-600",
+        desc: "My main focus. Heavy emphasis on Python and Java environments.",
+        core: ["Python (FastAPI, Django, Flask)", "Java (Spring Boot)"],
+        exposure: ["C#", "PHP"]
     },
-    java: {
-        title: "Java Engineering",
-        icon: '<i class="fab fa-java text-red-500"></i>',
-        desc: "Building robust, enterprise-grade backend systems.",
-        core: ["Java 17", "Spring Boot", "Spring Security", "JPA / Hibernate"],
-        tools: ["Maven", "Gradle", "JUnit 5", "Mockito", "Lombok", "Docker", "PostgreSQL"]
+    databaseAndTools: {
+        id: "databaseAndTools",
+        title: "Database & DevOps",
+        iconClass: "fas fa-database text-green-600",
+        desc: "Managing data persistence and deployment workflows.",
+        core: ["Git", "Docker", "SQL"],
+        exposure: []
     },
     frontend: {
-        title: "Frontend & Web",
-        icon: '<i class="fab fa-react text-blue-400"></i>',
-        desc: "Creating responsive and interactive user interfaces.",
-        core: ["TypeScript", "React 18", "JavaScript (ES6+)", "HTML5 / CSS3"],
-        tools: ["Tailwind CSS", "Redux Toolkit", "React Router", "Vite", "Axios", "Framer Motion", "Git"]
+        id: "frontend",
+        title: "Frontend",
+        iconClass: "fas fa-laptop-code text-purple-500",
+        desc: "Basic integration logic to connect user interfaces with backends.",
+        core: ["HTML/CSS", "API Integration"],
+        exposure: []
     }
 };
 
-const skillModal = document.getElementById('skillModal');
-const skillTitle = document.getElementById('skillModalTitle');
-const skillIcon = document.getElementById('skillModalIcon');
-const skillDesc = document.getElementById('skillModalDesc');
-const skillCore = document.getElementById('skillModalCore');
-const skillTools = document.getElementById('skillModalTools');
-
-window.openSkillModal = function(key) {
-    const data = skillData[key];
-    if(!data) return;
-
-    // Populate Header
-    skillTitle.textContent = data.title;
-    skillIcon.innerHTML = data.icon;
-    skillDesc.textContent = data.desc;
-
-    // Generate Core Badges
-    skillCore.innerHTML = data.core.map(item => 
-        `<span class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl font-bold text-sm shadow-sm">${item}</span>`
-    ).join('');
-
-    // Generate Tool Badges
-    skillTools.innerHTML = data.tools.map(item => 
-        `<span class="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium">${item}</span>`
-    ).join('');
-
-    skillModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+const experienceData = {
+    trailstone: {
+        company: "TrailStone",
+        period: "Sligo | Apr 2023 – Aug 2023",
+        role: "Software Engineering Intern",
+        timeline: [
+            { title: "Legacy Migration", desc: "Rewrote legacy UI tools using FastAPI and React." },
+            { title: "Data Visualization", desc: "Improved market data visualization for traders, increasing data accessibility." },
+            { title: "Agile Workflow", desc: "Participated in daily stand-ups and sprint planning using Jira." }
+        ]
+    },
+    wineflair: {
+        company: "Wineflair",
+        period: "Various Locations | May 2018 – Present",
+        role: "Management & Sales",
+        timeline: [
+            { title: "Leadership", desc: "Rose through the ranks from Sales Assistant to Assistant Manager." },
+            { title: "Operations", desc: "Managed stock control, cash handling, and staff training across 10+ locations." },
+            { title: "Customer Service", desc: "Maintained high customer satisfaction scores in a fast-paced retail environment." }
+        ]
+    }
 };
-
-window.closeSkillModal = function() {
-    skillModal.classList.add('hidden');
-    document.body.style.overflow = '';
-};
-
-// Close on outside click
-if(skillModal) {
-    skillModal.addEventListener('click', (e) => {
-        if (e.target === skillModal) window.closeSkillModal();
-    });
-}
-
-
-
-/* ==========================================================================
-   9. Education Modal Logic (Updated)
-   ========================================================================== */
 
 const educationData = {
     ou: {
         degree: "BSc (Hons) Computing & IT",
-        university: "Open University",
+        university: "The Open University",
         year: "2021 – 2026 (Expected)",
-        stages: {
-            "Stage 1 (First Year)": [
-                { code: "TM111", title: "Introduction to Computing & IT 1" },
-                { code: "TM112", title: "Introduction to Computing & IT 2" },
+        modules: {
+            "Stage 1": [
+                { code: "TM111", title: "Introduction to Computing and IT Part 1" },
+                { code: "TM112", title: "Introduction to Computing and IT Part 2" },
                 { code: "TM129", title: "Technologies in Practice" },
                 { code: "MU123", title: "Discovering Mathematics" }
             ],
-            "Stage 2 (Second Year)": [
+            "Stage 2": [
                 { code: "TT284", title: "Web Technologies" },
                 { code: "M250", title: "Object-Oriented Java Programming" },
-                { code: "M269", title: "Algorithms, Data Structures & Computability" },
+                { code: "M269", title: "Algorithms, Data Structures and Computability" },
                 { code: "TM254", title: "Managing IT" }
             ],
-            "Stage 3 (Final Year)": [
+            "Stage 3": [
                 { code: "TM352", title: "Web, Mobile and Cloud Technologies" },
-                { code: "TM351", title: "Data Management and Analysis" },
+                { code: "TM356", title: "Interaction Design and the User Experience" },
                 { code: "TM354", title: "Software Engineering" },
                 { code: "TM470", title: "The Computing and IT Project" }
             ]
@@ -374,116 +80,330 @@ const educationData = {
     }
 };
 
-const eduModal = document.getElementById('eduModal');
-const eduDegree = document.getElementById('eduModalDegree');
-const eduUni = document.getElementById('eduModalUni');
-const eduYear = document.getElementById('eduModalYear');
-const eduModules = document.getElementById('eduModalModules');
+const projectData = {
+    laochra: {
+        title: "Laochra 2D Game",
+        stack: ["Python", "Pygame"],
+        desc: "A top-down 2D adventure game featuring custom sprite animation, collision detection, and state management. Built entirely in Python using the Pygame library to demonstrate OOP principles.",
+        link: "https://github.com/CiaranC968"
+    },
+    tacocloud: {
+        title: "TacoCloud",
+        stack: ["Java", "Spring Boot", "H2 Database"],
+        desc: "A full-stack application allowing users to design custom tacos. Features Spring Security for authentication, Spring Data JPA for persistence, and a REST API for the frontend.",
+        link: "https://github.com/CiaranC968"
+    }
+};
 
-window.openEduModal = function(key) {
+const certData = {
+    kainos_event: {
+        title: "Open Uni & Kainos Event",
+        issuer: "Kainos / Open University",
+        date: "2023",
+        icon: '<img src="/static/images/ou-cert.png" alt="Cert" class="h-32 mx-auto rounded-lg shadow-md">',
+        desc: "Participated in a 2-day intensive industry workshop focused on software delivery, agile practices, and modern cloud technologies. Collaborated with a team to solve real-world coding challenges.",
+        link: "#"
+    }
+};
+
+/* ==========================================================================
+   2. RENDERING FUNCTIONS
+   ========================================================================== */
+
+function renderSkills() {
+    const container = document.getElementById('skills-container');
+    if (!container) return;
+
+    container.innerHTML = Object.values(skillData).map(skill => `
+        <article onclick="window.openSkillModal('${skill.id}')" 
+                 class="card-hover cursor-pointer bg-gray-50 dark:bg-gray-900/50 p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm group hover:shadow-lg transition-all">
+            <div class="flex justify-between items-start mb-6">
+                <i class="${skill.iconClass} text-5xl group-hover:scale-110 transition-transform"></i>
+                <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent -rotate-45 group-hover:rotate-0 transition-all duration-300 text-xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-brand-accent transition-colors">
+                ${skill.title}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4">
+                ${skill.desc}
+            </p>
+        </article>
+    `).join('');
+}
+
+/* ==========================================================================
+   3. MODAL LOGIC (Generic & Specific)
+   ========================================================================== */
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
+        modal.firstElementChild.classList.add('scale-100', 'opacity-100');
+    }, 10);
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
+    modal.firstElementChild.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+// --- Specific Modal Handlers ---
+
+// 1. Skills
+window.openSkillModal = (key) => {
+    const data = skillData[key];
+    if (!data) return;
+
+    document.getElementById('skillModalTitle').innerText = data.title;
+    document.getElementById('skillModalDesc').innerText = data.desc;
+    document.getElementById('skillModalIcon').innerHTML = `<i class="${data.iconClass}"></i>`;
+
+    document.getElementById('skillModalCore').innerHTML = data.core.map(item =>
+        `<span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600">${item}</span>`
+    ).join('');
+
+    const toolsContainer = document.getElementById('skillModalTools');
+    const secondHeader = document.getElementById('skillSecondHeader');
+
+    if (data.exposure && data.exposure.length > 0) {
+        secondHeader.innerText = "Exposure / Familiar With";
+        secondHeader.classList.remove('hidden');
+        toolsContainer.innerHTML = data.exposure.map(item =>
+            `<span class="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-3 py-1 rounded-lg text-sm border border-gray-200 dark:border-gray-700">${item}</span>`
+        ).join('');
+    } else {
+        secondHeader.classList.add('hidden');
+        toolsContainer.innerHTML = '';
+    }
+    openModal('skillModal');
+};
+window.closeSkillModal = () => closeModal('skillModal');
+
+// 2. Experience
+window.openExpModal = (key) => {
+    const data = experienceData[key];
+    if (!data) return;
+
+    document.getElementById('expModalCompany').innerText = data.company;
+    document.getElementById('expModalPeriod').innerText = `${data.role} | ${data.period}`;
+
+    document.getElementById('expModalTimeline').innerHTML = data.timeline.map(item => `
+        <div class="relative">
+            <div class="absolute -left-[41px] top-1 h-5 w-5 rounded-full border-4 border-white dark:border-gray-800 bg-brand-accent"></div>
+            <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-1">${item.title}</h4>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">${item.desc}</p>
+        </div>
+    `).join('');
+    openModal('experienceModal');
+};
+window.closeExpModal = () => closeModal('experienceModal');
+
+// 3. Education
+window.openEduModal = (key) => {
     const data = educationData[key];
-    if(!data) return;
+    if (!data) return;
 
-    eduDegree.textContent = data.degree;
-    eduUni.textContent = data.university;
-    eduYear.textContent = data.year;
+    // 1. Set Header Info
+    document.getElementById('eduModalDegree').innerText = data.degree;
+    document.getElementById('eduModalUni').innerText = data.university;
+    document.getElementById('eduModalYear').innerText = data.year;
 
-    // Build the Stage-based Grid
+    // 2. Prepare Container
+    const container = document.getElementById('eduModalModules');
+
+    container.className = "space-y-6";
+
     let contentHtml = '';
-    
-    // Loop through each stage (Stage 1, Stage 2, Stage 3)
-    for (const [stageName, modules] of Object.entries(data.stages)) {
+
+    // 3. Loop through Stages
+    for (const [stageName, modules] of Object.entries(data.modules)) {
         contentHtml += `
-            <div class="mb-8 last:mb-0">
-                <h4 class="text-sm font-bold uppercase tracking-widest text-brand-accent mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
-                    ${stageName}
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                
+                <div class="flex items-center gap-3 mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
+                    <span class="bg-brand-accent text-black text-xs font-black px-2 py-1 rounded uppercase tracking-wider">
+                        ${stageName}
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     ${modules.map(mod => `
-                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center gap-4 hover:border-brand-accent transition-colors">
-                            <span class="font-mono text-sm font-bold text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-gray-200 dark:border-gray-600">
-                                ${mod.code}
-                            </span>
-                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                ${mod.title}
-                            </span>
+                        <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                            <i class="fas fa-check-circle text-brand-accent mt-1 text-sm flex-shrink-0"></i>
+                            <div class="leading-tight">
+                                <span class="text-xs font-bold text-gray-400 block mb-0.5">${mod.code}</span>
+                                <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">${mod.title}</span>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
+
             </div>
         `;
     }
 
-    eduModules.innerHTML = contentHtml;
-    
-    // Update Layout for Scrolling
-    eduModules.className = ''; // Remove grid class as we are handling layout inside the loop now
-
-    eduModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    container.innerHTML = contentHtml;
+    openModal('eduModal');
 };
+window.closeEduModal = () => closeModal('eduModal');
 
-window.closeEduModal = function() {
-    eduModal.classList.add('hidden');
-    document.body.style.overflow = '';
+
+// 4. Certificates
+window.openCertModal = (key) => {
+    const data = certData[key];
+    if (!data) return;
+
+    document.getElementById('certTitle').innerText = data.title;
+    document.getElementById('certIssuer').innerText = data.issuer;
+    document.getElementById('certDate').innerText = data.date;
+    document.getElementById('certDesc').innerText = data.desc;
+    document.getElementById('certIcon').innerHTML = data.icon;
+    document.getElementById('certLink').href = data.link;
+
+    openModal('certModal');
 };
+window.closeCertModal = () => closeModal('certModal');
 
-// Close on outside click
-if(eduModal) {
-    eduModal.addEventListener('click', (e) => {
-        if (e.target === eduModal) window.closeEduModal();
+// 5. Projects (Event Listener approach used for these)
+function setupProjectModals() {
+    const cards = document.querySelectorAll('.project-card');
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            const key = card.getAttribute('data-project');
+            const data = projectData[key];
+            if (!data) return;
+
+            document.getElementById('modalTitle').innerText = data.title;
+            document.getElementById('modalDescription').innerText = data.desc;
+            document.getElementById('modalLink').href = data.link;
+
+            document.getElementById('modalStack').innerHTML = data.stack.map(tech =>
+                `<span class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded text-sm font-bold text-gray-600 dark:text-gray-300">${tech}</span>`
+            ).join('');
+
+            openModal('projectModal');
+        });
     });
 }
-
 
 /* ==========================================================================
-   10. Certificate Modal Logic (New)
+   4. INITIALIZATION & UI UTILITIES
    ========================================================================== */
 
-const certData = {
-    
-    kainos_event: {
-    title: "Open Uni & Kainos Event",
-    issuer: "Kainos / Open University",
-    date: "Duration: 2 Days",
-    // Updated styling: w-full and shadow-xl for a better "preview" look
-    icon: '<img src="/static/images/ou-cert.png" alt="Certificate" class="w-full h-auto rounded-xl shadow-xl mb-6 border border-gray-200 dark:border-gray-700">',
-    desc: "A collaborative 2-day event hosted by Kainos. Gained practical insight into modern software delivery lifecycles, agile methodologies, and industry-standard development practices.",
-    link: "/static/images/ou-cert.png" // The button will now open the image in a new tab
-}
+document.addEventListener('DOMContentLoaded', () => {
 
-};
+    // A. Render Dynamic Content
+    renderSkills();
+    setupProjectModals();
 
-const certModal = document.getElementById('certModal');
-const certTitle = document.getElementById('certTitle');
-const certIssuer = document.getElementById('certIssuer');
-const certDate = document.getElementById('certDate');
-const certDesc = document.getElementById('certDesc');
-const certLink = document.getElementById('certLink');
-const certIcon = document.getElementById('certIcon');
+    // B. Theme Logic
+    const toggleFixed = document.getElementById('theme-toggle-fixed');
+    const toggleMobile = document.getElementById('theme-btn-mobile');
 
-window.openCertModal = function(key) {
-    const data = certData[key];
-    if(!data) return;
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        if(toggleFixed) toggleFixed.checked = true;
+    } else {
+        document.documentElement.classList.remove('dark');
+        if(toggleFixed) toggleFixed.checked = false;
+    }
 
-    certTitle.textContent = data.title;
-    certIssuer.textContent = data.issuer;
-    certDate.textContent = data.date;
-    certDesc.textContent = data.desc;
-    certIcon.innerHTML = data.icon;
-    certLink.href = data.link;
+    const toggleTheme = () => {
+        document.documentElement.classList.toggle('dark');
+        localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    };
 
-    certModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-};
+    if(toggleFixed) toggleFixed.addEventListener('change', toggleTheme);
+    if(toggleMobile) toggleMobile.addEventListener('click', toggleTheme);
 
-window.closeCertModal = function() {
-    certModal.classList.add('hidden');
-    document.body.style.overflow = '';
-};
+    // C. Mobile Menu
+    const menuBtn = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
 
-if(certModal) {
-    certModal.addEventListener('click', (e) => {
-        if (e.target === certModal) window.closeCertModal();
+    function toggleMenu() {
+        const isClosed = sidebar.classList.contains('-translate-x-full');
+        if (isClosed) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+    }
+
+    if(menuBtn) menuBtn.addEventListener('click', toggleMenu);
+    if(overlay) overlay.addEventListener('click', toggleMenu);
+
+    // D. Scroll to Top
+    const scrollBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            scrollBtn.classList.remove('hidden');
+        } else {
+            scrollBtn.classList.add('hidden');
+        }
     });
-}
+    if(scrollBtn) {
+        scrollBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    // E. Resume Modal
+    const openCvBtn = document.getElementById('openCvModal');
+    const closeCvBtn = document.getElementById('closeCvModal');
+    if(openCvBtn) openCvBtn.addEventListener('click', () => openModal('cvModal'));
+    if(closeCvBtn) closeCvBtn.addEventListener('click', () => closeModal('cvModal'));
+
+    // F. Project Modal Close Btn
+    const closeProjBtn = document.getElementById('closeProjectModal');
+    if(closeProjBtn) closeProjBtn.addEventListener('click', () => closeModal('projectModal'));
+
+    /* ==========================================================================
+       G. Global Modal Utilities (Escape Key & Click Outside)
+       ========================================================================== */
+
+    // 1. Close on Escape Key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const openModals = document.querySelectorAll('.fixed.inset-0:not(.hidden)');
+            openModals.forEach(modal => {
+                // Skip the sidebar overlay, only close content modals
+                if (modal.id !== 'sidebar-overlay') {
+                    closeModal(modal.id);
+                }
+            });
+        }
+    });
+
+    const allModals = [
+        'cvModal', 'projectModal', 'experienceModal',
+        'skillModal', 'eduModal', 'certModal'
+    ];
+
+    allModals.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+
+                if (e.target === modal) {
+                    closeModal(id);
+                }
+            });
+        }
+    });
+
+});

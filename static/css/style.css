@@ -1,125 +1,145 @@
 /* =========================================
-   1) Global Variables & Smoothness updated
+   1) Variables & Reset
    ========================================= */
-
 :root {
-    --sidebar-width: 264px; /* Matches md:ml-64 */
-    --color-accent: #facc15; /* brand-accent */
-
-    /* New Cream Colour for Sidebar */
+    --sidebar-width: 264px;
+    --color-accent: #facc15;
     --color-cream: #fffdf5;
+    --color-dark: #111827;
 }
 
 html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
 }
 
-/* Offset for fixed mobile header so content isn't hidden when clicking links */
+/* Fix for text-size-adjust warning on mobile */
+:host, html {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 section {
     scroll-margin-top: 5rem;
 }
 
-/* =========================================
-   2) Sidebar Styling (JS Controlled)
-   ========================================= */
+/* Typography Polish */
+h1, h2, h3 {
+    text-wrap: balance;
+}
 
+/* =========================================
+   2) Sidebar Styling
+   ========================================= */
 #sidebar {
-    /* Sets the sidebar to the new cream colour */
     background-color: var(--color-cream);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Added border-color transition for smoother theme switching */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+    border-right: 1px solid #e5e7eb;
 }
 
-/* The class JS toggles on mobile */
-#sidebar.active {
-    transform: translateX(0) !important;
+/* Dark Mode Override */
+.dark #sidebar {
+    background-color: var(--color-dark);
+    border-right: 1px solid #1f2937;
 }
 
-/* ScrollSpy Highlight: When a section is active, the sidebar link glows */
-#sidebar a.active {
-    background-color: rgba(250, 204, 21, 0.1);
-    color: var(--color-accent);
-    font-weight: 600;
-    border-right: 4px solid var(--color-accent);
-}
+
+
 
 /* =========================================
-   3) Card & Tech Stack Polish
+   3) Interactive Elements (Cards & Buttons)
    ========================================= */
+/* REFACTORED: Using semantic class instead of Tailwind utilities */
+.card-hover,
+.project-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform; /* Performance hint for browsers */
+}
 
-/* Adds a subtle lift effect to your Project and Skill cards */
-article,
-.bg-gray-50.rounded-3xl {
+.card-hover,
+.project-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-article:hover {
+.card-hover:hover,
+.project-card:hover {
+    will-change: transform;
     transform: translateY(-4px);
 }
 
-/* Animation for your "Wee Circles" so they fade in nicely */
-.flex.gap-1\.5 .rounded-full {
-    transition: transform 0.2s ease;
+
+/* =========================================
+   4) Timeline Logic
+   ========================================= */
+.timeline-line::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 15px;
+    width: 2px;
+    background: #e5e7eb;
 }
 
-.group:hover .flex.gap-1\.5 .rounded-full {
-    transform: scale(1.2);
+.dark .timeline-line::before {
+    background: #374151;
 }
 
 /* =========================================
-   4) Contact Form Specifics
+   5) Accessibility & Utilities
    ========================================= */
 
-/* Overrides the default gray card style for the Contact section
-   so it blends with the main white background.
-   Note: Ensure your contact section or form wrapper has the ID="contact"
-*/
-#contact article,
-#contact .bg-gray-50 {
-    background-color: transparent !important; /* Removes gray background */
-    box-shadow: none !important;              /* Removes shadow/lift */
-    border: 1px solid #f3f4f6;                /* Optional: adds a very faint border instead */
+/* Skip Link (Hidden until focused) */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--color-accent);
+    color: black;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.3s;
+    font-weight: bold;
+}
+.skip-link:focus {
+    top: 0;
 }
 
-/* =========================================
-   5) Scroll To Top Button Logic
-   ========================================= */
+/* Custom Scrollbar (Better than hiding it) */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 20px;
+}
+.dark ::-webkit-scrollbar-thumb {
+    background-color: #374151;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-accent);
+}
 
 #scrollTopBtn {
-    transition: all 0.3s ease;
-    z-index: 99;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+
 }
 
-/* =========================================
-   6) Utilities & HTMX
-   ========================================= */
-
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-/* HTMX Loading Spinner Logic */
-.htmx-indicator {
-    display: none;
-}
-
-.htmx-request .htmx-indicator {
-    display: inline-block;
-}
-
-.htmx-request span:not(.htmx-indicator) {
-    display: none;
-}
-
-/* Accessibility: Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    * {
-        animation: none !important;
-        transition: none !important;
+    html {
         scroll-behavior: auto !important;
+    }
+
+    .animate-ping,
+    .animate-bounce,
+    .animate-spin {
+        animation: none !important;
     }
 }
