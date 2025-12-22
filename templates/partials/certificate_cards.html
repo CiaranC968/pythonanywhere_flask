@@ -1,0 +1,17 @@
+{% for cert in certificates %}
+<article 
+    hx-get="/fragment/certificate-modal/{{ cert.id }}"
+    hx-target="#modalContent"
+    class="group bg-white dark:bg-gray-800 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-sm cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all">
+    
+    <div class="flex items-center gap-5">
+        <div class="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center group-hover:bg-brand-accent transition-colors">
+            <i class="fas fa-award text-2xl text-amber-500 group-hover:text-black transition-colors"></i>
+        </div>
+        <div>
+            <h4 class="text-xl font-bold dark:text-white">{{ cert.title }}</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">{{ cert.issuer }}</p>
+        </div>
+    </div>
+</article>
+{% endfor %}

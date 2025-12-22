@@ -1,0 +1,86 @@
+[
+    {
+        "slug": "emerald",
+        "title": "Emerald",
+        "stack": ["Python", "FastAPI", "TanStack", "TypeScript", "WebSockets", "AWS"],
+        "quickDesc": "Real-time Energy Monitoring Dashboard",
+        "desc": "Named and built the 'Emerald' app, a full-stack platform to fetch, normalise, and visualise energy market time-series data. Deployed on AWS using Elastic Beanstalk for scalable data processing.",
+        "link": "#",
+        "icon": "fas fa-bolt",
+        "bgIcon": "fas fa-bolt",
+        "color": "text-emerald-500",
+        "hoverColor": "group-hover:text-emerald-400"
+    },
+    {
+        "slug": "trailstoneconfig",
+        "title": "Trailstone Config Service",
+        "stack": ["Python", "React", "AWS"],
+        "quickDesc": "Dynamic Configuration Management",
+        "desc": "Collaborated with another Team to develop a service that allows users to modify application settings and test it on the emerald app to inject new TSIDs into tanstack table on the fly.",
+        "link": "#",
+        "icon": "fas fa-cogs",
+        "bgIcon": "fas fa-cogs",
+        "color": "text-blue-500",
+        "hoverColor": "group-hover:text-blue-400"
+    },
+    {
+        "slug": "laochra",
+        "title": "Laochra 2D Game",
+        "stack": ["Python", "Pygame"],
+        "quickDesc": "A Viking-themed 2D adventure built with Pygame.",
+        "desc": "A top-down 2D adventure game featuring custom sprite animation, collision detection, and state management. Built entirely in Python using the Pygame library to demonstrate OOP principles.",
+        "link": "https://github.com/CiaranC968",
+        "icon": "fas fa-gamepad",
+        "bgIcon": "fas fa-shield-alt",
+        "color": "text-blue-600",
+        "hoverColor": "group-hover:text-blue-400"
+    },
+    {
+        "slug": "tacocloud",
+        "title": "TacoCloud",
+        "stack": ["Java", "Spring Boot", "H2 Database"],
+        "quickDesc": "Full-stack ordering system built with Spring Boot.",
+        "desc": "A full-stack application allowing users to design custom tacos. Features Spring Security for authentication, Spring Data JPA for persistence, and a REST API for the frontend.",
+        "link": "https://github.com/CiaranC968",
+        "icon": "fas fa-cloud",
+        "bgIcon": "fas fa-cloud",
+        "color": "text-orange-600",
+        "hoverColor": "group-hover:text-orange-400"
+    },
+    {
+        "slug": "nutrition",
+        "title": "Nutrition Meal App",
+        "stack": ["Java", "Spring Boot", "React"],
+        "quickDesc": "Nutrition tracking and meal planning application.",
+        "desc": "A meal planning and nutrition tracking application. Users can manage recipes, track daily caloric intake, and generate shopping lists based on meal plans.",
+        "link": "https://github.com/CiaranC968/NutritionProject",
+        "icon": "fas fa-utensils",
+        "bgIcon": "fas fa-apple-alt",
+        "color": "text-green-600",
+        "hoverColor": "group-hover:text-green-400"
+    },
+    {
+        "slug": "staffrota",
+        "title": "Staff Rota System",
+        "stack": ["PHP", "SQL"],
+        "quickDesc": "Upgrading a legacy scheduling system for TM356.",
+        "desc": "For my TM356 module, my project involves upgrading a previous workplace system that is not fit for purpose. This project focuses on modernizing the UI and backend logic to improve staff scheduling efficiency.",
+        "link": "#",
+        "icon": "fas fa-calendar-alt",
+        "bgIcon": "fas fa-calendar-check",
+        "color": "text-purple-600",
+        "hoverColor": "group-hover:text-purple-400"
+    },
+    {
+        "slug": "thisapp",
+        "title": "ciarancdev",
+        "stack": ["Python", "Flask", "Javascript", "Tailwind"],
+        "quickDesc": "Developer Portfolio",
+        "desc": "Developed this website using python and flask on the backend and Javascript and tailwind with some htmx on the frontend and is hosted on the pythonanywhere server",
+        "link": "#",
+        "icon": "fas fa-code",
+        "bgIcon": "fas fa-laptop-code",
+        "color": "text-indigo-500",
+        "hoverColor": "group-hover:text-indigo-400"
+    }
+]

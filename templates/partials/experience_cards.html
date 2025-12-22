@@ -1,0 +1,23 @@
+{% for exp in experience %}
+<article hx-get="/fragment/experience/{{ exp.id }}" 
+         hx-target="#modalContent"
+         class="group card-hover cursor-pointer bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1">
+
+    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity duration-300">
+        <i class="{{ exp.bgIcon }} text-9xl {{ exp.hoverColor }}"></i>
+    </div>
+
+    <div class="relative z-10">
+        <div class="flex justify-between items-start mb-6">
+            <div class="w-16 h-16 rounded-xl {{ exp.bgColor }} dark:bg-opacity-20 flex items-center justify-center {{ exp.iconColor }} text-3xl group-hover:bg-brand-accent group-hover:text-black transition-all duration-300">
+                <i class="{{ exp.icon }}"></i>
+            </div>
+            <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent -rotate-45 group-hover:rotate-0 transition-all duration-300 text-xl"></i>
+        </div>
+
+        <h3 class="text-3xl font-bold mb-1 text-gray-900 dark:text-white">{{ exp.company }}</h3>
+        <p class="text-brand-accent font-bold uppercase tracking-wider text-sm mb-4">{{ exp.role }}</p>
+        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{{ exp.brief }}</p>
+    </div>
+</article>
+{% endfor %}

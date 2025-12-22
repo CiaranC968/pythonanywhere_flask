@@ -1,0 +1,37 @@
+{% for skill in skills %}
+<article 
+    hx-get="/fragment/skill-modal/{{ skill.id }}"
+    hx-target="#modalContent"
+    hx-trigger="click"
+    class="group card-hover cursor-pointer bg-white dark:bg-gray-800 rounded-[2rem] p-8 border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1">
+
+    <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-all duration-500 pointer-events-none">
+        <i class="{{ skill.bgIcon }} text-8xl transform group-hover:scale-110 group-hover:-rotate-12 transition-transform"></i>
+    </div>
+
+    <div class="relative z-10">
+        <div class="flex justify-between items-start mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center shadow-sm group-hover:bg-brand-accent transition-colors duration-300">
+                <i class="{{ skill.iconClass }} text-2xl group-hover:text-black transition-colors"></i>
+            </div>
+            <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent transition-all duration-300 text-xl -rotate-45 group-hover:rotate-0"></i>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-3 dark:text-white tracking-tight">{{ skill.title }}</h3>
+        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4 line-clamp-2">{{ skill.desc }}</p>
+
+        <div class="flex flex-wrap gap-2">
+            {% for item in skill.core[:3] %}
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700/50 rounded-md dark:text-gray-300 border border-transparent dark:border-gray-600">
+                {{ item }}
+            </span>
+            {% endfor %}
+            {% if skill.core|length > 3 %}
+            <span class="text-[10px] font-bold text-brand-accent self-center ml-1">
+                + {{ skill.core|length - 3 }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</article>
+{% endfor %}

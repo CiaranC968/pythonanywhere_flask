@@ -1,250 +1,98 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Portfolio of Ciaran Cairns, a Software Developer." />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ciaran Cairns | Software Developer</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { dark: '#111827', accent: '#facc15', hover: '#f59e0b' }
-                    },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
-                }
-            }
+            theme: { extend: { colors: { brand: { dark: '#111827', accent: '#facc15', hover: '#f59e0b' } } } }
         };
     </script>
-    <script src="https://unpkg.com/htmx.org@1.9.2" defer></script>
-    <style>
-        .timeline-line::before {
-            content: '';
-            position: absolute;
-            top: 0; bottom: 0; left: 0;
-            width: 2px;
-            background: #e5e7eb;
-        }
-        .dark .timeline-line::before { background: #374151; }
-        #sidebar::-webkit-scrollbar { width: 6px; }
-        #sidebar::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 4px; }
-    </style>
 </head>
-
 <body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 antialiased transition-colors duration-300">
 
-<div class="fixed top-6 right-6 z-[60] hidden md:block">
-    <label for="theme-toggle-fixed" class="relative inline-flex items-center cursor-pointer group">
-        <input type="checkbox" id="theme-toggle-fixed" class="sr-only peer">
-        <div class="w-16 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-lg peer-checked:bg-gray-800 transition-all duration-300 relative overflow-hidden">
-            <i class="fas fa-moon absolute top-2 left-2 text-xs text-gray-400 z-10"></i>
-            <i class="fas fa-sun absolute top-2 right-2 text-xs text-yellow-500 z-10"></i>
-        </div>
-        <div class="absolute top-1 left-1 bg-brand-accent w-6 h-6 rounded-full shadow-md transition-all duration-300 peer-checked:translate-x-8"></div>
-    </label>
-</div>
-
-<header class="md:hidden fixed top-0 left-0 right-0 z-50 bg-brand-dark/95 backdrop-blur-md text-white p-4 flex justify-between items-center shadow-lg border-b border-gray-800">
-    <span class="text-xl font-bold tracking-tight">Ciaran Cairns</span>
-    <div class="flex items-center gap-4">
-        <button id="theme-btn-mobile" type="button" class="text-yellow-400 hover:text-white transition-colors p-1"><i class="fas fa-moon text-xl"></i></button>
-        <button id="menu-toggle" type="button" class="p-2 text-brand-accent hover:bg-gray-800 rounded-lg transition-colors"><i class="fas fa-bars text-2xl"></i></button>
-    </div>
-</header>
-
-<aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white dark:bg-[#0b111e] border-r border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-300 p-8 overflow-y-auto z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
-    <div class="mb-10 hidden md:block group text-center">
-        <div class="relative w-32 h-32 mx-auto mb-4">
-            <img src="/static/images/about.png" alt="Profile" class="rounded-2xl border-2 border-gray-200 dark:border-gray-700 group-hover:border-brand-accent transition-all duration-300 shadow-lg object-cover w-full h-full">
-            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white dark:border-brand-dark rounded-full z-20"></div>
-        </div>
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Ciaran Cairns</h2>
-        <p class="text-xs text-gray-500">Software Developer</p>
-    </div>
-    <nav class="space-y-1">
-        <a href="#about" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all group"><i class="fas fa-user w-5 text-gray-400 group-hover:text-brand-accent"></i>About</a>
-        <a href="#experience" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all group"><i class="fas fa-briefcase w-5 text-gray-400 group-hover:text-brand-accent"></i>Experience</a>
-        <a href="#skills" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all group"><i class="fas fa-code w-5 text-gray-400 group-hover:text-brand-accent"></i>Tech Stack</a>
-        <a href="#projects" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all group"><i class="fas fa-rocket w-5 text-gray-400 group-hover:text-brand-accent"></i>Projects</a>
-        <a href="#education" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all group"><i class="fas fa-graduation-cap w-5 text-gray-400 group-hover:text-brand-accent"></i>Education</a>
-        <a href="#certificates" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all group"><i class="fas fa-certificate w-5 text-gray-400 group-hover:text-brand-accent"></i>Certificates</a>
-        <a href="#contact" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all group"><i class="fas fa-envelope w-5 text-gray-400 group-hover:text-brand-accent"></i>Contact</a>
-    </nav>
-</aside>
-
-<div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden transition-opacity"></div>
-
-<main class="main-content md:ml-64 transition-all duration-300">
-
-    <section id="about" class="min-h-screen flex items-center bg-white dark:bg-gray-800 py-20 px-8 lg:px-16 transition-colors duration-300">
-        <div class="max-w-4xl">
-            <div class="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-widest mb-8 border border-amber-200 dark:border-amber-800">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                </span>
-                Available for Work
+    <div class="fixed top-6 right-6 z-[100] hidden md:block">
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="theme-toggle-fixed" class="sr-only peer">
+            <div class="w-14 h-7 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-brand-accent transition-all"></div>
+            <div class="absolute top-1 left-1 bg-white w-5 h-5 rounded-full peer-checked:translate-x-7 flex items-center justify-center">
+                <i class="fas fa-sun text-[10px] text-orange-500 dark:hidden"></i>
+                <i class="fas fa-moon text-[10px] text-indigo-600 hidden dark:block"></i>
             </div>
-            <h1 class="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-tight text-gray-900 dark:text-white">
-                Ciaran Cairns <br/>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-red-600">Software Developer.</span>
-            </h1>
-            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl leading-relaxed">
-                I'm <span class="text-gray-900 dark:text-white font-semibold">Ciaran</span>, a final year student at the Open University studying Computing and IT (Software).
-            </p>
-            <div class="flex flex-wrap gap-5">
-                <button id="openCvModal" class="bg-brand-dark text-white font-bold py-4 px-8 rounded-2xl shadow-xl hover:bg-gray-800 transition-all flex items-center gap-3 transform hover:-translate-y-1">
+        </label>
+    </div>
+
+    <header class="md:hidden fixed top-0 left-0 right-0 z-50 bg-brand-dark/95 backdrop-blur-md text-white p-4 flex justify-between items-center">
+        <span class="font-bold">Ciaran Cairns</span>
+        <button id="menu-toggle" class="text-brand-accent"><i class="fas fa-bars text-2xl"></i></button>
+    </header>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden"></div>
+
+    <aside id="sidebar" class="bg-white dark:bg-[#0b111e] border-r border-gray-200 dark:border-gray-800 p-8 flex flex-col z-50">
+        <div class="mb-10 text-center">
+            <img src="/static/images/about.png" class="w-32 h-32 mx-auto mb-4 rounded-2xl border-2 border-gray-200 dark:border-gray-700 object-cover" alt="aboutme">
+            <h2 class="text-xl font-bold">Ciaran Cairns</h2>
+            <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Software Developer</p>
+        </div>
+        <nav class="space-y-1 flex-grow">
+            <a href="#about" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-user group-hover:text-brand-accent"></i>About</a>
+            <a href="#experience" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-briefcase group-hover:text-brand-accent"></i>Experience</a>
+            <a href="#skills" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-code group-hover:text-brand-accent"></i>Tech Stack</a>
+            <a href="#projects" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-rocket group-hover:text-brand-accent"></i>Projects</a>
+            <a href="#education" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-graduation-cap group-hover:text-brand-accent"></i>Education</a>
+            <a href="#certificates" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-award group-hover:text-brand-accent"></i>Certificates</a>
+            <a href="#contact" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-envelope group-hover:text-brand-accent"></i>Contact</a>
+        </nav>
+    </aside>
+
+    <main>
+        <section id="about" class="h-screen flex items-center px-8 lg:px-16 bg-white dark:bg-gray-800">
+            <div class="max-w-4xl">
+                <div class="inline-flex items-center gap-2 py-1 px-4 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold mb-8 border border-amber-200 dark:border-amber-800">
+                    <span class="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span> Available for Work
+                </div>
+                <h1 class="text-6xl md:text-8xl font-black mb-8 tracking-tighter dark:text-white">Ciaran Cairns<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-red-600">Software Developer.</span></h1>
+                <p class="text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl leading-relaxed">I'm a final-year Computing & IT student at the Open University specializing in building robust, user-centric software solutions.</p>
+                <button hx-get="/fragment/cv" hx-target="#modalContent" class="bg-brand-dark text-white font-bold py-4 px-8 rounded-2xl shadow-xl hover:bg-gray-800 transition-all flex items-center gap-3 transform hover:-translate-y-1">
                     <i class="fas fa-file-pdf text-brand-accent"></i> View Resume
                 </button>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="experience" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
-        <div class="max-w-6xl">
-            <div class="flex items-center gap-4 mb-16">
-                <h2 class="text-4xl font-bold whitespace-nowrap text-gray-900 dark:text-white">Experience</h2>
-                <div class="h-1 flex-grow bg-gray-200 dark:bg-gray-800 rounded-full"></div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <article onclick="window.openExpModal('trailstone')" class="card-hover cursor-pointer bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm group relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-50 transition-opacity duration-300"><i class="fas fa-bolt text-9xl transition-colors duration-300 group-hover:text-yellow-400"></i></div>
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start mb-6">
-                            <div class="w-16 h-16 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-3xl"><i class="fas fa-code-branch"></i></div>
-                            <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent -rotate-45 group-hover:rotate-0 transition-all duration-300 text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold mb-1 text-gray-900 dark:text-white">TrailStone</h3>
-                        <p class="text-brand-accent font-bold uppercase tracking-wider text-sm mb-4">Software Engineering Intern</p>
-                        <p class="text-gray-500 italic mb-6">Sligo | Apr 2023 – Aug 2023</p>
-                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">Rewrote legacy UI tools using FastAPI and React, providing improved market data visualization for traders.</p>
-                    </div>
-                </article>
+        <section id="experience" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t dark:border-gray-800">
+            <div class="max-w-6xl mx-auto"><h2 class="text-4xl font-bold mb-16 dark:text-white">Experience</h2><div id="experience-container" hx-get="/fragment/experience" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-2 gap-10"></div></div>
+        </section>
 
-                <article onclick="window.openExpModal('wineflair')" class="card-hover cursor-pointer bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm group relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-50 transition-opacity duration-300"><i class="fas fa-wine-bottle text-9xl transition-colors duration-300 group-hover:text-green-600"></i></div>
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start mb-6">
-                            <div class="w-16 h-16 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 text-3xl"><i class="fas fa-store"></i></div>
-                            <div class="flex items-center gap-2">
-                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-bold px-3 py-1 rounded-full">3 Roles</span>
-                                <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent -rotate-45 group-hover:rotate-0 transition-all duration-300 text-xl"></i>
-                            </div>
-                        </div>
-                        <h3 class="text-3xl font-bold mb-1 text-gray-900 dark:text-white">Wineflair</h3>
-                        <p class="text-brand-accent font-bold uppercase tracking-wider text-sm mb-4">Management & Sales</p>
-                        <p class="text-gray-500 italic mb-6">Various | May 2018 – Present</p>
-                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">Rose through the ranks from Sales Assistant to Assistant Manager across 10+ locations.</p>
-                    </div>
+        <section id="skills" class="bg-white dark:bg-gray-800 py-24 px-8 lg:px-16 border-t dark:border-gray-700">
+            <div class="max-w-6xl mx-auto"><h2 class="text-4xl font-bold mb-16 dark:text-white">Tech Stack</h2><div id="skills-container" hx-get="/fragment/skills" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div></div>
+        </section>
+
+        <section id="projects" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t dark:border-gray-800">
+            <div class="max-w-6xl mx-auto"><h2 class="text-4xl font-bold mb-16 dark:text-white">Projects</h2><div id="projects-container" hx-get="/fragment/projects" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"></div></div>
+        </section>
+
+        <section id="education" class="bg-white dark:bg-gray-800 py-24 px-8 lg:px-16 border-t dark:border-gray-700">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-4xl font-bold mb-16 dark:text-white">Education</h2>
+                <article hx-get="/fragment/education" hx-target="#modalContent" class="group relative cursor-pointer bg-gray-50 dark:bg-gray-900/50 p-10 rounded-[2.5rem] border dark:border-gray-700 hover:shadow-2xl transition-all">
+                    <h3 class="text-3xl font-black dark:text-white mb-2">BSc (Hons) Computing & IT</h3>
+                    <span class="text-brand-accent font-bold text-xl">Open University</span>
+                    <p class="text-gray-500 mt-4 italic">Expected Graduation: 2026. Click for module details.</p>
                 </article>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="skills" class="bg-white dark:bg-gray-800 py-24 px-8 lg:px-16 border-t border-gray-100 dark:border-gray-700 transition-colors duration-300">
-        <div class="max-w-6xl">
-            <div class="flex items-center gap-4 mb-16">
-                <h2 class="text-4xl font-bold whitespace-nowrap text-gray-900 dark:text-white">Tech Stack</h2>
-                <div class="h-1 flex-grow bg-gray-200 dark:bg-gray-800 rounded-full"></div>
-            </div>
-            <div id="skills-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
-        </div>
-    </section>
-
-    <section id="projects" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
-        <div class="max-w-6xl">
-            <div class="flex items-center gap-4 mb-16">
-                <h2 class="text-4xl font-bold whitespace-nowrap text-gray-900 dark:text-white">Featured Projects</h2>
-                <div class="h-1 flex-grow bg-gray-200 dark:bg-gray-800 rounded-full"></div>
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <article data-project="laochra" class="project-card card-hover cursor-pointer group bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div class="flex justify-between items-start mb-6 text-blue-600">
-                        <i class="fas fa-gamepad text-3xl"></i>
-                        <i class="fas fa-expand-alt text-gray-300 group-hover:text-brand-accent transition-colors"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-brand-accent transition-colors">Laochra 2D Game</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg">A Viking-themed 2D adventure built with Pygame.</p>
-                    <span class="px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-bold text-gray-500 uppercase tracking-widest">Python</span>
-                </article>
-
-                <article data-project="tacocloud" class="project-card card-hover cursor-pointer group bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div class="flex justify-between items-start mb-6 text-orange-600">
-                        <i class="fas fa-cloud text-3xl"></i>
-                        <i class="fas fa-expand-alt text-gray-300 group-hover:text-brand-accent transition-colors"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-brand-accent transition-colors">TacoCloud</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg">Full-stack ordering system built with Spring Boot.</p>
-                    <span class="px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-bold text-gray-500 uppercase tracking-widest">Java</span>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section id="education" class="bg-white dark:bg-gray-800 py-24 px-8 lg:px-16 border-t border-gray-100 dark:border-gray-700 transition-colors duration-300">
-        <div class="max-w-6xl">
-            <div class="flex items-center gap-4 mb-16">
-                <h2 class="text-4xl font-bold whitespace-nowrap text-gray-900 dark:text-white">Education</h2>
-                <div class="h-1 flex-grow bg-gray-200 dark:bg-gray-800 rounded-full"></div>
-            </div>
-
-            <article onclick="window.openEduModal('ou')" class="card-hover cursor-pointer bg-gray-50 dark:bg-gray-900/50 p-10 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm group relative hover:shadow-lg transition-all">
-                <div class="flex flex-col md:flex-row md:justify-between mb-6 relative z-10">
-                    <div>
-                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white group-hover:text-brand-accent transition-colors">BSc (Hons) Computing & IT</h3>
-                        <span class="text-brand-accent font-bold text-xl uppercase tracking-wide">Open University</span>
-                    </div>
-                    <div class="hidden md:block">
-                        <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent -rotate-45 group-hover:rotate-0 transition-all duration-300 text-3xl"></i>
-                    </div>
-                </div>
-
-                <p class="text-gray-500 italic mb-8">Expected Graduation: 2026 | Track: 2:1 Upper Second Class</p>
-
-                <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600 dark:text-gray-300 text-lg relative z-10">
-                    <li class="flex items-center gap-3"><i class="fas fa-check-circle text-brand-accent"></i> Algorithms & Data Structures</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check-circle text-brand-accent"></i> Web Technologies</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check-circle text-brand-accent"></i> Object‑Oriented Java</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check-circle text-brand-accent"></i> Software Engineering</li>
-                </ul>
-
-                <div class="absolute bottom-4 right-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                    <i class="fas fa-graduation-cap text-8xl"></i>
-                </div>
-            </article>
-        </div>
-    </section>
-
-
-    <section id="certificates" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
-        <div class="max-w-6xl">
-            <div class="flex items-center gap-4 mb-16">
-                <h2 class="text-4xl font-bold whitespace-nowrap text-gray-900 dark:text-white">Certificates</h2>
-                <div class="h-1 flex-grow bg-gray-200 dark:bg-gray-800 rounded-full"></div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <article onclick="window.openCertModal('kainos_event')" class="card-hover cursor-pointer bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm group hover:shadow-lg transition-all">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-16 h-16 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white">
-                            <img src="/static/images/ou-cert.png" alt="Kainos Event" loading="lazy" class="w-full h-full object-cover">
-                        </div>
-                        <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent -rotate-45 group-hover:rotate-0 transition-all duration-300 text-xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-1 text-gray-900 dark:text-white group-hover:text-brand-accent transition-colors">Open Uni & Kainos Event</h3>
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Kainos / Open University</p>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">Participated in a 2-day intensive industry workshop focused on software delivery and agile practices.</p>
-                </article>
-            </div>
-        </div>
-    </section>
+        <section id="certificates" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t dark:border-gray-800">
+            <div class="max-w-6xl mx-auto"><h2 class="text-4xl font-bold mb-16 dark:text-white">Certifications & Events</h2><div id="certificates-container" hx-get="/fragment/certificates" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div></div>
+        </section>
 
     <section id="contact" class="bg-white dark:bg-brand-dark text-gray-900 dark:text-white py-24 px-8 lg:px-16 border-t border-gray-200 dark:border-gray-800 text-center relative overflow-hidden transition-colors duration-300">
         <div class="max-w-4xl mx-auto relative z-10">
@@ -290,107 +138,18 @@
 
 </main>
 
-<div id="cvModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[120] p-4 transition-opacity duration-300">
-    <div class="relative w-full max-w-5xl h-[90vh] bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col transform transition-all duration-300 scale-95 opacity-0">
-        <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-            <h3 class="text-lg font-bold text-gray-700 dark:text-gray-200 ml-2">Resume Preview</h3>
-            <div class="flex gap-3">
-                <a href="/static/docs/Ciaran_Cairns_CV.pdf" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-brand-accent text-black text-sm font-bold rounded-xl hover:bg-brand-hover transition-colors">
-                    <i class="fas fa-external-link-alt"></i> <span class="hidden sm:inline">Open Full Screen</span>
-                </a>
-                <button id="closeCvModal" class="bg-gray-200 dark:bg-gray-700 hover:bg-red-500 hover:text-white px-4 py-2 rounded-xl transition-colors"><i class="fas fa-times"></i></button>
-            </div>
-        </div>
-        <div class="flex-grow bg-gray-200 dark:bg-gray-900 relative">
-            <object data="/static/docs/Ciaran_Cairns_CV.pdf" type="application/pdf" class="w-full h-full rounded-b-3xl">
-                <div class="flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
-                    <i class="fas fa-file-pdf text-6xl mb-4 text-gray-300"></i>
-                    <p class="mb-4 text-lg">Your browser cannot display this PDF directly.</p>
-                    <a href="/static/docs/Ciaran_Cairns_CV.pdf" target="_blank" class="text-brand-accent font-bold hover:underline">Click here to download it instead.</a>
+<div id="universalModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[110] p-4">
+        <div class="modal-content relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300">
+            <button onclick="modal.close()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-[70]">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <div id="modalContent" class="max-h-[85vh] overflow-y-auto custom-scrollbar">
                 </div>
-            </object>
         </div>
     </div>
-</div>
+    
+    <button id="scrollTopBtn" class="fixed bottom-8 right-8 hidden bg-brand-accent text-black w-12 h-12 rounded-xl shadow-2xl z-50 flex items-center justify-center transition-all hover:-translate-y-1"><i class="fas fa-arrow-up"></i></button>
 
-<div id="projectModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[110] p-4 transition-opacity duration-300">
-    <div class="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 transform transition-all duration-300 scale-95 opacity-0">
-        <button id="closeProjectModal" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors"><i class="fas fa-times text-2xl"></i></button>
-        <div id="modalTitle" class="text-4xl font-black mb-4 text-gray-900 dark:text-white"></div>
-        <div id="modalStack" class="flex gap-2 mb-8"></div>
-        <p id="modalDescription" class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-10"></p>
-        <a id="modalLink" href="#" target="_blank" class="inline-flex items-center gap-3 bg-brand-dark dark:bg-gray-700 text-white font-bold py-4 px-8 rounded-2xl hover:bg-brand-accent hover:text-black transition-all">
-            <i class="fab fa-github"></i> View Source Code
-        </a>
-    </div>
-</div>
-
-<div id="experienceModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[110] p-4 transition-opacity duration-300">
-    <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 transform transition-all duration-300 scale-95 opacity-0">
-        <button onclick="window.closeExpModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-20"><i class="fas fa-times text-2xl"></i></button>
-        <div class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-6">
-            <h2 id="expModalCompany" class="text-4xl font-black text-gray-900 dark:text-white mb-2"></h2>
-            <p id="expModalPeriod" class="text-brand-accent font-bold uppercase tracking-widest text-sm"></p>
-        </div>
-        <div id="expModalTimeline" class="relative timeline-line space-y-8 pl-8"></div>
-    </div>
-</div>
-
-<div id="skillModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[110] p-4 transition-opacity duration-300">
-    <div class="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-10 transform transition-all duration-300 scale-95 opacity-0">
-        <button onclick="window.closeSkillModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-20"><i class="fas fa-times text-2xl"></i></button>
-        <div class="text-center mb-8">
-            <div id="skillModalIcon" class="text-6xl mb-4"></div>
-            <h2 id="skillModalTitle" class="text-3xl font-black text-gray-900 dark:text-white"></h2>
-            <p id="skillModalDesc" class="text-gray-500 mt-2"></p>
-        </div>
-        <div class="space-y-6">
-            <div>
-                <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Core Technologies</h4>
-                <div id="skillModalCore" class="flex flex-wrap gap-2 justify-center"></div>
-            </div>
-            <div>
-                <h4 id="skillSecondHeader" class="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Tools & Libraries</h4>
-                <div id="skillModalTools" class="flex flex-wrap gap-2 justify-center"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="eduModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[110] p-4 transition-opacity duration-300">
-    <div class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 transform transition-all duration-300 scale-95 opacity-0">
-        <button onclick="window.closeEduModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-20"><i class="fas fa-times text-2xl"></i></button>
-        <div class="border-b border-gray-100 dark:border-gray-700 pb-6 mb-8">
-            <h2 id="eduModalDegree" class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2"></h2>
-            <p id="eduModalUni" class="text-brand-accent font-bold uppercase tracking-widest text-lg"></p>
-            <p id="eduModalYear" class="text-gray-500 mt-2 italic"></p>
-        </div>
-        <div><div id="eduModalModules" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div></div>
-    </div>
-</div>
-
-<div id="certModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[110] p-4 transition-opacity duration-300">
-    <div class="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 transform transition-all duration-300 scale-95 opacity-0">
-        <button onclick="window.closeCertModal()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-20"><i class="fas fa-times text-2xl"></i></button>
-        <div class="text-center mb-8">
-            <div id="certIcon" class="mb-4 inline-block w-full"></div>
-            <h2 id="certTitle" class="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2"></h2>
-            <p id="certIssuer" class="text-brand-accent font-bold uppercase tracking-widest text-sm"></p>
-            <p id="certDate" class="text-gray-500 text-xs mt-1 italic"></p>
-        </div>
-        <div class="space-y-6">
-            <div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
-                <p id="certDesc" class="text-gray-600 dark:text-gray-300 text-center leading-relaxed"></p>
-            </div>
-            <a id="certLink" href="#" target="_blank" class="w-full block text-center bg-brand-dark dark:bg-gray-700 text-white font-bold py-4 rounded-xl hover:bg-brand-accent hover:text-black transition-all">
-                <i class="fas fa-external-link-alt mr-2"></i> View Certificate / Image
-            </a>
-        </div>
-    </div>
-</div>
-
-<button id="scrollTopBtn" class="fixed bottom-8 right-8 hidden bg-brand-accent text-black w-12 h-12 rounded-xl shadow-2xl hover:bg-brand-hover hover:-translate-y-2 transition-all z-50 flex items-center justify-center"><i class="fas fa-arrow-up"></i></button>
-
-<script src="/static/js/main.js"></script>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>

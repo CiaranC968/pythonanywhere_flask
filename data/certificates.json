@@ -1,0 +1,11 @@
+[
+    {
+        "id": "kainos_event",
+        "title": "Open Uni & Kainos Event",
+        "issuer": "Kainos / Open University",
+        "date": "2023",
+        "image_path": "/static/images/ou-cert.png",
+        "desc": "Participated in a 2-day intensive industry workshop focused on software delivery, agile practices, and modern cloud technologies. Collaborated with a team to solve real-world coding challenges.",
+        "link": "#"
+    }
+]

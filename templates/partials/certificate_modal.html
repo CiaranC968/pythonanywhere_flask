@@ -1,0 +1,25 @@
+<div class="text-center">
+    <div class="mb-6">
+        <img src="{{ cert.image_path }}" alt="{{ cert.title }}"
+             class="h-48 mx-auto rounded-2xl shadow-xl border-4 border-white dark:border-gray-700">
+    </div>
+
+    <h3 class="text-3xl font-black dark:text-white mb-2">{{ cert.title }}</h3>
+    <p class="text-brand-accent font-bold uppercase tracking-widest text-sm mb-6">
+        {{ cert.issuer }} • {{ cert.date }}
+    </p>
+
+    <div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-3xl text-left mb-8">
+        <h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Event Description</h4>
+        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+            {{ cert.desc }}
+        </p>
+    </div>
+
+    {% if cert.link and cert.link != "#" %}
+    <a href="{{ cert.link }}" target="_blank"
+       class="inline-flex items-center gap-2 bg-brand-dark text-white px-8 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all">
+        <i class="fas fa-external-link-alt"></i> Verify Credential
+    </a>
+    {% endif %}
+</div>

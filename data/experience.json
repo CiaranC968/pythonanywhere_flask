@@ -1,0 +1,26 @@
+[
+    {
+        "id": "trailstone",
+        "company": "TrailStone",
+        "role": "Software Engineering Intern",
+        "period": "Apr 2023 – Aug 2023",
+        "brief": "Rewrote legacy UI tools using FastAPI and React...",
+        "icon": "fas fa-code-branch",
+        "bgIcon": "fas fa-bolt",
+        "iconColor": "text-indigo-600",
+        "bgColor": "bg-indigo-100",
+        "hoverColor": "group-hover:text-yellow-400"
+    },
+    {
+        "id": "wineflair",
+        "company": "Wineflair",
+        "role": "Management & Sales",
+        "period": "May 2018 – Present",
+        "brief": "Led teams across 10+ locations...",
+        "icon": "fas fa-store",
+        "bgIcon": "fas fa-wine-bottle",
+        "iconColor": "text-red-600",
+        "bgColor": "bg-red-100",
+        "hoverColor": "group-hover:text-green-600"
+    }
+]

@@ -1,145 +1,51 @@
-/* =========================================
-   1) Variables & Reset
-   ========================================= */
 :root {
-    --sidebar-width: 264px;
-    --color-accent: #facc15;
-    --color-cream: #fffdf5;
-    --color-dark: #111827;
+    --sidebar-width: 16rem;
+    --brand-accent: #facc15;
 }
 
-html {
-    scroll-behavior: smooth;
-    scrollbar-gutter: stable;
+body {
+    margin: 0;
+    display: flex; /* Stable sidebar layout */
+    min-height: 100vh;
 }
 
-/* Fix for text-size-adjust warning on mobile */
-:host, html {
-    -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
-
-section {
-    scroll-margin-top: 5rem;
-}
-
-/* Typography Polish */
-h1, h2, h3 {
-    text-wrap: balance;
-}
-
-/* =========================================
-   2) Sidebar Styling
-   ========================================= */
 #sidebar {
-    background-color: var(--color-cream);
-    /* Added border-color transition for smoother theme switching */
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.3s ease,
-    border-color 0.3s ease;
-    border-right: 1px solid #e5e7eb;
-}
-
-/* Dark Mode Override */
-.dark #sidebar {
-    background-color: var(--color-dark);
-    border-right: 1px solid #1f2937;
-}
-
-
-
-
-/* =========================================
-   3) Interactive Elements (Cards & Buttons)
-   ========================================= */
-/* REFACTORED: Using semantic class instead of Tailwind utilities */
-.card-hover,
-.project-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    will-change: transform; /* Performance hint for browsers */
-}
-
-.card-hover,
-.project-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card-hover:hover,
-.project-card:hover {
-    will-change: transform;
-    transform: translateY(-4px);
-}
-
-
-/* =========================================
-   4) Timeline Logic
-   ========================================= */
-.timeline-line::before {
-    content: '';
-    position: absolute;
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: sticky;
     top: 0;
-    bottom: 0;
-    left: 15px;
-    width: 2px;
-    background: #e5e7eb;
+    flex-shrink: 0;
+    z-index: 60;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
 }
 
-.dark .timeline-line::before {
-    background: #374151;
+main {
+    flex-grow: 1;
+    min-width: 0;
+    position: relative;
 }
 
-/* =========================================
-   5) Accessibility & Utilities
-   ========================================= */
-
-/* Skip Link (Hidden until focused) */
-.skip-link {
-    position: absolute;
-    top: -40px;
-    left: 0;
-    background: var(--color-accent);
-    color: black;
-    padding: 8px;
-    z-index: 100;
-    transition: top 0.3s;
-    font-weight: bold;
-}
-.skip-link:focus {
-    top: 0;
-}
-
-/* Custom Scrollbar (Better than hiding it) */
-::-webkit-scrollbar {
-    width: 8px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background-color: #d1d5db;
-    border-radius: 20px;
-}
-.dark ::-webkit-scrollbar-thumb {
-    background-color: #374151;
-}
-::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-accent);
-}
-
-#scrollTopBtn {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-
-}
-
-@media (prefers-reduced-motion: reduce) {
-    html {
-        scroll-behavior: auto !important;
+@media (max-width: 767px) {
+    #sidebar {
+        position: fixed;
+        left: 0;
+        transform: translateX(-100%);
     }
-
-    .animate-ping,
-    .animate-bounce,
-    .animate-spin {
-        animation: none !important;
+    #sidebar.open {
+        transform: translateX(0);
     }
+    main { padding-top: 64px; }
+}
+
+.dark .dark\:hidden { display: none !important; }
+.dark .dark\:block { display: block !important; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--brand-accent); border-radius: 10px; }
+
+.modal-content {
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
 }

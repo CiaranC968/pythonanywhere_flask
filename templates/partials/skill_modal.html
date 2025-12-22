@@ -1,0 +1,26 @@
+<div class="relative">
+    <div class="flex items-center gap-5 mb-8">
+        <div class="w-16 h-16 rounded-2xl bg-brand-accent flex items-center justify-center text-black text-3xl shadow-lg shadow-brand-accent/20">
+            <i class="{{ skill.iconClass }}"></i>
+        </div>
+        <div>
+            <h3 class="text-3xl font-extrabold dark:text-white leading-tight">{{ skill.title }}</h3>
+            <p class="text-brand-accent font-bold text-xs uppercase tracking-widest mt-1">Core Tech Stack</p>
+        </div>
+    </div>
+
+    <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-8">
+        {{ skill.desc }}
+    </p>
+
+    <div class="space-y-4">
+        <h4 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Technical Competencies</h4>
+        <div class="flex flex-wrap gap-2">
+            {% for item in skill.core %}
+            <span class="px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-xl text-sm font-semibold dark:text-gray-200 shadow-sm">
+                {{ item }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
