@@ -1,29 +1,14 @@
 import json
 import os
-from flask import Flask, render_template, request, abort, jsonify, send_from_directory, make_response
+from flask import Flask, render_template, abort, send_from_directory, make_response
 from dotenv import load_dotenv
-from flask_mail import Mail, Message
 
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # --- Configuration ---
-def _bool_env(name: str, default: str = "false") -> bool:
-    return os.getenv(name, default).strip().lower() in {"1", "true", "t", "yes", "y"}
-
-app.config.update(
-    SECRET_KEY=os.getenv("SECRET_KEY", "dev-secret-change-me"),
-    MAIL_SERVER=os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_PORT=int(os.getenv("MAIL_PORT", "587")),
-    MAIL_USE_TLS=_bool_env("MAIL_USE_TLS", "true"),
-    MAIL_USE_SSL=_bool_env("MAIL_USE_SSL", "false"),
-    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
-    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
-    MAIL_DEFAULT_SENDER=os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME"),
-)
-
-mail = Mail(app)
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "dev-secret-change-me")
 
 # --- Helpers ---
 def load_json(filename):
@@ -63,7 +48,25 @@ def fragment_experience_detail(company_id):
 
 @app.route("/fragment/education")
 def fragment_education():
-    return render_template("partials/education_details.html", education=load_json('education.json'))
+    """Renders the grid of cards on the main page"""
+    return render_template(
+        "partials/education_cards.html",
+        education=load_json('education.json')
+    )
+
+@app.route("/fragment/education/<edu_id>")
+def fragment_education_detail(edu_id):
+    """Renders the content inside the pop-up modal"""
+    education_data = load_json('education.json')
+    selected_edu = next((item for item in education_data if item['id'] == edu_id), None)
+
+    if not selected_edu:
+        abort(404)
+
+    return render_template(
+        "partials/education_modal.html",
+        edu=selected_edu
+    )
 
 @app.route("/fragment/skills")
 def fragment_skills():
@@ -97,20 +100,6 @@ def get_cv_file():
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'inline; filename=%s' % filename
     return response
-
-# --- Contact Form ---
-@app.route("/send-email", methods=["POST"])
-def send_email():
-    if request.form.get("fax_number"): return "", 200
-    name, email, message = request.form.get("name", ""), request.form.get("email", ""), request.form.get("message", "")
-    if not name or not email or not message: return "Missing fields", 400
-    msg = Message(subject=f"Contact: {name}", recipients=[os.getenv("MAIL_RECIPIENT") or app.config["MAIL_USERNAME"]],
-                  reply_to=email, body=f"From: {name} ({email})\n\n{message}")
-    try:
-        mail.send(msg)
-        return "<p class='text-green-500 font-bold'>Message sent!</p>", 200
-    except Exception as e:
-        return f"<p class='text-red-500'>Error: {str(e)}</p>", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
