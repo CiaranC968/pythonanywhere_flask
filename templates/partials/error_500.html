@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>500 - Server Error | Ciaran Cairns</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { brand: { dark: '#111827', accent: '#facc15', hover: '#f59e0b' } }
+                }
+            }
+        };
+    </script>
+
+    <!-- Theme initialization -->
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme');
+            var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (t === 'dark' || (!t && d)) document.documentElement.classList.add('dark');
+        })();
+    </script>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center p-6 font-sans">
+    <div class="text-center max-w-lg">
+        <!-- 500 Illustration -->
+        <div class="mb-8">
+            <span class="text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-600">
+                500
+            </span>
+        </div>
+
+        <!-- Error Message -->
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4">
+            Server Error
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-8 text-lg">
+            Oops! Something went wrong on our end. Please try again later.
+        </p>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/"
+               class="inline-flex items-center justify-center gap-2 bg-brand-accent text-brand-dark font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-brand-hover hover:shadow-xl transition-all transform hover:-translate-y-1">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                Back to Home
+            </a>
+            <button onclick="location.reload()"
+                    class="inline-flex items-center justify-center gap-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-3 px-6 rounded-xl shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">
+                <i class="fas fa-redo" aria-hidden="true"></i>
+                Try Again
+            </button>
+        </div>
+
+        <!-- Support Info -->
+        <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">If the problem persists, please contact me:</p>
+            <a href="mailto:ciarancairns@googlemail.com" class="text-brand-accent hover:underline text-sm">
+                <i class="fas fa-envelope mr-1" aria-hidden="true"></i> ciarancairns@googlemail.com
+            </a>
+        </div>
+    </div>
+</body>
+</html>

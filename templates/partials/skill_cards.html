@@ -1,37 +1,115 @@
+<!-- partials/skill_cards.html -->
 {% for skill in skills %}
-<article 
+<article
     hx-get="/fragment/skill-modal/{{ skill.id }}"
     hx-target="#modalContent"
-    hx-trigger="click"
-    class="group card-hover cursor-pointer bg-white dark:bg-gray-800 rounded-[2rem] p-8 border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1">
+    hx-swap="innerHTML"
+    hx-on::after-request="openModal()"
+    class="group relative cursor-pointer bg-white dark:bg-gray-800/50 rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-brand-accent/10 hover:-translate-y-1"
+    role="button"
+    tabindex="0"
+    aria-label="View details for {{ skill.title }}">
 
-    <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-all duration-500 pointer-events-none">
-        <i class="{{ skill.bgIcon }} text-8xl transform group-hover:scale-110 group-hover:-rotate-12 transition-transform"></i>
+    <!-- Background decorative icon -->
+    <div class="absolute -top-4 -right-4 opacity-[0.02] group-hover:opacity-[0.06] transition-opacity duration-500 pointer-events-none">
+        <i class="{{ skill.bgIcon | default(skill.iconClass) }} text-[10rem] transform group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700"></i>
     </div>
 
+    <!-- Gradient overlay on hover -->
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-accent/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+    <!-- Top accent line -->
+    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-accent via-amber-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+
     <div class="relative z-10">
+        <!-- Header Row -->
         <div class="flex justify-between items-start mb-6">
-            <div class="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center shadow-sm group-hover:bg-brand-accent transition-colors duration-300">
-                <i class="{{ skill.iconClass }} text-2xl group-hover:text-black transition-colors"></i>
+            <!-- Icon Container -->
+            <div class="relative">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:from-brand-accent group-hover:to-amber-400 transition-all duration-300">
+                    <i class="{{ skill.iconClass }} text-2xl {{ skill.iconColor | default('text-gray-600 dark:text-gray-400') }} group-hover:text-brand-dark transition-colors duration-300"></i>
+                </div>
+                <!-- Proficiency indicator -->
+                {% if skill.level %}
+                <span class="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-brand-accent text-brand-dark text-[10px] font-black flex items-center justify-center shadow-md border-2 border-white dark:border-gray-800">
+                    {{ skill.level }}
+                </span>
+                {% endif %}
             </div>
-            <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent transition-all duration-300 text-xl -rotate-45 group-hover:rotate-0"></i>
+
+            <!-- Arrow Button -->
+            <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-brand-accent transition-all duration-300">
+                <i class="fas fa-arrow-right text-gray-400 group-hover:text-brand-dark transition-all duration-300 -rotate-45 group-hover:rotate-0"></i>
+            </div>
         </div>
 
-        <h3 class="text-2xl font-bold mb-3 dark:text-white tracking-tight">{{ skill.title }}</h3>
-        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4 line-clamp-2">{{ skill.desc }}</p>
+        <!-- Title -->
+        <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-brand-accent transition-colors duration-300 mb-3">
+            {{ skill.title }}
+        </h3>
 
+        <!-- Description -->
+        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
+            {{ skill.desc }}
+        </p>
+
+        <!-- Core Skills Tags -->
         <div class="flex flex-wrap gap-2">
             {% for item in skill.core[:3] %}
-            <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700/50 rounded-md dark:text-gray-300 border border-transparent dark:border-gray-600">
+            <span class="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 bg-gray-100 dark:bg-gray-700/50 rounded-lg text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 group-hover:border-brand-accent/30 group-hover:bg-brand-accent/5 transition-all duration-300">
                 {{ item }}
             </span>
             {% endfor %}
             {% if skill.core|length > 3 %}
-            <span class="text-[10px] font-bold text-brand-accent self-center ml-1">
-                + {{ skill.core|length - 3 }}
+            <span class="inline-flex items-center text-[10px] font-bold text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-lg">
+                +{{ skill.core|length - 3 }} more
             </span>
             {% endif %}
         </div>
+
+        <!-- Experience Bar (optional) -->
+        {% if skill.experience_years %}
+        <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700/50">
+            <div class="flex items-center justify-between text-xs mb-2">
+                <span class="font-medium text-gray-500 dark:text-gray-400">Experience</span>
+                <span class="font-bold text-brand-accent">{{ skill.experience_years }} years</span>
+            </div>
+            <div class="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-brand-accent to-amber-400 rounded-full transition-all duration-500"
+                     style="width: {{ [skill.experience_years * 20, 100] | min }}%"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Projects count (optional) -->
+        {% if skill.projects_count %}
+        <div class="mt-4 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <span class="inline-flex items-center gap-1.5">
+                <i class="fas fa-folder text-[10px] text-brand-accent"></i>
+                {{ skill.projects_count }} projects
+            </span>
+            {% if skill.certifications_count %}
+            <span class="inline-flex items-center gap-1.5">
+                <i class="fas fa-award text-[10px] text-brand-accent"></i>
+                {{ skill.certifications_count }} certs
+            </span>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
+
+    <!-- Bottom decorative element -->
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-0.5 bg-gradient-to-r from-transparent via-brand-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 </article>
 {% endfor %}
+
+<!-- Empty State -->
+{% if not skills %}
+<div class="col-span-full text-center py-16">
+    <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <i class="fas fa-code text-4xl text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
+    </div>
+    <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">No Skills Listed</h3>
+    <p class="text-gray-500 dark:text-gray-400">Technical skills will appear here.</p>
+</div>
+{% endif %}

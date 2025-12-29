@@ -1,116 +1,241 @@
 import json
 import os
-from flask import Flask, render_template, request, abort, jsonify, send_from_directory, make_response
-from dotenv import load_dotenv
-from flask_mail import Mail, Message
-
-load_dotenv()
+from functools import lru_cache
+from flask import Flask, render_template, abort, send_from_directory, make_response, request
+from werkzeug.exceptions import NotFound
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # --- Configuration ---
-def _bool_env(name: str, default: str = "false") -> bool:
-    return os.getenv(name, default).strip().lower() in {"1", "true", "t", "yes", "y"}
-
 app.config.update(
-    SECRET_KEY=os.getenv("SECRET_KEY", "dev-secret-change-me"),
-    MAIL_SERVER=os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_PORT=int(os.getenv("MAIL_PORT", "587")),
-    MAIL_USE_TLS=_bool_env("MAIL_USE_TLS", "true"),
-    MAIL_USE_SSL=_bool_env("MAIL_USE_SSL", "false"),
-    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
-    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
-    MAIL_DEFAULT_SENDER=os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME"),
+    JSON_AS_ASCII=False,
+    TEMPLATES_AUTO_RELOAD=True if os.environ.get('FLASK_ENV') == 'development' else False,
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024  # 16MB max request size
 )
 
-mail = Mail(app)
 
-# --- Helpers ---
+# --- Data Loading with Caching ---
+@lru_cache(maxsize=32)
 def load_json(filename):
+    """
+    Load JSON data with caching for better performance.
+    Cache is cleared when app restarts.
+    """
     path = os.path.join(app.root_path, 'data', filename)
     try:
         with open(path, 'r', encoding='utf-8') as f:
             return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Error loading {filename}: {e}")
+    except FileNotFoundError:
+        app.logger.error(f"JSON file not found: {filename}")
         return []
+    except json.JSONDecodeError as e:
+        app.logger.error(f"Error decoding JSON from {filename}: {e}")
+        return []
+    except Exception as e:
+        app.logger.error(f"Unexpected error loading {filename}: {e}")
+        return []
+
+
+def find_item_by_id(data, item_id, id_field='id'):
+    """Helper function to find items in data by ID"""
+    return next((item for item in data if item.get(id_field) == item_id), None)
+
+
+@app.errorhandler(404)
+def not_found_error(error):
+    # HTMX always sends the 'HX-Request' header
+    if request.headers.get('HX-Request'):
+        return render_template('partials/error_404.html'), 404
+    return render_template('partials/404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle 500 errors"""
+    app.logger.error(f"Internal error: {error}")
+    return render_template('partials/error_500.html'), 500
+
 
 # --- Main Route ---
 @app.route("/")
 def index():
+    """Main portfolio page"""
     return render_template("index.html")
 
-# --- Fragment Routes ---
+
+# --- Project Routes ---
 @app.route("/fragment/projects")
 def fragment_projects():
-    return render_template("partials/project_cards.html", projects=load_json('projects.json'))
+    """Load all project cards"""
+    projects = load_json('projects.json')
+    return render_template("partials/project_cards.html", projects=projects)
+
 
 @app.route("/fragment/project-modal/<slug>")
 def fragment_project_modal(slug):
-    p = next((x for x in load_json('projects.json') if x["slug"] == slug), None)
-    if not p: abort(404)
-    return render_template("partials/project_modal.html", p=p)
+    """Load individual project modal"""
+    projects = load_json('projects.json')
+    project = find_item_by_id(projects, slug, id_field='slug')
 
+    if not project:
+        app.logger.warning(f"Project not found: {slug}")
+        abort(404)
+
+    return render_template("partials/project_modal.html", p=project)
+
+
+# --- Experience Routes ---
 @app.route("/fragment/experience")
 def fragment_experience_list():
-    return render_template("partials/experience_cards.html", experience=load_json('experience.json'))
+    """Load all experience cards"""
+    experience = load_json('experience.json')
+    return render_template("partials/experience_cards.html", experience=experience)
+
 
 @app.route("/fragment/experience/<company_id>")
 def fragment_experience_detail(company_id):
-    job = next((item for item in load_json('experience.json') if item["id"] == company_id), None)
-    if not job: abort(404)
+    """Load individual experience modal"""
+    experience = load_json('experience.json')
+    job = find_item_by_id(experience, company_id)
+
+    if not job:
+        app.logger.warning(f"Experience not found: {company_id}")
+        abort(404)
+
     return render_template("partials/experience_modal.html", exp=job)
 
+
+# --- Education Routes ---
 @app.route("/fragment/education")
 def fragment_education():
-    return render_template("partials/education_details.html", education=load_json('education.json'))
+    """Load all education cards"""
+    education = load_json('education.json')
+    return render_template("partials/education_cards.html", education=education)
 
+
+@app.route("/fragment/education/<edu_id>")
+def fragment_education_detail(edu_id):
+    """Load individual education modal"""
+    education = load_json('education.json')
+    selected_edu = find_item_by_id(education, edu_id)
+
+    if not selected_edu:
+        app.logger.warning(f"Education not found: {edu_id}")
+        abort(404)
+
+    return render_template("partials/education_modal.html", edu=selected_edu)
+
+
+# --- Skills Routes ---
 @app.route("/fragment/skills")
 def fragment_skills():
-    return render_template("partials/skill_cards.html", skills=load_json('skills.json'))
+    """Load all skill cards"""
+    skills = load_json('skills.json')
+    return render_template("partials/skill_cards.html", skills=skills)
+
 
 @app.route("/fragment/skill-modal/<skill_id>")
 def fragment_skill_modal(skill_id):
-    skill = next((s for s in load_json('skills.json') if s["id"] == skill_id), None)
-    if not skill: abort(404)
+    """Load individual skill modal"""
+    skills = load_json('skills.json')
+    skill = find_item_by_id(skills, skill_id)
+
+    if not skill:
+        app.logger.warning(f"Skill not found: {skill_id}")
+        abort(404)
+
     return render_template("partials/skill_modal.html", skill=skill)
 
+
+# --- Certificate Routes ---
 @app.route("/fragment/certificates")
 def fragment_certificates():
-    return render_template("partials/certificate_cards.html", certificates=load_json('certificates.json'))
+    """Load all certificate cards"""
+    certificates = load_json('certificates.json')
+    return render_template("partials/certificate_cards.html", certificates=certificates)
+
 
 @app.route("/fragment/certificate-modal/<cert_id>")
 def fragment_certificate_modal(cert_id):
-    cert = next((c for c in load_json('certificates.json') if c["id"] == cert_id), None)
-    if not cert: abort(404)
+    """Load individual certificate modal"""
+    certificates = load_json('certificates.json')
+    cert = find_item_by_id(certificates, cert_id)
+
+    if not cert:
+        app.logger.warning(f"Certificate not found: {cert_id}")
+        abort(404)
+
     return render_template("partials/certificate_modal.html", cert=cert)
 
+
+# --- CV Routes ---
 @app.route("/fragment/cv")
 def fragment_cv():
+    """Load CV modal content"""
     return render_template("partials/cv_modal.html")
+
 
 @app.route("/get-cv")
 def get_cv_file():
+    """Download or view CV PDF"""
     directory = os.path.join(app.root_path, 'static', 'docs')
     filename = "Ciaran_Cairns_CV.pdf"
-    response = make_response(send_from_directory(directory, filename))
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'inline; filename=%s' % filename
-    return response
 
-# --- Contact Form ---
-@app.route("/send-email", methods=["POST"])
-def send_email():
-    if request.form.get("fax_number"): return "", 200
-    name, email, message = request.form.get("name", ""), request.form.get("email", ""), request.form.get("message", "")
-    if not name or not email or not message: return "Missing fields", 400
-    msg = Message(subject=f"Contact: {name}", recipients=[os.getenv("MAIL_RECIPIENT") or app.config["MAIL_USERNAME"]],
-                  reply_to=email, body=f"From: {name} ({email})\n\n{message}")
+    # Check if file exists
+    filepath = os.path.join(directory, filename)
+    if not os.path.exists(filepath):
+        app.logger.error(f"CV file not found: {filepath}")
+        abort(404)
+
     try:
-        mail.send(msg)
-        return "<p class='text-green-500 font-bold'>Message sent!</p>", 200
+        response = make_response(send_from_directory(directory, filename))
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename="{filename}"'
+        response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+        return response
     except Exception as e:
-        return f"<p class='text-red-500'>Error: {str(e)}</p>", 500
+        app.logger.error(f"Error serving CV: {e}")
+        abort(500)
+
+
+# --- Context Processors ---
+@app.context_processor
+def inject_globals():
+    """Inject global variables into all templates"""
+    return {
+        'site_name': 'Ciaran Cairns',
+        'site_title': 'Software Developer',
+        'current_year': 2025
+    }
+
+
+# --- CLI Commands for Development ---
+@app.cli.command()
+def clear_cache():
+    """Clear the JSON cache"""
+    load_json.cache_clear()
+    print("Cache cleared!")
+
+
+@app.cli.command()
+def validate_data():
+    """Validate all JSON data files"""
+    files = ['projects.json', 'experience.json', 'education.json',
+             'skills.json', 'certificates.json']
+
+    for filename in files:
+        data = load_json(filename)
+        if data:
+            print(f"✓ {filename}: {len(data)} items loaded")
+        else:
+            print(f"✗ {filename}: Failed to load or empty")
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Development server configuration
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True,
+        use_reloader=True
+    )

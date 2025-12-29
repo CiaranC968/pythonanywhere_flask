@@ -1,31 +1,163 @@
+<!-- partials/project_cards.html -->
 {% for p in projects %}
 <article
     hx-get="/fragment/project-modal/{{ p.slug }}"
     hx-target="#modalContent"
-    hx-trigger="click"
-    class="card-hover group relative cursor-pointer bg-white dark:bg-gray-800 rounded-[2rem] p-8 border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1">
+    hx-swap="innerHTML"
+    hx-on::after-request="openModal()"
+    class="group relative cursor-pointer bg-white dark:bg-gray-800/50 rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-brand-accent/10 hover:-translate-y-2"
+    role="button"
+    tabindex="0"
+    aria-label="View details for {{ p.title }} project">
 
-    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-25 transition-all duration-500 pointer-events-none">
-        <i class="{{ p.bgIcon }} text-9xl {{ p.hoverColor }}"></i>
+    <!-- Project Image/Preview -->
+    {% if p.image %}
+    <div class="relative h-48 overflow-hidden bg-gradient-to-br {{ p.gradient | default('from-gray-100 to-gray-200') }} dark:from-gray-700 dark:to-gray-800">
+        <img src="{{ url_for('static', filename='images/projects/' + p.image) }}"
+             alt="{{ p.title }} preview"
+             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+             loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        <!-- Status Badge -->
+        {% if p.status %}
+        <div class="absolute top-4 left-4">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full backdrop-blur-sm
+                {% if p.status == 'Live' %}bg-green-500/90 text-white
+                {% elif p.status == 'In Progress' %}bg-amber-500/90 text-white
+                {% elif p.status == 'Completed' %}bg-blue-500/90 text-white
+                {% else %}bg-gray-500/90 text-white{% endif %}">
+                {% if p.status == 'Live' %}<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>{% endif %}
+                {{ p.status }}
+            </span>
+        </div>
+        {% endif %}
+
+        <!-- Quick Links -->
+        {% if p.demo or p.github %}
+        <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {% if p.demo %}
+            <a href="{{ p.demo }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               onclick="event.stopPropagation()"
+               class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-brand-accent transition-colors"
+               aria-label="View live demo">
+                <i class="fas fa-external-link-alt text-sm text-gray-700 hover:text-brand-dark"></i>
+            </a>
+            {% endif %}
+            {% if p.github %}
+            <a href="{{ p.github }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               onclick="event.stopPropagation()"
+               class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-brand-accent transition-colors"
+               aria-label="View source code">
+                <i class="fab fa-github text-sm text-gray-700 hover:text-brand-dark"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
+    {% else %}
+    <!-- Fallback: Icon-based header -->
+    <div class="relative h-32 bg-gradient-to-br {{ p.gradient | default('from-gray-50 to-gray-100') }} dark:from-gray-800 dark:to-gray-900 flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500">
+            <i class="{{ p.bgIcon | default('fas fa-code') }} text-[10rem] {{ p.hoverColor | default('text-gray-900') }} transform group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-700"></i>
+        </div>
+        <div class="w-20 h-20 rounded-2xl bg-white dark:bg-gray-700 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:bg-brand-accent transition-all duration-300">
+            <i class="{{ p.icon | default('fas fa-folder') }} text-3xl {{ p.color | default('text-gray-600') }} group-hover:text-brand-dark transition-colors duration-300"></i>
+        </div>
 
-    <div class="relative z-10">
-        <div class="flex justify-between items-start mb-6">
-            <div class="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center {{ p.color }} text-3xl shadow-sm group-hover:bg-brand-accent group-hover:text-black transition-all duration-300">
-                <i class="{{ p.icon }}"></i>
+        {% if p.status %}
+        <div class="absolute top-4 left-4">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full
+                {% if p.status == 'Live' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400
+                {% elif p.status == 'In Progress' %}bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400
+                {% else %}bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400{% endif %}">
+                {% if p.status == 'Live' %}<span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>{% endif %}
+                {{ p.status }}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Top accent line -->
+    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-accent via-amber-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left z-10"></div>
+
+    <!-- Content -->
+    <div class="p-6 md:p-8">
+        <!-- Title & Arrow -->
+        <div class="flex justify-between items-start gap-4 mb-4">
+            <h3 class="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight group-hover:text-brand-accent transition-colors duration-300 leading-tight">
+                {{ p.title }}
+            </h3>
+            <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-brand-accent transition-all duration-300 shrink-0">
+                <i class="fas fa-arrow-right text-gray-400 group-hover:text-brand-dark transition-all duration-300 -rotate-45 group-hover:rotate-0"></i>
             </div>
-            <i class="fas fa-arrow-right text-gray-300 group-hover:text-brand-accent -rotate-45 group-hover:rotate-0 transition-all duration-300 text-xl"></i>
         </div>
 
-        <h3 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white tracking-tight">{{ p.title }}</h3>
-
+        <!-- Tech Stack -->
         <div class="flex flex-wrap gap-2 mb-4">
-            {% for tech in p.stack %}
-            <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md dark:text-gray-300">{{ tech }}</span>
+            {% for tech in p.stack[:4] %}
+            <span class="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700/50 rounded-lg text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 group-hover:border-brand-accent/30 group-hover:bg-brand-accent/5 transition-all duration-300">
+                {{ tech }}
+            </span>
             {% endfor %}
+            {% if p.stack|length > 4 %}
+            <span class="text-[10px] font-bold text-brand-accent self-center">
+                +{{ p.stack|length - 4 }}
+            </span>
+            {% endif %}
         </div>
 
-        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-2">{{ p.quickDesc }}</p>
+        <!-- Description -->
+        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-2 mb-4">
+            {{ p.quickDesc }}
+        </p>
+
+        <!-- Footer Meta -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700/50">
+            <div class="flex items-center gap-3">
+                {% if p.stars %}
+                <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-star text-amber-400 text-[10px]"></i>
+                    {{ p.stars }}
+                </span>
+                {% endif %}
+                {% if p.forks %}
+                <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-code-branch text-[10px]"></i>
+                    {{ p.forks }}
+                </span>
+                {% endif %}
+                {% if p.date %}
+                <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-calendar text-[10px]"></i>
+                    {{ p.date }}
+                </span>
+                {% endif %}
+            </div>
+
+            <span class="text-xs font-bold text-brand-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                View Project →
+            </span>
+        </div>
     </div>
+
+    <!-- Bottom decorative element -->
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-0.5 bg-gradient-to-r from-transparent via-brand-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 </article>
 {% endfor %}
+
+<!-- Empty State -->
+{% if not projects %}
+<div class="col-span-full text-center py-16">
+    <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <i class="fas fa-rocket text-4xl text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
+    </div>
+    <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">No Projects Yet</h3>
+    <p class="text-gray-500 dark:text-gray-400">Projects will appear here as they're added.</p>
+</div>
+{% endif %}

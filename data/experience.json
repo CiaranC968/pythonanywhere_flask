@@ -4,7 +4,15 @@
         "company": "TrailStone",
         "role": "Software Engineering Intern",
         "period": "Apr 2023 – Aug 2023",
-        "brief": "Rewrote legacy UI tools using FastAPI and React...",
+        "brief": "Developed and released a full-stack internal tool using FastAPI and React within an Agile environment, presenting weekly demos to the CTO.",
+        "details": [
+            "Rewrote legacy UI tools using FastAPI and React to modernise internal workflows.",
+            "Worked within a 2-person dev team in a high-tempo Agile environment.",
+            "Utilised Jira and Confluence for sprint planning, documentation, and task tracking.",
+            "Participated in daily standups and delivered weekly product demos directly to the CTO.",
+            "Successfully deployed a fully functional production application by the end of the internship."
+        ],
+        "tech_stack": ["FastAPI", "React", "Agile", "Jira", "Confluence", "Python"],
         "icon": "fas fa-code-branch",
         "bgIcon": "fas fa-bolt",
         "iconColor": "text-indigo-600",
@@ -16,7 +24,27 @@
         "company": "Wineflair",
         "role": "Management & Sales",
         "period": "May 2018 – Present",
-        "brief": "Led teams across 10+ locations...",
+        "brief": "Progressive leadership experience across 10+ locations, managing teams, finances, and operations from Sales Assistant to Assistant Manager.",
+        "timeline": [
+            {
+                "role": "Assistant Manager",
+                "period": "Sep 2023 – Present",
+                "loc": "Main Portadown, Other Newry, Tandragee, Portadown, Coalisland",
+                "desc": "Returned to oversee multi-site operations, demonstrating leadership in staff management, customer service excellence, and operational efficiency. Now currently back in portadown"
+            },
+            {
+                "role": "Assistant Manager",
+                "period": "Apr 2019 – Apr 2023",
+                "loc": "Main Portadown, Other Loughview, Gilpinstown, Armagh, Dromara, Lisburn",
+                "desc": "Managed cash operations, investigated shortages, and handled complex paperwork. Implemented inventory control measures to optimise stock levels across 10 locations."
+            },
+            {
+                "role": "Sales Assistant",
+                "period": "May 2018 – Jun 2019",
+                "loc": "Coalisland",
+                "desc": "Opening and closing procedures, managed inventory, and maintained store standards while providing exceptional front-line service."
+            }
+        ],
         "icon": "fas fa-store",
         "bgIcon": "fas fa-wine-bottle",
         "iconColor": "text-red-600",

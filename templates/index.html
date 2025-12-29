@@ -2,154 +2,577 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Portfolio of Ciaran Cairns, a Software Developer specialising in Python, Flask, and Web Development. View my projects, skills, and experience.">
+    <meta name="author" content="Ciaran Cairns">
+    <meta name="keywords" content="software developer, python, flask, web development, portfolio, ciaran cairns">
+    <meta name="theme-color" content="#facc15" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ciaranc.dev">
+    <meta property="og:title" content="Ciaran Cairns | Software Developer">
+    <meta property="og:description" content="Final-year Computing & IT student specialising in Python, Flask, and full-stack development.">
+    <meta property="og:image" content="https://ciaranc.dev/static/images/og-image.png">
+    <meta property="og:site_name" content="Ciaran Cairns Portfolio">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Ciaran Cairns | Software Developer">
+    <meta name="twitter:description" content="Final-year Computing & IT student specialising in Python, Flask, and full-stack development.">
+    <meta name="twitter:image" content="https://ciaranc.dev/static/images/og-image.png">
+
     <title>Ciaran Cairns | Software Developer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="canonical" href="https://ciaranc.dev">
+
+    <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
+    <link rel="manifest" href="/static/site.webmanifest">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://unpkg.com">
+
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+    <link rel="preload" href="/static/js/main.js" as="script">
+    <link rel="preload" href="/static/css/style.css" as="style">
+    <link rel="preload" href="/static/images/about.png" as="image">
+
+    <link rel="prefetch" href="/fragment/experience">
+    <link rel="prefetch" href="/fragment/skills">
+    <link rel="prefetch" href="/fragment/projects">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { colors: { brand: { dark: '#111827', accent: '#facc15', hover: '#f59e0b' } } } }
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            dark: '#111827',
+                            accent: '#facc15',
+                            hover: '#f59e0b'
+                        },
+                        // Warmer light mode grays
+                        warm: {
+                            50: '#fafaf8',
+                            100: '#f5f4f1',
+                            200: '#e8e6e1',
+                            300: '#d5d2cc',
+                            400: '#a8a49c',
+                            500: '#7a756c',
+                            600: '#5c574f',
+                            700: '#45413a',
+                            800: '#2d2a25',
+                            900: '#1a1815'
+                        }
+                    }
+                }
+            }
         };
     </script>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Ciaran Cairns",
+        "jobTitle": "Software Developer",
+        "url": "https://ciaranc.dev",
+        "sameAs": [
+            "https://github.com/CiaranC968",
+            "https://www.linkedin.com/in/ciarancairns"
+        ],
+        "knowsAbout": ["Python", "Flask", "Web Development", "JavaScript", "SQL"],
+        "alumniOf": {
+            "@type": "CollegeOrUniversity",
+            "name": "The Open University"
+        }
+    }
+    </script>
+
+    <script>
+        (function() {
+            try {
+                var t = localStorage.getItem('theme');
+                var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (t === 'dark' || (!t && d)) document.documentElement.classList.add('dark');
+            } catch(e) {}
+        })();
+    </script>
+
+    <style>
+        .skip-to-main {
+            position: absolute;
+            top: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #facc15;
+            color: #111827;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 0 0 0.5rem 0.5rem;
+            z-index: 9999;
+            transition: top 0.2s ease;
+            text-decoration: none;
+        }
+        .skip-to-main:focus { top: 0; }
+        .skeleton {
+            background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 1rem;
+        }
+        .dark .skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .htmx-indicator { opacity: 0; transition: opacity 0.2s ease; }
+        .htmx-request .htmx-indicator { opacity: 1; }
+        .htmx-request.htmx-indicator { opacity: 1; }
+    </style>
+
+    <noscript>
+        <style>
+            .htmx-indicator { display: none !important; }
+            .js-only { display: none !important; }
+            .noscript-show { display: block !important; }
+        </style>
+    </noscript>
 </head>
-<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 antialiased transition-colors duration-300">
+
+<body class="bg-warm-100 text-warm-800 dark:bg-gray-900 dark:text-gray-200 antialiased flex flex-col md:flex-row min-h-[100dvh]">
+
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <div id="offline-notice" class="fixed top-0 left-0 right-0 bg-amber-500 text-amber-900 text-center py-2 px-4 text-sm font-medium z-[200] transform -translate-y-full transition-transform duration-300" role="alert" aria-live="polite">
+        <i class="fas fa-wifi-slash mr-2" aria-hidden="true"></i>
+        You're offline. Some content may not load.
+    </div>
 
     <div class="fixed top-6 right-6 z-[100] hidden md:block">
-        <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="theme-toggle-fixed" class="sr-only peer">
-            <div class="w-14 h-7 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-brand-accent transition-all"></div>
-            <div class="absolute top-1 left-1 bg-white w-5 h-5 rounded-full peer-checked:translate-x-7 flex items-center justify-center">
-                <i class="fas fa-sun text-[10px] text-orange-500 dark:hidden"></i>
-                <i class="fas fa-moon text-[10px] text-indigo-600 hidden dark:block"></i>
+        <label class="theme-toggle-label relative inline-flex items-center cursor-pointer hover:scale-105 transition-transform focus-within:ring-2 focus-within:ring-brand-accent focus-within:ring-offset-2 rounded-full">
+            <input type="checkbox" id="theme-toggle-fixed" class="sr-only peer" aria-label="Toggle dark mode">
+            <div class="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-brand-accent transition-colors duration-300 shadow-inner"></div>
+            <div class="absolute top-1 left-1 bg-white w-6 h-6 rounded-full peer-checked:translate-x-8 transition-transform duration-300 flex items-center justify-center shadow-md">
+                <i class="fas fa-sun text-xs text-orange-500 dark:hidden" aria-hidden="true"></i>
+                <i class="fas fa-moon text-xs text-indigo-600 hidden dark:block" aria-hidden="true"></i>
             </div>
         </label>
     </div>
 
-    <header class="md:hidden fixed top-0 left-0 right-0 z-50 bg-brand-dark/95 backdrop-blur-md text-white p-4 flex justify-between items-center">
-        <span class="font-bold">Ciaran Cairns</span>
-        <button id="menu-toggle" class="text-brand-accent"><i class="fas fa-bars text-2xl"></i></button>
+    <header class="md:hidden fixed top-0 left-0 right-0 z-40 bg-warm-50/95 dark:bg-brand-dark/95 backdrop-blur-md border-b border-warm-200 dark:border-gray-800 p-4 flex justify-between items-center h-16">
+        <span class="font-bold text-lg tracking-tight text-warm-900 dark:text-white">Ciaran Cairns</span>
+        <div class="flex items-center gap-4">
+            <button id="mobile-theme-btn" aria-label="Toggle dark mode" class="text-warm-600 dark:text-gray-300 hover:text-brand-accent transition-colors p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <i class="fas fa-sun dark:hidden text-lg" aria-hidden="true"></i>
+                <i class="fas fa-moon hidden dark:inline text-lg" aria-hidden="true"></i>
+            </button>
+            <button id="menu-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar" class="text-brand-accent p-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <i class="fas fa-bars text-2xl" aria-hidden="true"></i>
+            </button>
+        </div>
     </header>
 
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-45 hidden backdrop-blur-sm md:hidden" aria-hidden="true"></div>
 
-    <aside id="sidebar" class="bg-white dark:bg-[#0b111e] border-r border-gray-200 dark:border-gray-800 p-8 flex flex-col z-50">
-        <div class="mb-10 text-center">
-            <img src="/static/images/about.png" class="w-32 h-32 mx-auto mb-4 rounded-2xl border-2 border-gray-200 dark:border-gray-700 object-cover" alt="aboutme">
-            <h2 class="text-xl font-bold">Ciaran Cairns</h2>
-            <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Software Developer</p>
+    <aside id="sidebar" aria-label="Main navigation" class="fixed inset-y-0 left-0 z-50 w-72 bg-warm-50 dark:bg-[#0b111e] border-r border-warm-200 dark:border-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:relative md:sticky md:top-0 h-[100dvh] overflow-y-auto flex flex-col shadow-2xl md:shadow-none custom-scrollbar">
+
+        <div class="p-8 pb-4 text-center">
+            <div class="relative inline-block">
+                <img src="/static/images/about.png"
+                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Ciaran+Cairns&background=facc15&color=111827&size=128'"
+                     class="w-32 h-32 mx-auto mb-4 rounded-2xl border-4 border-warm-100 dark:border-gray-800 object-cover shadow-lg"
+                     alt="Ciaran Cairns profile photo"
+                     width="128"
+                     height="128"
+                     loading="eager"
+                     fetchpriority="high">
+                <span class="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full" role="img" aria-label="Available for work" title="Available for work"></span>
+            </div>
+            <h2 class="text-xl font-bold tracking-tight text-warm-900 dark:text-white">Ciaran Cairns</h2>
+            <p class="text-xs text-warm-500 dark:text-gray-400 uppercase tracking-widest mt-1 font-medium">Software Developer</p>
         </div>
-        <nav class="space-y-1 flex-grow">
-            <a href="#about" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-user group-hover:text-brand-accent"></i>About</a>
-            <a href="#experience" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-briefcase group-hover:text-brand-accent"></i>Experience</a>
-            <a href="#skills" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-code group-hover:text-brand-accent"></i>Tech Stack</a>
-            <a href="#projects" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-rocket group-hover:text-brand-accent"></i>Projects</a>
-            <a href="#education" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-graduation-cap group-hover:text-brand-accent"></i>Education</a>
-            <a href="#certificates" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-award group-hover:text-brand-accent"></i>Certificates</a>
-            <a href="#contact" class="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"><i class="fas fa-envelope group-hover:text-brand-accent"></i>Contact</a>
+
+        <nav class="px-4 py-4 space-y-1 flex-grow" aria-label="Main navigation">
+            <a href="#about" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <span class="w-6 text-center"><i class="fas fa-user group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> About
+            </a>
+            <a href="#experience" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <span class="w-6 text-center"><i class="fas fa-briefcase group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Experience
+            </a>
+            <a href="#skills" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <span class="w-6 text-center"><i class="fas fa-code group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Tech Stack
+            </a>
+            <a href="#projects" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <span class="w-6 text-center"><i class="fas fa-rocket group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Projects
+            </a>
+            <a href="#education" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <span class="w-6 text-center"><i class="fas fa-graduation-cap group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Education
+            </a>
+            <a href="#certificates" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <span class="w-6 text-center"><i class="fas fa-award group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Certifications
+            </a>
+            <a href="#contact" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <span class="w-6 text-center"><i class="fas fa-envelope group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Contact
+            </a>
         </nav>
+
+        <div class="p-6 border-t border-warm-200 dark:border-gray-800">
+            <p class="text-xs text-warm-500 dark:text-gray-400 text-center">&copy; <span id="year">2025</span> Ciaran Cairns</p>
+        </div>
     </aside>
 
-    <main>
-        <section id="about" class="h-screen flex items-center px-8 lg:px-16 bg-white dark:bg-gray-800">
-            <div class="max-w-4xl">
-                <div class="inline-flex items-center gap-2 py-1 px-4 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold mb-8 border border-amber-200 dark:border-amber-800">
-                    <span class="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span> Available for Work
+    <main id="main-content" class="flex-1 min-w-0 md:pt-0 pt-16 transition-all duration-300" tabindex="-1">
+
+        <section id="about" class="min-h-[100dvh] flex items-center px-6 lg:px-12 bg-warm-50 dark:bg-gray-800 border-b border-warm-200 dark:border-gray-700 scroll-mt-16">
+            <div class="w-full max-w-7xl mx-auto py-12 md:py-0">
+                <div class="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold mb-6 border border-amber-200 dark:border-amber-800">
+                    <span class="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true"></span>
+                    <span>Available for Work</span>
                 </div>
-                <h1 class="text-6xl md:text-8xl font-black mb-8 tracking-tighter dark:text-white">Ciaran Cairns<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-red-600">Software Developer.</span></h1>
-                <p class="text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl leading-relaxed">I'm a final-year Computing & IT student at the Open University specializing in building robust, user-centric software solutions.</p>
-                <button hx-get="/fragment/cv" hx-target="#modalContent" class="bg-brand-dark text-white font-bold py-4 px-8 rounded-2xl shadow-xl hover:bg-gray-800 transition-all flex items-center gap-3 transform hover:-translate-y-1">
-                    <i class="fas fa-file-pdf text-brand-accent"></i> View Resume
-                </button>
+                <h1 class="text-5xl sm:text-7xl lg:text-8xl font-black mb-6 tracking-tighter dark:text-white leading-[1.1]">
+                    Ciaran Cairns<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-red-600">Software Developer.</span>
+                </h1>
+                <p class="text-lg md:text-xl text-warm-600 dark:text-gray-300 mb-8 max-w-2xl leading-relaxed">
+                    I'm a final-year Computing & IT student at the Open University specialising in building robust, user-centric software solutions.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <button id="cv-btn"
+                        hx-get="/fragment/cv"
+                        hx-target="#modalContent"
+                        hx-swap="innerHTML"
+                        aria-label="View my resume"
+                        class="js-only btn-lift bg-brand-dark text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-gray-800 flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+                        <i class="fas fa-file-pdf text-brand-accent" aria-hidden="true"></i> View Resume
+                    </button>
+                    <noscript>
+                        <a href="/static/docs/Ciaran_Cairns_CV.pdf"
+                           class="btn-lift bg-brand-dark text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-gray-800 flex items-center gap-3"
+                           target="_blank" rel="noopener noreferrer">
+                            <i class="fas fa-file-pdf text-brand-accent" aria-hidden="true"></i> Download Resume
+                        </a>
+                    </noscript>
+                    <a href="#contact"
+                        class="btn-lift bg-brand-accent text-brand-dark font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-brand-hover flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Get in Touch
+                    </a>
+                </div>
             </div>
         </section>
 
-        <section id="experience" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t dark:border-gray-800">
-            <div class="max-w-6xl mx-auto"><h2 class="text-4xl font-bold mb-16 dark:text-white">Experience</h2><div id="experience-container" hx-get="/fragment/experience" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-2 gap-10"></div></div>
-        </section>
-
-        <section id="skills" class="bg-white dark:bg-gray-800 py-24 px-8 lg:px-16 border-t dark:border-gray-700">
-            <div class="max-w-6xl mx-auto"><h2 class="text-4xl font-bold mb-16 dark:text-white">Tech Stack</h2><div id="skills-container" hx-get="/fragment/skills" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div></div>
-        </section>
-
-        <section id="projects" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t dark:border-gray-800">
-            <div class="max-w-6xl mx-auto"><h2 class="text-4xl font-bold mb-16 dark:text-white">Projects</h2><div id="projects-container" hx-get="/fragment/projects" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"></div></div>
-        </section>
-
-        <section id="education" class="bg-white dark:bg-gray-800 py-24 px-8 lg:px-16 border-t dark:border-gray-700">
-            <div class="max-w-6xl mx-auto">
-                <h2 class="text-4xl font-bold mb-16 dark:text-white">Education</h2>
-                <article hx-get="/fragment/education" hx-target="#modalContent" class="group relative cursor-pointer bg-gray-50 dark:bg-gray-900/50 p-10 rounded-[2.5rem] border dark:border-gray-700 hover:shadow-2xl transition-all">
-                    <h3 class="text-3xl font-black dark:text-white mb-2">BSc (Hons) Computing & IT</h3>
-                    <span class="text-brand-accent font-bold text-xl">Open University</span>
-                    <p class="text-gray-500 mt-4 italic">Expected Graduation: 2026. Click for module details.</p>
-                </article>
+        <section id="experience" class="bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16" aria-labelledby="experience-heading">
+            <div class="w-full max-w-7xl mx-auto">
+                <h2 id="experience-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+                    <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Experience
+                </h2>
+                <div id="experience-container"
+                     aria-live="polite"
+                     aria-busy="false"
+                     hx-get="/fragment/experience"
+                     hx-trigger="load"
+                     hx-indicator="#experience-loader"
+                     class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div id="experience-loader" class="htmx-indicator col-span-full text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
+                        <span class="sr-only">Loading experience...</span>
+                    </div>
+                    <div class="skeleton h-64 js-only" aria-hidden="true"></div>
+                    <div class="skeleton h-64 js-only" aria-hidden="true"></div>
+                </div>
+                <noscript>
+                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view experience details, or <a href="/fragment/experience" class="text-brand-accent underline">view the raw content</a>.</p>
+                </noscript>
             </div>
         </section>
 
-        <section id="certificates" class="bg-gray-50 dark:bg-gray-900 py-24 px-8 lg:px-16 border-t dark:border-gray-800">
-            <div class="max-w-6xl mx-auto"><h2 class="text-4xl font-bold mb-16 dark:text-white">Certifications & Events</h2><div id="certificates-container" hx-get="/fragment/certificates" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div></div>
+        <section id="skills" class="bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16" aria-labelledby="skills-heading">
+            <div class="w-full max-w-7xl mx-auto">
+                <h2 id="skills-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+                    <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Tech Stack
+                </h2>
+                <div id="skills-container"
+                     aria-live="polite"
+                     aria-busy="false"
+                     hx-get="/fragment/skills"
+                     hx-trigger="load"
+                     hx-indicator="#skills-loader"
+                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div id="skills-loader" class="htmx-indicator col-span-full text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
+                        <span class="sr-only">Loading skills...</span>
+                    </div>
+                    <div class="skeleton h-40 js-only" aria-hidden="true"></div>
+                    <div class="skeleton h-40 js-only" aria-hidden="true"></div>
+                    <div class="skeleton h-40 js-only" aria-hidden="true"></div>
+                </div>
+                <noscript>
+                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view skills, or <a href="/fragment/skills" class="text-brand-accent underline">view the raw content</a>.</p>
+                </noscript>
+            </div>
         </section>
 
-    <section id="contact" class="bg-white dark:bg-brand-dark text-gray-900 dark:text-white py-24 px-8 lg:px-16 border-t border-gray-200 dark:border-gray-800 text-center relative overflow-hidden transition-colors duration-300">
-        <div class="max-w-4xl mx-auto relative z-10">
-            <h2 class="text-5xl font-black mb-6 tracking-tight">Let's Build Something.</h2>
+        <section id="projects" class="bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16" aria-labelledby="projects-heading">
+            <div class="w-full max-w-7xl mx-auto">
+                <h2 id="projects-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+                    <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Featured Projects
+                </h2>
+                <div id="projects-container"
+                     aria-live="polite"
+                     aria-busy="false"
+                     hx-get="/fragment/projects"
+                     hx-trigger="load"
+                     hx-indicator="#projects-loader"
+                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div id="projects-loader" class="htmx-indicator col-span-full text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
+                        <span class="sr-only">Loading projects...</span>
+                    </div>
+                    <div class="skeleton h-80 js-only" aria-hidden="true"></div>
+                    <div class="skeleton h-80 js-only" aria-hidden="true"></div>
+                    <div class="skeleton h-80 js-only" aria-hidden="true"></div>
+                </div>
+                <noscript>
+                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view projects, or <a href="/fragment/projects" class="text-brand-accent underline">view the raw content</a>.</p>
+                </noscript>
+            </div>
+        </section>
 
-            <form hx-post="/send-email"
-                  hx-target="#form-response"
-                  hx-swap="innerHTML"
-                  class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+        <section id="education" class="bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16" aria-labelledby="education-heading">
+            <div class="w-full max-w-7xl mx-auto">
+                <h2 id="education-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+                    <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Education
+                </h2>
+                <div id="education-container"
+                     aria-live="polite"
+                     aria-busy="false"
+                     hx-get="/fragment/education"
+                     hx-trigger="revealed"
+                     hx-indicator="#education-loader">
+                    <div id="education-loader" class="htmx-indicator text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
+                        <span class="sr-only">Loading education...</span>
+                    </div>
+                    <div class="skeleton h-48 js-only" aria-hidden="true"></div>
+                </div>
+                <noscript>
+                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view education details, or <a href="/fragment/education" class="text-brand-accent underline">view the raw content</a>.</p>
+                </noscript>
+            </div>
+        </section>
 
-                <div class="hidden" aria-hidden="true">
-                    <label for="fax_number">Do not fill this out</label>
-                    <input type="text" name="fax_number" id="fax_number" tabindex="-1" autocomplete="off">
+        <section id="certificates" class="bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16" aria-labelledby="certificates-heading">
+            <div class="w-full max-w-7xl mx-auto">
+                <h2 id="certificates-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+                    <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Certifications
+                </h2>
+                <div id="certificates-container"
+                     aria-live="polite"
+                     aria-busy="false"
+                     hx-get="/fragment/certificates"
+                     hx-trigger="revealed"
+                     hx-indicator="#certificates-loader"
+                     class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div id="certificates-loader" class="htmx-indicator col-span-full text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
+                        <span class="sr-only">Loading certifications...</span>
+                    </div>
+                    <div class="skeleton h-48 js-only" aria-hidden="true"></div>
+                    <div class="skeleton h-48 js-only" aria-hidden="true"></div>
+                    <div class="skeleton h-48 js-only" aria-hidden="true"></div>
+                </div>
+                <noscript>
+                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view certifications, or <a href="/fragment/certificates" class="text-brand-accent underline">view the raw content</a>.</p>
+                </noscript>
+            </div>
+        </section>
+
+        <section id="contact" class="bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16" aria-labelledby="contact-heading">
+            <div class="w-full max-w-7xl mx-auto">
+                <h2 id="contact-heading" class="text-3xl md:text-4xl font-bold mb-6 dark:text-white flex items-center gap-3">
+                    <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Let's Work Together
+                </h2>
+                <p class="text-lg text-warm-600 dark:text-gray-300 mb-12 max-w-2xl">
+                    I'm currently available for freelance projects, internships, and full-time positions.
+                    If you have a project in mind or just want to chat, feel free to reach out!
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl">
+                    <a href="mailto:ciarancairns@googlemail.com" class="contact-card group p-6 bg-warm-50 dark:bg-gray-900 rounded-2xl border border-warm-200 dark:border-gray-700 hover:border-brand-accent dark:hover:border-brand-accent transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                        <div class="w-12 h-12 bg-brand-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
+                            <i class="fas fa-envelope text-xl text-brand-accent" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-1 text-warm-900 dark:text-white">Email</h3>
+                        <p class="text-warm-600 dark:text-gray-400 text-sm break-all">ciarancairns@googlemail.com</p>
+                    </a>
+
+                    <a href="https://www.linkedin.com/in/ciarancairns"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="contact-card group p-6 bg-warm-50 dark:bg-gray-900 rounded-2xl border border-warm-200 dark:border-gray-700 hover:border-brand-accent dark:hover:border-brand-accent transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                        <div class="w-12 h-12 bg-brand-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
+                            <i class="fab fa-linkedin text-xl text-brand-accent" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-1 text-warm-900 dark:text-white">LinkedIn</h3>
+                        <p class="text-warm-600 dark:text-gray-400 text-sm">Connect with me</p>
+                    </a>
+
+                    <a href="https://github.com/CiaranC968"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="contact-card group p-6 bg-warm-50 dark:bg-gray-900 rounded-2xl border border-warm-200 dark:border-gray-700 hover:border-brand-accent dark:hover:border-brand-accent transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                        <div class="w-12 h-12 bg-brand-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
+                            <i class="fab fa-github text-xl text-brand-accent" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-1 text-warm-900 dark:text-white">GitHub</h3>
+                        <p class="text-warm-600 dark:text-gray-400 text-sm">View my code</p>
+                    </a>
                 </div>
 
-                <input type="text" name="name" placeholder="Full Name" aria-label="Full Name" required
-                       class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded-2xl p-4 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all">
+                <div class="mt-12">
+                    <a href="mailto:ciarancairns@googlemail.com?subject=Project%20Inquiry&body=Hi%20Ciaran%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20potential%20project.%0A%0A" class="btn-lift inline-flex items-center gap-3 bg-brand-accent text-brand-dark font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        Send me a message
+                    </a>
+                </div>
+            </div>
+        </section>
 
-                <input type="email" name="email" placeholder="Email Address" aria-label="Email Address" required
-                       class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded-2xl p-4 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all">
+        <footer class="bg-warm-100 dark:bg-gray-900 border-t border-warm-200 dark:border-gray-800 py-12 text-center" role="contentinfo">
+            <div class="flex justify-center gap-8 mb-8">
+                <a href="https://github.com/CiaranC968" target="_blank" rel="noopener noreferrer" aria-label="Visit my GitHub profile" class="text-warm-500 hover:text-brand-accent transition-colors transform hover:scale-110 focus:outline-none focus:text-brand-accent">
+                    <i class="fab fa-github text-2xl" aria-hidden="true"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/ciarancairns" target="_blank" rel="noopener noreferrer" aria-label="Visit my LinkedIn profile" class="text-warm-500 hover:text-brand-accent transition-colors transform hover:scale-110 focus:outline-none focus:text-brand-accent">
+                    <i class="fab fa-linkedin text-2xl" aria-hidden="true"></i>
+                </a>
+                <a href="mailto:ciarancairns@googlemail.com" aria-label="Send me an email" class="text-warm-500 hover:text-brand-accent transition-colors transform hover:scale-110 focus:outline-none focus:text-brand-accent">
+                    <i class="fas fa-envelope text-2xl" aria-hidden="true"></i>
+                </a>
+            </div>
+            <p class="text-warm-600 dark:text-gray-400 text-sm">&copy; <span id="footer-year">2025</span> Ciaran Cairns. Built with Python and Flask.</p>
+        </footer>
 
-                <textarea rows="5" name="message" placeholder="Your Message" aria-label="Your Message" required
-                          class="md:col-span-2 w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded-2xl p-4 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all"></textarea>
+    </main>
 
-                <div id="form-response" class="md:col-span-2 text-center font-bold text-lg min-h-[1.5rem]"></div>
-
-                <button type="submit" class="md:col-span-2 bg-brand-accent text-black font-black py-5 rounded-2xl hover:bg-brand-hover hover:-translate-y-1 shadow-lg hover:shadow-xl transition-all">
-                    Send Message
+    <div id="universalModal"
+         class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6"
+         role="dialog"
+         aria-modal="true"
+         aria-hidden="true"
+         aria-labelledby="modal-title">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop"></div>
+        <div class="relative w-full max-w-4xl bg-warm-50 dark:bg-gray-800 rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]" id="modalPanel" role="document">
+            <div class="absolute top-4 right-4 z-10">
+                <button id="closeModalBtn"
+                        aria-label="Close modal"
+                        class="w-10 h-10 flex items-center justify-center rounded-full bg-warm-200 dark:bg-gray-700 text-warm-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <i class="fas fa-times text-lg" aria-hidden="true"></i>
                 </button>
-            </form>
-        </div>
-    </section>
-
-
-    <footer class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-12 text-center transition-colors duration-300">
-        <div class="flex justify-center gap-8 mb-8">
-            <a href="https://github.com/CiaranC968" target="_blank" class="text-gray-400 hover:text-brand-accent transition-colors"><i class="fab fa-github text-2xl"></i></a>
-            <a href="https://www.linkedin.com/in/ciarancairns" target="_blank" class="text-gray-400 hover:text-brand-accent transition-colors"><i class="fab fa-linkedin text-2xl"></i></a>
-            <a href="mailto:ciarancairns@googlemail.com" class="text-gray-400 hover:text-brand-accent transition-colors"><i class="fas fa-envelope text-2xl"></i></a>
-        </div>
-        <p class="text-gray-500 text-sm">&copy; <script>document.write(new Date().getFullYear())</script> Ciaran Cairns. Built with Python and Flask.</p>
-    </footer>
-
-</main>
-
-<div id="universalModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[110] p-4">
-        <div class="modal-content relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300">
-            <button onclick="modal.close()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-[70]">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-            <div id="modalContent" class="max-h-[85vh] overflow-y-auto custom-scrollbar">
-                </div>
+            </div>
+            <div id="modalContent" class="p-6 sm:p-8 overflow-y-auto custom-scrollbar"></div>
         </div>
     </div>
-    
-    <button id="scrollTopBtn" class="fixed bottom-8 right-8 hidden bg-brand-accent text-black w-12 h-12 rounded-xl shadow-2xl z-50 flex items-center justify-center transition-all hover:-translate-y-1"><i class="fas fa-arrow-up"></i></button>
+
+    <button id="scrollTopBtn"
+            aria-label="Scroll to top of page"
+            class="fixed bottom-6 right-6 translate-y-20 opacity-0 bg-brand-accent text-brand-dark w-12 h-12 rounded-xl shadow-xl z-40 flex items-center justify-center transition-all duration-300 hover:scale-110 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
+        <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+
+    <script>
+        function handleLoadError(container, section) {
+            container.innerHTML = '<div class="load-error col-span-full text-center py-12">' +
+                '<div class="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">' +
+                '<i class="fas fa-exclamation-triangle text-2xl text-red-500" aria-hidden="true"></i></div>' +
+                '<h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Failed to Load</h3>' +
+                '<p class="text-gray-600 dark:text-gray-400 text-sm mb-4">Unable to load ' + section + '. Please try again.</p>' +
+                '<button onclick="htmx.trigger(this.closest(\'[hx-get]\'), \'load\')" ' +
+                'class="inline-flex items-center gap-2 px-4 py-2 bg-brand-accent hover:bg-brand-hover text-brand-dark text-sm font-medium rounded-lg transition-colors">' +
+                '<i class="fas fa-redo" aria-hidden="true"></i> Retry</button></div>';
+        }
+
+        // Open modal function
+        function openModal() {
+            const modal = document.getElementById('universalModal');
+            const backdrop = document.getElementById('modalBackdrop');
+            const panel = document.getElementById('modalPanel');
+            if (modal && backdrop && panel) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                modal.setAttribute('aria-hidden', 'false');
+                requestAnimationFrame(() => {
+                    backdrop.classList.remove('opacity-0');
+                    backdrop.classList.add('opacity-100');
+                    panel.classList.remove('scale-95', 'opacity-0');
+                    panel.classList.add('scale-100', 'opacity-100');
+                });
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set aria-busy on request start
+            document.body.addEventListener('htmx:beforeRequest', function(evt) {
+                var target = evt.detail.target;
+                if (target && target.hasAttribute('aria-busy')) {
+                    target.setAttribute('aria-busy', 'true');
+                }
+            });
+
+            // Clear aria-busy and open modal if needed
+            document.body.addEventListener('htmx:afterRequest', function(evt) {
+                var target = evt.detail.target;
+                if (target && target.hasAttribute('aria-busy')) {
+                    target.setAttribute('aria-busy', 'false');
+                }
+                // Open modal if content was loaded into modalContent
+                if (target && target.id === 'modalContent' && evt.detail.successful) {
+                    openModal();
+                }
+            });
+
+            // Handle errors
+            document.body.addEventListener('htmx:responseError', function(evt) {
+                var target = evt.detail.target;
+                if (target) {
+                    var section = target.id ? target.id.replace('-container', '') : 'content';
+                    handleLoadError(target, section);
+                }
+            });
+        });
+
+        // Offline detection
+        function updateOnlineStatus() {
+            var notice = document.getElementById('offline-notice');
+            if (notice) {
+                notice.style.transform = navigator.onLine ? 'translateY(-100%)' : 'translateY(0)';
+            }
+        }
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+    </script>
 
     <script src="/static/js/main.js"></script>
+
 </body>
 </html>

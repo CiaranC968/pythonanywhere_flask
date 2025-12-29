@@ -13,7 +13,7 @@
         "iconClass": "fas fa-cloud text-green-600",
         "bgIcon": "fas fa-network-wired",
         "desc": "Infrastructure management and automated deployment strategies.",
-        "core": ["Docker", "Git", "AWS (EC2, S3)", "CI/CD", "Linux", "Nginx"]
+        "core": ["Docker", "Git", "AWS (EC2, S3)", "CI/CD", "Linux"]
     },
     {
         "id": "frontend",

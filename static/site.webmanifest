@@ -1,0 +1,16 @@
+{
+  "name": "Ciaran Cairns | Software Developer",
+  "short_name": "Ciaran C",
+  "description": "Portfolio of Ciaran Cairns, Software Developer specialising in Python and Flask",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#facc15",
+  "icons": [
+    {
+      "src": "/static/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,29 +1,37 @@
 [
-    {
-        "id": "ou",
-        "degree": "BSc (Hons) Computing & IT",
-        "university": "The Open University",
-        "year": "2021 - 2026 (Expected)",
-        "logo": "ou-logo.png",
-        "stages": {
-            "Stage 1": [
-                { "code": "TM111", "title": "Introduction to Computing and IT Part 1" },
-                { "code": "TM112", "title": "Introduction to Computing and IT Part 2" },
-                { "code": "TM129", "title": "Technologies in Practice" },
-                { "code": "MU123", "title": "Discovering Mathematics" }
-            ],
-            "Stage 2": [
-                { "code": "TT284", "title": "Web Technologies" },
-                { "code": "M250", "title": "Object-Oriented Java Programming" },
-                { "code": "M269", "title": "Algorithms, Data Structures and Computability" },
-                { "code": "TM254", "title": "Managing IT" }
-            ],
-            "Stage 3": [
-                { "code": "TM352", "title": "Web, Mobile and Cloud Technologies" },
-                { "code": "TM356", "title": "Interaction Design and the User Experience" },
-                { "code": "TM354", "title": "Software Engineering" },
-                { "code": "TM470", "title": "The Computing and IT Project" }
-            ]
-        }
+  {
+    "id": "ou",
+    "degree": "BSc (Hons) Computing & IT",
+    "university": "The Open University",
+    "year": "2021 - 2026 (Expected)",
+    "logo": "ou-logo.png",
+    "stages": {
+      "Stage 1": [
+        { "code": "TM111", "title": "Introduction to Computing and IT Part 1" },
+        { "code": "TM112", "title": "Introduction to Computing and IT Part 2" },
+        { "code": "TM129", "title": "Technologies in Practice" },
+        { "code": "MU123", "title": "Discovering Mathematics" }
+      ],
+      "Stage 2": [
+        { "code": "TT284", "title": "Web Technologies" },
+        { "code": "M250", "title": "Object-Oriented Java Programming" },
+        { "code": "M269", "title": "Algorithms, Data Structures and Computability" },
+        { "code": "TM254", "title": "Managing IT" }
+      ],
+      "Stage 3": [
+        { "code": "TM352", "title": "Web, Mobile and Cloud Technologies" },
+        { "code": "TM356", "title": "Interaction Design and the User Experience" },
+        { "code": "TM354", "title": "Software Engineering" },
+        { "code": "TM470", "title": "The Computing and IT Project" }
+      ]
     }
+  },
+  {
+    "id": "swc",
+    "degree": "BTEC National Diploma",
+    "university": "South West College",
+    "year": "2005 - 2007",
+    "logo": "swc.png",
+    "stages": {}
+  }
 ]
