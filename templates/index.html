@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Portfolio of Ciaran Cairns, a Software Developer specialising in Python, Flask, and Web Development. View my projects, skills, and experience.">
+    <meta name="description" content="Portfolio of Ciaran Cairns, a Software Developer specialising in Python, Flask, and Web Development.">
     <meta name="author" content="Ciaran Cairns">
-    <meta name="keywords" content="software developer, python, flask, web development, portfolio, ciaran cairns">
+    <meta name="keywords" content="software developer, python, flask, web development, portfolio, Ciaran cairns">
     <meta name="theme-color" content="#facc15" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
 
@@ -14,7 +14,6 @@
     <meta property="og:title" content="Ciaran Cairns | Software Developer">
     <meta property="og:description" content="Final-year Computing & IT student specialising in Python, Flask, and full-stack development.">
     <meta property="og:image" content="https://ciaranc.dev/static/images/og-image.png">
-    <meta property="og:site_name" content="Ciaran Cairns Portfolio">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Ciaran Cairns | Software Developer">
@@ -25,30 +24,18 @@
     <link rel="canonical" href="https://ciaranc.dev">
 
     <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
     <link rel="manifest" href="/static/site.webmanifest">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://unpkg.com">
-
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
     <link rel="preload" href="/static/js/main.js" as="script">
     <link rel="preload" href="/static/css/style.css" as="style">
     <link rel="preload" href="/static/images/about.png" as="image">
 
-    <link rel="prefetch" href="/fragment/experience">
-    <link rel="prefetch" href="/fragment/skills">
-    <link rel="prefetch" href="/fragment/projects">
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -58,24 +45,8 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        brand: {
-                            dark: '#111827',
-                            accent: '#facc15',
-                            hover: '#f59e0b'
-                        },
-                        // Warmer light mode grays
-                        warm: {
-                            50: '#fafaf8',
-                            100: '#f5f4f1',
-                            200: '#e8e6e1',
-                            300: '#d5d2cc',
-                            400: '#a8a49c',
-                            500: '#7a756c',
-                            600: '#5c574f',
-                            700: '#45413a',
-                            800: '#2d2a25',
-                            900: '#1a1815'
-                        }
+                        brand: { dark: '#111827', accent: '#facc15', hover: '#f59e0b' },
+                        warm: { 50: '#fafaf8', 100: '#f5f4f1', 200: '#e8e6e1', 300: '#d5d2cc', 400: '#a8a49c', 500: '#7a756c', 600: '#5c574f', 700: '#45413a', 800: '#2d2a25', 900: '#1a1815' }
                     }
                 }
             }
@@ -91,15 +62,9 @@
         "name": "Ciaran Cairns",
         "jobTitle": "Software Developer",
         "url": "https://ciaranc.dev",
-        "sameAs": [
-            "https://github.com/CiaranC968",
-            "https://www.linkedin.com/in/ciarancairns"
-        ],
+        "sameAs": ["https://github.com/CiaranC968", "https://www.linkedin.com/in/ciarancairns"],
         "knowsAbout": ["Python", "Flask", "Web Development", "JavaScript", "SQL"],
-        "alumniOf": {
-            "@type": "CollegeOrUniversity",
-            "name": "The Open University"
-        }
+        "alumniOf": { "@type": "CollegeOrUniversity", "name": "The Open University" }
     }
     </script>
 
@@ -113,45 +78,9 @@
         })();
     </script>
 
-    <style>
-        .skip-to-main {
-            position: absolute;
-            top: -100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #facc15;
-            color: #111827;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            border-radius: 0 0 0.5rem 0.5rem;
-            z-index: 9999;
-            transition: top 0.2s ease;
-            text-decoration: none;
-        }
-        .skip-to-main:focus { top: 0; }
-        .skeleton {
-            background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
-            background-size: 200% 100%;
-            animation: skeleton-loading 1.5s infinite;
-            border-radius: 1rem;
-        }
-        .dark .skeleton {
-            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
-            background-size: 200% 100%;
-        }
-        @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        .htmx-indicator { opacity: 0; transition: opacity 0.2s ease; }
-        .htmx-request .htmx-indicator { opacity: 1; }
-        .htmx-request.htmx-indicator { opacity: 1; }
-    </style>
-
     <noscript>
         <style>
-            .htmx-indicator { display: none !important; }
-            .js-only { display: none !important; }
+            .htmx-indicator, .js-only { display: none !important; }
             .noscript-show { display: block !important; }
         </style>
     </noscript>
@@ -161,9 +90,8 @@
 
     <a href="#main-content" class="skip-to-main">Skip to main content</a>
 
-    <div id="offline-notice" class="fixed top-0 left-0 right-0 bg-amber-500 text-amber-900 text-center py-2 px-4 text-sm font-medium z-[200] transform -translate-y-full transition-transform duration-300" role="alert" aria-live="polite">
-        <i class="fas fa-wifi-slash mr-2" aria-hidden="true"></i>
-        You're offline. Some content may not load.
+    <div id="offline-notice" class="fixed top-0 left-0 right-0 bg-amber-500 text-amber-900 text-center py-2 px-4 text-sm font-medium z-[200] transform -translate-y-full transition-transform duration-300 will-change-transform" role="alert" aria-live="polite">
+        <i class="fas fa-wifi-slash mr-2" aria-hidden="true"></i> You're offline. Some content may not load.
     </div>
 
     <div class="fixed top-6 right-6 z-[100] hidden md:block">
@@ -192,17 +120,16 @@
 
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-45 hidden backdrop-blur-sm md:hidden" aria-hidden="true"></div>
 
-    <aside id="sidebar" aria-label="Main navigation" class="fixed inset-y-0 left-0 z-50 w-72 bg-warm-50 dark:bg-[#0b111e] border-r border-warm-200 dark:border-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:relative md:sticky md:top-0 h-[100dvh] overflow-y-auto flex flex-col shadow-2xl md:shadow-none custom-scrollbar">
-
+    <aside id="sidebar" aria-label="Main navigation" class="fixed inset-y-0 left-0 z-50 w-72 bg-warm-50 dark:bg-[#0b111e] border-r border-warm-200 dark:border-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:relative md:sticky md:top-0 h-[100dvh] overflow-y-auto flex flex-col shadow-2xl md:shadow-none custom-scrollbar will-change-transform">
         <div class="p-8 pb-4 text-center">
             <div class="relative inline-block">
                 <img src="/static/images/about.png"
                      onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Ciaran+Cairns&background=facc15&color=111827&size=128'"
                      class="w-32 h-32 mx-auto mb-4 rounded-2xl border-4 border-warm-100 dark:border-gray-800 object-cover shadow-lg"
                      alt="Ciaran Cairns profile photo"
-                     width="128"
-                     height="128"
+                     width="1024" height="1024"
                      loading="eager"
+                     decoding="async"
                      fetchpriority="high">
                 <span class="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full" role="img" aria-label="Available for work" title="Available for work"></span>
             </div>
@@ -287,13 +214,15 @@
                      aria-live="polite"
                      aria-busy="false"
                      hx-get="/fragment/experience"
-                     hx-trigger="load"
+                     hx-trigger="intersect once threshold:0.1"
                      hx-indicator="#experience-loader"
-                     class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div id="experience-loader" class="htmx-indicator col-span-full text-center py-12">
+                     class="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+
+                    <div id="experience-loader" class="htmx-indicator col-span-full text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-100 dark:bg-gray-900">
                         <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
                         <span class="sr-only">Loading experience...</span>
                     </div>
+
                     <div class="skeleton h-64 js-only" aria-hidden="true"></div>
                     <div class="skeleton h-64 js-only" aria-hidden="true"></div>
                 </div>
@@ -312,13 +241,15 @@
                      aria-live="polite"
                      aria-busy="false"
                      hx-get="/fragment/skills"
-                     hx-trigger="load"
+                     hx-trigger="intersect once threshold:0.1"
                      hx-indicator="#skills-loader"
-                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div id="skills-loader" class="htmx-indicator col-span-full text-center py-12">
+                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+
+                     <div id="skills-loader" class="htmx-indicator col-span-full text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-50 dark:bg-gray-800">
                         <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
                         <span class="sr-only">Loading skills...</span>
                     </div>
+
                     <div class="skeleton h-40 js-only" aria-hidden="true"></div>
                     <div class="skeleton h-40 js-only" aria-hidden="true"></div>
                     <div class="skeleton h-40 js-only" aria-hidden="true"></div>
@@ -338,13 +269,15 @@
                      aria-live="polite"
                      aria-busy="false"
                      hx-get="/fragment/projects"
-                     hx-trigger="load"
+                     hx-trigger="intersect once threshold:0.1"
                      hx-indicator="#projects-loader"
-                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div id="projects-loader" class="htmx-indicator col-span-full text-center py-12">
+                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+
+                    <div id="projects-loader" class="htmx-indicator col-span-full text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-100 dark:bg-gray-900">
                         <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
                         <span class="sr-only">Loading projects...</span>
                     </div>
+
                     <div class="skeleton h-80 js-only" aria-hidden="true"></div>
                     <div class="skeleton h-80 js-only" aria-hidden="true"></div>
                     <div class="skeleton h-80 js-only" aria-hidden="true"></div>
@@ -364,12 +297,15 @@
                      aria-live="polite"
                      aria-busy="false"
                      hx-get="/fragment/education"
-                     hx-trigger="revealed"
-                     hx-indicator="#education-loader">
-                    <div id="education-loader" class="htmx-indicator text-center py-12">
+                     hx-trigger="intersect once threshold:0.1"
+                     hx-indicator="#education-loader"
+                     class="relative min-h-[12rem]">
+
+                    <div id="education-loader" class="htmx-indicator text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-50 dark:bg-gray-800">
                         <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
                         <span class="sr-only">Loading education...</span>
                     </div>
+
                     <div class="skeleton h-48 js-only" aria-hidden="true"></div>
                 </div>
                 <noscript>
@@ -387,13 +323,15 @@
                      aria-live="polite"
                      aria-busy="false"
                      hx-get="/fragment/certificates"
-                     hx-trigger="revealed"
+                     hx-trigger="intersect once threshold:0.1"
                      hx-indicator="#certificates-loader"
-                     class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div id="certificates-loader" class="htmx-indicator col-span-full text-center py-12">
+                     class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+
+                    <div id="certificates-loader" class="htmx-indicator col-span-full text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-100 dark:bg-gray-900">
                         <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
                         <span class="sr-only">Loading certifications...</span>
                     </div>
+
                     <div class="skeleton h-48 js-only" aria-hidden="true"></div>
                     <div class="skeleton h-48 js-only" aria-hidden="true"></div>
                     <div class="skeleton h-48 js-only" aria-hidden="true"></div>
@@ -406,51 +344,102 @@
 
         <section id="contact" class="bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16" aria-labelledby="contact-heading">
             <div class="w-full max-w-7xl mx-auto">
-                <h2 id="contact-heading" class="text-3xl md:text-4xl font-bold mb-6 dark:text-white flex items-center gap-3">
-                    <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Let's Work Together
-                </h2>
-                <p class="text-lg text-warm-600 dark:text-gray-300 mb-12 max-w-2xl">
-                    I'm currently available for freelance projects, internships, and full-time positions.
-                    If you have a project in mind or just want to chat, feel free to reach out!
-                </p>
+                <div class="grid lg:grid-cols-2 gap-12 lg:gap-24 items-start">
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl">
-                    <a href="mailto:ciarancairns@googlemail.com" class="contact-card group p-6 bg-warm-50 dark:bg-gray-900 rounded-2xl border border-warm-200 dark:border-gray-700 hover:border-brand-accent dark:hover:border-brand-accent transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent">
-                        <div class="w-12 h-12 bg-brand-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                            <i class="fas fa-envelope text-xl text-brand-accent" aria-hidden="true"></i>
+                    <div>
+                        <div class="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold mb-6 border border-green-200 dark:border-green-800">
+                            <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" aria-hidden="true"></span>
+                            <span>Available for new projects</span>
                         </div>
-                        <h3 class="font-bold text-lg mb-1 text-warm-900 dark:text-white">Email</h3>
-                        <p class="text-warm-600 dark:text-gray-400 text-sm break-all">ciarancairns@googlemail.com</p>
-                    </a>
 
-                    <a href="https://www.linkedin.com/in/ciarancairns"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="contact-card group p-6 bg-warm-50 dark:bg-gray-900 rounded-2xl border border-warm-200 dark:border-gray-700 hover:border-brand-accent dark:hover:border-brand-accent transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent">
-                        <div class="w-12 h-12 bg-brand-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                            <i class="fab fa-linkedin text-xl text-brand-accent" aria-hidden="true"></i>
+                        <h2 id="contact-heading" class="text-3xl md:text-4xl font-bold mb-6 dark:text-white flex items-center gap-3">
+                            <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Let's Connect
+                        </h2>
+
+                        <p class="text-lg text-warm-600 dark:text-gray-300 mb-8 leading-relaxed">
+                            I'm currently looking for <strong>full-time roles</strong> or <strong>Internship opportunities</strong>.
+                            Whether you have a question, a project idea, or just want to say hi, I'll try my best to get back to you!
+                        </p>
+
+                        <div class="mb-8">
+                            <label class="block text-xs font-bold uppercase text-warm-500 dark:text-gray-400 tracking-wider mb-2">Direct Email</label>
+                            <div class="flex items-center gap-3 p-2 bg-white dark:bg-gray-900 border border-warm-200 dark:border-gray-700 rounded-xl shadow-sm">
+                                <div class="w-10 h-10 bg-brand-accent/10 rounded-lg flex items-center justify-center text-brand-accent">
+                                    <i class="fas fa-envelope" aria-hidden="true"></i>
+                                </div>
+                                <span class="flex-grow font-mono text-sm text-warm-800 dark:text-gray-200 truncate">ciarancairns@googlemail.com</span>
+                                <button onclick="copyToClipboard(this, 'ciarancairns@googlemail.com')"
+                                        class="p-2 text-warm-500 hover:text-brand-accent hover:bg-warm-50 dark:hover:bg-gray-800 rounded-lg transition-all"
+                                        aria-label="Copy email address">
+                                    <i class="far fa-copy text-lg"></i>
+                                </button>
+                            </div>
                         </div>
-                        <h3 class="font-bold text-lg mb-1 text-warm-900 dark:text-white">LinkedIn</h3>
-                        <p class="text-warm-600 dark:text-gray-400 text-sm">Connect with me</p>
-                    </a>
 
-                    <a href="https://github.com/CiaranC968"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="contact-card group p-6 bg-warm-50 dark:bg-gray-900 rounded-2xl border border-warm-200 dark:border-gray-700 hover:border-brand-accent dark:hover:border-brand-accent transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent">
-                        <div class="w-12 h-12 bg-brand-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                            <i class="fab fa-github text-xl text-brand-accent" aria-hidden="true"></i>
+                        <div class="flex gap-4">
+                            <a href="https://www.linkedin.com/in/ciarancairns" target="_blank" rel="noopener noreferrer"
+                               class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-warm-200 dark:border-gray-700 rounded-xl hover:border-brand-accent dark:hover:border-brand-accent group transition-all shadow-sm">
+                                <i class="fab fa-linkedin text-xl text-warm-400 group-hover:text-brand-accent transition-colors"></i>
+                                <span class="font-medium text-warm-700 dark:text-gray-300">LinkedIn</span>
+                            </a>
+                            <a href="https://github.com/CiaranC968" target="_blank" rel="noopener noreferrer"
+                               class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-warm-200 dark:border-gray-700 rounded-xl hover:border-brand-accent dark:hover:border-brand-accent group transition-all shadow-sm">
+                                <i class="fab fa-github text-xl text-warm-400 group-hover:text-brand-accent transition-colors"></i>
+                                <span class="font-medium text-warm-700 dark:text-gray-300">GitHub</span>
+                            </a>
                         </div>
-                        <h3 class="font-bold text-lg mb-1 text-warm-900 dark:text-white">GitHub</h3>
-                        <p class="text-warm-600 dark:text-gray-400 text-sm">View my code</p>
-                    </a>
-                </div>
+                    </div>
 
-                <div class="mt-12">
-                    <a href="mailto:ciarancairns@googlemail.com?subject=Project%20Inquiry&body=Hi%20Ciaran%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20potential%20project.%0A%0A" class="btn-lift inline-flex items-center gap-3 bg-brand-accent text-brand-dark font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
-                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
-                        Send me a message
-                    </a>
+                    <div class="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-xl border border-warm-100 dark:border-gray-800 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+                        <form hx-post="/contact"
+                              hx-swap="innerHTML"
+                              hx-target="#form-response"
+                              hx-indicator="#form-spinner"
+                              class="space-y-6 relative z-10">
+
+                            <div id="form-response"></div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label for="name" class="text-sm font-semibold text-warm-700 dark:text-gray-300">Name</label>
+                                    <input type="text" id="name" name="name" required
+                                           class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all dark:text-white"
+                                           placeholder="Your name">
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="email" class="text-sm font-semibold text-warm-700 dark:text-gray-300">Email</label>
+                                    <input type="email" id="email" name="email" required
+                                           class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all dark:text-white"
+                                           placeholder="john@example.com">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label for="subject" class="text-sm font-semibold text-warm-700 dark:text-gray-300">Subject</label>
+                                <select id="subject" name="subject" class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all dark:text-white">
+                                    <option value="Project Inquiry">Project Inquiry</option>
+                                    <option value="Job Opportunity">Job Opportunity</option>
+                                    <option value="General Question">General Question</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label for="message" class="text-sm font-semibold text-warm-700 dark:text-gray-300">Message</label>
+                                <textarea id="message" name="message" rows="4" required
+                                          class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all resize-none dark:text-white"
+                                          placeholder="How can I help you?"></textarea>
+                            </div>
+
+                            <button type="submit"
+                                    class="w-full btn-lift bg-brand-dark dark:bg-white text-white dark:text-brand-dark font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-gray-800 dark:hover:bg-gray-200 flex items-center justify-center gap-3 transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+                                <span>Send Message</span>
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                <i id="form-spinner" class="fas fa-circle-notch fa-spin htmx-indicator" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>
@@ -497,82 +486,7 @@
         <i class="fas fa-arrow-up" aria-hidden="true"></i>
     </button>
 
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
-
-    <script>
-        function handleLoadError(container, section) {
-            container.innerHTML = '<div class="load-error col-span-full text-center py-12">' +
-                '<div class="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">' +
-                '<i class="fas fa-exclamation-triangle text-2xl text-red-500" aria-hidden="true"></i></div>' +
-                '<h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Failed to Load</h3>' +
-                '<p class="text-gray-600 dark:text-gray-400 text-sm mb-4">Unable to load ' + section + '. Please try again.</p>' +
-                '<button onclick="htmx.trigger(this.closest(\'[hx-get]\'), \'load\')" ' +
-                'class="inline-flex items-center gap-2 px-4 py-2 bg-brand-accent hover:bg-brand-hover text-brand-dark text-sm font-medium rounded-lg transition-colors">' +
-                '<i class="fas fa-redo" aria-hidden="true"></i> Retry</button></div>';
-        }
-
-        // Open modal function
-        function openModal() {
-            const modal = document.getElementById('universalModal');
-            const backdrop = document.getElementById('modalBackdrop');
-            const panel = document.getElementById('modalPanel');
-            if (modal && backdrop && panel) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                modal.setAttribute('aria-hidden', 'false');
-                requestAnimationFrame(() => {
-                    backdrop.classList.remove('opacity-0');
-                    backdrop.classList.add('opacity-100');
-                    panel.classList.remove('scale-95', 'opacity-0');
-                    panel.classList.add('scale-100', 'opacity-100');
-                });
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set aria-busy on request start
-            document.body.addEventListener('htmx:beforeRequest', function(evt) {
-                var target = evt.detail.target;
-                if (target && target.hasAttribute('aria-busy')) {
-                    target.setAttribute('aria-busy', 'true');
-                }
-            });
-
-            // Clear aria-busy and open modal if needed
-            document.body.addEventListener('htmx:afterRequest', function(evt) {
-                var target = evt.detail.target;
-                if (target && target.hasAttribute('aria-busy')) {
-                    target.setAttribute('aria-busy', 'false');
-                }
-                // Open modal if content was loaded into modalContent
-                if (target && target.id === 'modalContent' && evt.detail.successful) {
-                    openModal();
-                }
-            });
-
-            // Handle errors
-            document.body.addEventListener('htmx:responseError', function(evt) {
-                var target = evt.detail.target;
-                if (target) {
-                    var section = target.id ? target.id.replace('-container', '') : 'content';
-                    handleLoadError(target, section);
-                }
-            });
-        });
-
-        // Offline detection
-        function updateOnlineStatus() {
-            var notice = document.getElementById('offline-notice');
-            if (notice) {
-                notice.style.transform = navigator.onLine ? 'translateY(-100%)' : 'translateY(0)';
-            }
-        }
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-    </script>
-
-    <script src="/static/js/main.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" defer></script>
+    <script src="/static/js/main.js" defer></script>
 </body>
 </html>

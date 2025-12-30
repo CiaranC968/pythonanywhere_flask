@@ -660,8 +660,8 @@ const HtmxIntegration = {
                 <i class="fas fa-exclamation-triangle text-3xl mb-3" aria-hidden="true"></i>
                 <p class="font-medium">Unable to load ${sectionName}</p>
                 <p class="text-sm mt-1 opacity-75">${message}</p>
-                <button 
-                    onclick="htmx.trigger(this.closest('[hx-get]'), 'load')" 
+                <button
+                    onclick="htmx.trigger(this.closest('[hx-get]'), 'load')"
                     class="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
                     <i class="fas fa-redo mr-2" aria-hidden="true"></i>Retry
                 </button>

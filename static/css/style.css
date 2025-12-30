@@ -15,6 +15,7 @@
    11. High Contrast Mode
    12. Reduced Motion
    13. Print Styles
+   14. Performance Optimizations
    ========================================= */
 
 /* =========================================
@@ -36,8 +37,8 @@
     --color-border: #d8d5cf;            /* Warm border */
     --color-border-light: #e0ddd8;      /* Lighter warm border */
 
-    /* Card backgrounds - soft cream */
-    --color-card-bg: #faf9f7;           /* Slightly lighter than bg for elevation */
+    /* Card backgrounds */
+    --color-card-bg: #faf9f7;
     --color-card-bg-hover: #f5f4f1;
 
     /* Section alternating backgrounds */
@@ -56,7 +57,8 @@
     --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Spacing */
+    /* Dimensions & Spacing */
+    --header-height: 4rem; /* Used for scroll padding */
     --spacing-section: 6rem;
     --spacing-container: 1.5rem;
 
@@ -86,7 +88,7 @@
 
 /* Dark Mode Variables */
 .dark {
-    --color-bg-primary: #0f1419;         /* Slightly blue-tinted dark */
+    --color-bg-primary: #0f1419;
     --color-bg-secondary: #1a1f26;
     --color-bg-tertiary: #252b33;
     --color-text-primary: #f1f3f5;
@@ -118,6 +120,8 @@ html {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
     scroll-behavior: smooth;
+    /* Prevents fixed header from covering anchor targets */
+    scroll-padding-top: var(--header-height);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
@@ -138,7 +142,6 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* Prevent layout shift from images */
 img,
 video {
     max-width: 100%;
@@ -146,7 +149,6 @@ video {
     display: block;
 }
 
-/* Remove default button styles */
 button {
     font: inherit;
     color: inherit;
@@ -155,7 +157,6 @@ button {
     cursor: pointer;
 }
 
-/* Remove default link underlines */
 a {
     color: inherit;
     text-decoration: none;
@@ -165,19 +166,16 @@ a {
 /* =========================================
    3. TYPOGRAPHY
    ========================================= */
-/* Improved text rendering for headers */
 h1, h2, h3, h4, h5, h6 {
     text-wrap: balance;
     line-height: 1.2;
 }
 
-/* Improved paragraph readability */
 p {
     text-wrap: pretty;
     max-width: 70ch;
 }
 
-/* Selection styling */
 ::selection {
     background-color: var(--color-brand-accent);
     color: var(--color-brand-dark);
@@ -208,10 +206,12 @@ p {
     background-color: var(--scrollbar-thumb-hover);
 }
 
-/* Custom scrollbar for specific elements */
+/* Custom scrollbar for Sidebar/Modal */
 .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    /* Prevents background page from scrolling when sidebar reaches end */
+    overscroll-behavior: contain;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -230,7 +230,6 @@ p {
 /* =========================================
    5. ACCESSIBILITY
    ========================================= */
-/* Screen reader only content */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -243,7 +242,6 @@ p {
     border-width: 0;
 }
 
-/* Focus visible styles for keyboard navigation */
 :focus {
     outline: none;
 }
@@ -265,7 +263,6 @@ select:focus-visible,
     outline-offset: 2px;
 }
 
-/* Skip to main content link */
 .skip-to-main {
     position: absolute;
     top: -100%;
@@ -286,7 +283,6 @@ select:focus-visible,
     top: 0;
 }
 
-/* Live region announcements */
 .announce {
     position: absolute;
     width: 1px;
@@ -302,7 +298,6 @@ select:focus-visible,
 /* =========================================
    6. LAYOUT & COMPONENTS
    ========================================= */
-/* Sidebar overlay */
 #sidebar-overlay {
     transition: opacity var(--transition-slow), visibility var(--transition-slow);
 }
@@ -319,7 +314,6 @@ select:focus-visible,
     pointer-events: auto;
 }
 
-/* Navigation link active state */
 .nav-link.active,
 .nav-link[aria-current="page"] {
     background-color: var(--color-bg-tertiary);
@@ -331,7 +325,6 @@ select:focus-visible,
     color: var(--color-brand-accent);
 }
 
-/* Contact cards hover effect */
 .contact-card {
     transition: transform var(--transition-normal),
                 box-shadow var(--transition-normal),
@@ -343,7 +336,6 @@ select:focus-visible,
     box-shadow: var(--shadow-lg);
 }
 
-/* Button hover lift effect */
 .btn-lift {
     transition: transform var(--transition-fast),
                 box-shadow var(--transition-fast);
@@ -361,7 +353,6 @@ select:focus-visible,
 /* =========================================
    7. ANIMATIONS & TRANSITIONS
    ========================================= */
-/* Fade in up animation */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -377,42 +368,30 @@ select:focus-visible,
     animation: fadeInUp 0.5s ease-out forwards;
 }
 
-/* Staggered animation delays */
 .animate-delay-100 { animation-delay: 100ms; }
 .animate-delay-200 { animation-delay: 200ms; }
 .animate-delay-300 { animation-delay: 300ms; }
 .animate-delay-400 { animation-delay: 400ms; }
 .animate-delay-500 { animation-delay: 500ms; }
 
-/* Pulse animation for loading */
 @keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Spin animation for loading spinners */
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .animate-spin {
     animation: spin 1s linear infinite;
 }
 
-/* Smooth color transitions for theme switching */
 .theme-transition,
 .theme-transition *:not(a):not(button):not(.no-transition) {
     transition: background-color var(--transition-fast),
@@ -423,7 +402,6 @@ select:focus-visible,
 /* =========================================
    8. LOADING STATES
    ========================================= */
-/* HTMX loading indicator */
 .htmx-request .htmx-indicator {
     opacity: 1;
 }
@@ -433,7 +411,6 @@ select:focus-visible,
     transition: opacity var(--transition-normal);
 }
 
-/* Skeleton loading placeholder */
 .skeleton {
     background: linear-gradient(
         90deg,
@@ -447,12 +424,8 @@ select:focus-visible,
 }
 
 @keyframes skeleton-loading {
-    0% {
-        background-position: 200% 0;
-    }
-    100% {
-        background-position: -200% 0;
-    }
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 /* =========================================
@@ -491,12 +464,10 @@ select:focus-visible,
 /* =========================================
    10. DARK MODE ENHANCEMENTS
    ========================================= */
-/* Improved image rendering in dark mode */
 .dark img:not([src*=".svg"]) {
     filter: brightness(0.95);
 }
 
-/* Softer shadows in dark mode */
 .dark .shadow-lg {
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3),
                 0 4px 6px -4px rgb(0 0 0 / 0.3);
@@ -510,7 +481,7 @@ select:focus-visible,
 /* =========================================
    11. HIGH CONTRAST MODE SUPPORT
    ========================================= */
-@media (prefers-contrast: high) {
+@media (prefers-contrast: more) {
     :root {
         --color-text-primary: #000000;
         --color-text-secondary: #1a1a1a;
@@ -523,18 +494,15 @@ select:focus-visible,
         --color-border: #ffffff;
     }
 
-    /* Ensure borders are always visible */
     *:not(hr) {
         border-color: currentColor !important;
     }
 
-    /* More prominent focus indicators */
     :focus-visible {
         outline-width: 3px;
         outline-offset: 3px;
     }
 
-    /* Ensure sufficient contrast for badges */
     .badge,
     .tag {
         border: 2px solid currentColor;
@@ -545,9 +513,7 @@ select:focus-visible,
    12. REDUCED MOTION SUPPORT
    ========================================= */
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
@@ -569,7 +535,6 @@ select:focus-visible,
    13. PRINT STYLES
    ========================================= */
 @media print {
-    /* Hide non-essential elements */
     #sidebar,
     #menu-toggle,
     #theme-toggle-fixed,
@@ -581,7 +546,6 @@ select:focus-visible,
         display: none !important;
     }
 
-    /* Reset layout */
     body {
         display: block !important;
     }
@@ -593,20 +557,17 @@ select:focus-visible,
         margin: 0 !important;
     }
 
-    /* Remove backgrounds */
-    body,
-    section {
+    body, section {
         background: white !important;
         color: black !important;
     }
 
-    /* Improve link visibility */
     a {
         color: #111827 !important;
         text-decoration: underline !important;
     }
 
-    /* Show URLs after external links */
+    /* Improved: Only show URLs for external links, not internal hashes */
     a[href^="http"]:not([href*="ciaranc.dev"])::after {
         content: " (" attr(href) ")";
         font-size: 0.75em;
@@ -614,29 +575,20 @@ select:focus-visible,
         word-break: break-all;
     }
 
-    /* Prevent orphans and widows */
     p, h2, h3 {
         orphans: 3;
         widows: 3;
     }
 
-    /* Prevent page breaks inside elements */
-    section,
-    .project-card,
-    .experience-card,
-    .education-card {
+    section, .project-card, .experience-card, .education-card {
         page-break-inside: avoid;
         break-inside: avoid;
     }
 
-    /* Force page breaks before major sections */
-    #experience,
-    #projects,
-    #education {
+    #experience, #projects, #education {
         page-break-before: always;
     }
 
-    /* Ensure images print correctly */
     img {
         max-width: 100% !important;
         page-break-inside: avoid;
@@ -646,7 +598,6 @@ select:focus-visible,
 /* =========================================
    14. PERFORMANCE OPTIMIZATIONS
    ========================================= */
-/* Use GPU acceleration for frequently animated elements */
 #sidebar,
 #modalPanel,
 #scrollTopBtn,
@@ -655,12 +606,15 @@ select:focus-visible,
     will-change: transform;
 }
 
-/* Contain layout for complex components */
+/* Updated: content-visibility for better rendering performance on long pages */
 section {
-    contain: layout style;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 1000px; /* Approximation prevents scroll bar jump */
 }
 
-/* Optimize font loading */
+/* Optimized font loading fallback */
 @font-face {
     font-display: swap;
+    font-family: 'Inter';
+    src: local('Inter');
 }
