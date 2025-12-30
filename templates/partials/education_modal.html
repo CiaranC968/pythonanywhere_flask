@@ -4,13 +4,13 @@
     <!-- Header Section -->
     <div class="relative mb-10">
         <!-- Decorative background gradient -->
-        <div class="absolute -inset-4 bg-gradient-to-br from-brand-accent/10 via-transparent to-amber-500/5 rounded-3xl -z-10"></div>
+        <div class="absolute -inset-4 bg-linear-to-br from-brand-accent/10 via-transparent to-amber-500/5 rounded-3xl -z-10" aria-hidden="true"></div>
 
         <div class="flex flex-col md:flex-row gap-6 items-start">
             <!-- Logo -->
             <div class="w-20 h-20 rounded-2xl bg-white dark:bg-gray-800 p-3 flex items-center justify-center shadow-lg border border-gray-100 dark:border-gray-700 shrink-0 ring-4 ring-brand-accent/10">
                 <img src="{{ url_for('static', filename='images/' + edu.logo) }}"
-                     alt="{{ edu.university }} logo"
+                     alt=""
                      class="max-h-full max-w-full object-contain">
             </div>
 
@@ -30,13 +30,13 @@
                     <!-- Year Badge -->
                     <div class="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 dark:border-gray-700">
                         <i class="fas fa-calendar-alt text-xs" aria-hidden="true"></i>
-                        {{ edu.year }}
+                        <time datetime="{{ edu.year }}">{{ edu.year }}</time>
                     </div>
 
                     {% if edu.status %}
                     <!-- Status Badge -->
                     <div class="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-4 py-2 rounded-xl text-sm font-bold border border-green-200 dark:border-green-800">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true"></span>
                         {{ edu.status }}
                     </div>
                     {% endif %}
@@ -46,17 +46,17 @@
     </div>
 
     <!-- Divider -->
-    <div class="flex items-center gap-4 mb-10">
-        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
-        <i class="fas fa-book-open text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
-        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
+    <div class="flex items-center gap-4 mb-10" aria-hidden="true">
+        <div class="h-px flex-1 bg-linear-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
+        <i class="fas fa-book-open text-gray-300 dark:text-gray-600"></i>
+        <div class="h-px flex-1 bg-linear-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
     </div>
 
     <!-- Modules Section -->
     {% if edu.stages %}
     <div class="space-y-12">
         {% for stage_name, modules in edu.stages.items() %}
-        <div>
+        <section>
             <!-- Stage Header -->
             <div class="flex items-center gap-3 mb-6">
                 <div class="w-10 h-10 rounded-xl bg-brand-accent/10 dark:bg-brand-accent/5 flex items-center justify-center">
@@ -64,14 +64,14 @@
                 </div>
                 <div>
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ stage_name }}</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ modules|length }} module{% if modules|length != 1 %}s{% endif %}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ modules|length }} module{{ 's' if modules|length != 1 else '' }}</p>
                 </div>
             </div>
 
             <!-- Module Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {% for module in modules %}
-                <div class="group relative bg-white dark:bg-gray-800/50 p-5 rounded-2xl border border-gray-100 dark:border-gray-700/50 hover:border-brand-accent/50 dark:hover:border-brand-accent/30 transition-all duration-300 hover:shadow-lg hover:shadow-brand-accent/5 hover:-translate-y-0.5">
+                <article class="group relative bg-white dark:bg-gray-800/50 p-5 rounded-2xl border border-gray-100 dark:border-gray-700/50 hover:border-brand-accent/50 dark:hover:border-brand-accent/30 transition-all duration-300 hover:shadow-lg hover:shadow-brand-accent/5 hover:-translate-y-0.5">
                     <!-- Module Code -->
                     <div class="flex items-start justify-between gap-3 mb-3">
                         <span class="inline-flex items-center gap-1.5 text-[11px] font-bold bg-gray-900 dark:bg-brand-accent text-brand-accent dark:text-gray-900 px-2.5 py-1 rounded-lg uppercase tracking-wider">
@@ -94,23 +94,23 @@
                     <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
                         <span class="text-xs text-gray-400 dark:text-gray-500">
                             <i class="fas fa-star text-[10px] mr-1" aria-hidden="true"></i>
-                            {{ module.credits }} credits
+                            {{ module.credits }} credit{{ 's' if module.credits != 1 else '' }}
                         </span>
                     </div>
                     {% endif %}
 
                     <!-- Hover accent line -->
-                    <div class="absolute bottom-0 left-4 right-4 h-0.5 bg-brand-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full"></div>
-                </div>
+                    <div class="absolute bottom-0 left-4 right-4 h-0.5 bg-brand-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full" aria-hidden="true"></div>
+                </article>
                 {% endfor %}
             </div>
-        </div>
+        </section>
         {% endfor %}
     </div>
 
     <!-- Summary Stats -->
-    {% if edu.total_credits or edu.gpa %}
-    <div class="mt-12 p-6 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 rounded-2xl border border-gray-200/50 dark:border-gray-700/30">
+    {% if edu.total_credits or edu.gpa or edu.modules_completed %}
+    <div class="mt-12 p-6 bg-linear-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 rounded-2xl border border-gray-200/50 dark:border-gray-700/30">
         <div class="flex flex-wrap justify-center gap-8">
             {% if edu.total_credits %}
             <div class="text-center">
@@ -136,10 +136,10 @@
 
     {% else %}
     <!-- Empty State -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/30 dark:to-gray-900/20 p-12 rounded-3xl border border-gray-200/50 dark:border-gray-700/30 text-center">
+    <div class="relative overflow-hidden bg-linear-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/30 dark:to-gray-900/20 p-12 rounded-3xl border border-gray-200/50 dark:border-gray-700/30 text-center">
         <!-- Decorative circles -->
-        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div class="absolute bottom-0 left-0 w-24 h-24 bg-brand-accent/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full -translate-y-1/2 translate-x-1/2" aria-hidden="true"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-brand-accent/5 rounded-full translate-y-1/2 -translate-x-1/2" aria-hidden="true"></div>
 
         <div class="relative">
             <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-brand-accent/10 flex items-center justify-center">
@@ -150,8 +150,8 @@
                 Complete curriculum details for this qualification are available upon request.
             </p>
             <a href="#contact"
-               onclick="closeModal()"
-               class="inline-flex items-center gap-2 mt-6 px-5 py-2.5 bg-brand-accent text-brand-dark font-bold text-sm rounded-xl hover:bg-brand-hover transition-colors">
+               class="inline-flex items-center gap-2 mt-6 px-5 py-2.5 bg-brand-accent text-brand-dark font-bold text-sm rounded-xl hover:opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2"
+               data-close-modal>
                 <i class="fas fa-envelope" aria-hidden="true"></i>
                 Request Details
             </a>

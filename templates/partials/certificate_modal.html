@@ -1,25 +1,68 @@
-<div class="text-center">
-    <div class="mb-6">
-        <img src="{{ cert.image_path }}" alt="{{ cert.title }}"
-             class="h-48 mx-auto rounded-2xl shadow-xl border-4 border-white dark:border-gray-700">
-    </div>
+<!-- partials/certificate_modal.html -->
+<div class="p-2 md:p-6">
+    <div class="text-center">
+        {% if cert.image_path %}
+        <div class="mb-6">
+            <img src="{{ cert.image_path }}"
+                 alt="Certificate: {{ cert.title }}"
+                 class="h-48 mx-auto rounded-2xl shadow-xl border-4 border-white dark:border-gray-700">
+        </div>
+        {% endif %}
 
-    <h3 class="text-3xl font-black dark:text-white mb-2">{{ cert.title }}</h3>
-    <p class="text-brand-accent font-bold uppercase tracking-widest text-sm mb-6">
-        {{ cert.issuer }} • {{ cert.date }}
-    </p>
-
-    <div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-3xl text-left mb-8">
-        <h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Event Description</h4>
-        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-            {{ cert.desc }}
+        <h2 id="modal-title" class="text-3xl font-black text-gray-900 dark:text-white mb-2">
+            {{ cert.title }}
+        </h2>
+        <p class="text-brand-accent font-bold uppercase tracking-widest text-sm mb-6">
+            {{ cert.issuer }} · <time datetime="{{ cert.date }}">{{ cert.date }}</time>
         </p>
-    </div>
 
-    {% if cert.link and cert.link != "#" %}
-    <a href="{{ cert.link }}" target="_blank"
-       class="inline-flex items-center gap-2 bg-brand-dark text-white px-8 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all">
-        <i class="fas fa-external-link-alt"></i> Verify Credential
-    </a>
-    {% endif %}
+        {% if cert.desc %}
+        <div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-3xl text-left mb-8 border border-gray-100 dark:border-gray-700/50">
+            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">
+                <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>Description
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                {{ cert.desc }}
+            </p>
+        </div>
+        {% endif %}
+
+        {% if cert.skills %}
+        <div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-3xl text-left mb-8 border border-gray-100 dark:border-gray-700/50">
+            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">
+                <i class="fas fa-tags mr-2" aria-hidden="true"></i>Skills
+            </h3>
+            <div class="flex flex-wrap gap-2">
+                {% for skill in cert.skills %}
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-lg border border-brand-accent/20">
+                    {{ skill }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if cert.credential_id %}
+        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl text-left mb-8 border border-gray-100 dark:border-gray-700/50">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-widest text-gray-400">
+                    <i class="fas fa-fingerprint mr-2" aria-hidden="true"></i>Credential ID
+                </span>
+                <code class="text-sm font-mono text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg">
+                    {{ cert.credential_id }}
+                </code>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if cert.link and cert.link != "#" %}
+        <a href="{{ cert.link }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 bg-brand-dark dark:bg-white text-white dark:text-brand-dark px-8 py-4 rounded-2xl font-bold hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+            <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+            Verify Credential
+        </a>
+        {% endif %}
+    </div>
 </div>

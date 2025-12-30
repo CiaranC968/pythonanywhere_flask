@@ -168,6 +168,54 @@ def fragment_certificate_modal(cert_id):
     return render_template("partials/certificate_modal.html", cert=cert)
 
 
+# --- Contact Route (NEW) ---
+@app.route("/contact", methods=['POST'])
+def contact():
+    """
+    Handle contact form submissions via HTMX.
+    In a production app, you would send an email here using Flask-Mail.
+    """
+    name = request.form.get('name')
+    email = request.form.get('email')
+    subject = request.form.get('subject')
+    message = request.form.get('message')
+
+    # Basic Validation
+    if not name or not email or not message:
+        return f"""
+        <div class="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-800 dark:text-red-300 flex items-center gap-3">
+            <i class="fas fa-exclamation-circle text-xl"></i>
+            <div>
+                <p class="font-bold">Error</p>
+                <p class="text-sm">Please fill out all required fields.</p>
+            </div>
+        </div>
+        """, 200 # Return 200 so HTMX renders the error HTML
+
+    # LOGGING: This simulates sending the email. Check your terminal!
+    app.logger.info(f"----- NEW MESSAGE -----")
+    app.logger.info(f"From: {name} <{email}>")
+    app.logger.info(f"Subject: {subject}")
+    app.logger.info(f"Message: {message}")
+    app.logger.info(f"-----------------------")
+
+    # Return HTML Fragment for Success Message
+    # This replaces the #form-response div in your HTML
+    return f"""
+    <div class="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl text-green-800 dark:text-green-300 flex items-center gap-3 animate-fade-in-up">
+        <i class="fas fa-check-circle text-xl"></i>
+        <div>
+            <p class="font-bold">Message Sent!</p>
+            <p class="text-sm">Thanks {name}, I'll get back to you shortly.</p>
+        </div>
+    </div>
+    <script>
+        // Clear the form fields after successful submission
+        document.querySelector('form').reset();
+    </script>
+    """
+
+
 # --- CV Routes ---
 @app.route("/fragment/cv")
 def fragment_cv():
@@ -234,8 +282,6 @@ def validate_data():
 if __name__ == "__main__":
     # Development server configuration
     app.run(
-        host="0.0.0.0",
         port=5000,
         debug=True,
-        use_reloader=True
     )

@@ -5,68 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Portfolio of Ciaran Cairns, a Software Developer specialising in Python, Flask, and Web Development.">
     <meta name="author" content="Ciaran Cairns">
-    <meta name="keywords" content="software developer, python, flask, web development, portfolio, Ciaran cairns">
-    <meta name="theme-color" content="#facc15" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
+    <title>Ciaran Cairns | Software Developer</title>
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ciaranc.dev">
     <meta property="og:title" content="Ciaran Cairns | Software Developer">
     <meta property="og:description" content="Final-year Computing & IT student specialising in Python, Flask, and full-stack development.">
-    <meta property="og:image" content="https://ciaranc.dev/static/images/og-image.png">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Ciaran Cairns | Software Developer">
-    <meta name="twitter:description" content="Final-year Computing & IT student specialising in Python, Flask, and full-stack development.">
-    <meta name="twitter:image" content="https://ciaranc.dev/static/images/og-image.png">
-
-    <title>Ciaran Cairns | Software Developer</title>
-    <link rel="canonical" href="https://ciaranc.dev">
+    <meta property="og:image" content="/static/images/og-image.png">
 
     <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
     <link rel="manifest" href="/static/site.webmanifest">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link rel="preload" href="/static/js/main.js" as="script">
-    <link rel="preload" href="/static/css/style.css" as="style">
-    <link rel="preload" href="/static/images/about.png" as="image">
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        brand: { dark: '#111827', accent: '#facc15', hover: '#f59e0b' },
-                        warm: { 50: '#fafaf8', 100: '#f5f4f1', 200: '#e8e6e1', 300: '#d5d2cc', 400: '#a8a49c', 500: '#7a756c', 600: '#5c574f', 700: '#45413a', 800: '#2d2a25', 900: '#1a1815' }
-                    }
-                }
-            }
-        };
-    </script>
+    <link rel="stylesheet" href="/static/css/output.css">
 
-    <link rel="stylesheet" href="/static/css/style.css">
-
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Ciaran Cairns",
-        "jobTitle": "Software Developer",
-        "url": "https://ciaranc.dev",
-        "sameAs": ["https://github.com/CiaranC968", "https://www.linkedin.com/in/ciarancairns"],
-        "knowsAbout": ["Python", "Flask", "Web Development", "JavaScript", "SQL"],
-        "alumniOf": { "@type": "CollegeOrUniversity", "name": "The Open University" }
-    }
-    </script>
+    <style>
+        /* Section watermark icons */
+        .section-watermark {
+            position: absolute;
+            font-size: clamp(12rem, 25vw, 20rem);
+            pointer-events: none;
+            z-index: 0;
+            right: 2rem;
+            bottom: 2rem;
+            color: rgba(0, 0, 0, 0.08);
+        }
+        .dark .section-watermark {
+            color: rgba(255, 255, 255, 0.05);
+        }
+    </style>
 
     <script>
         (function() {
@@ -86,21 +58,19 @@
     </noscript>
 </head>
 
-<body class="bg-warm-100 text-warm-800 dark:bg-gray-900 dark:text-gray-200 antialiased flex flex-col md:flex-row min-h-[100dvh]">
+<body class="bg-warm-100 text-warm-800 dark:bg-gray-900 dark:text-gray-200 antialiased flex flex-col md:flex-row min-h-dvh">
 
-    <a href="#main-content" class="skip-to-main">Skip to main content</a>
-
-    <div id="offline-notice" class="fixed top-0 left-0 right-0 bg-amber-500 text-amber-900 text-center py-2 px-4 text-sm font-medium z-[200] transform -translate-y-full transition-transform duration-300 will-change-transform" role="alert" aria-live="polite">
+    <div id="offline-notice" class="fixed top-0 left-0 right-0 bg-amber-500 text-amber-900 text-center py-2 px-4 text-sm font-medium z-200 transform -translate-y-full transition-transform duration-300 will-change-transform" role="alert" aria-live="polite">
         <i class="fas fa-wifi-slash mr-2" aria-hidden="true"></i> You're offline. Some content may not load.
     </div>
 
-    <div class="fixed top-6 right-6 z-[100] hidden md:block">
+    <div class="fixed top-6 right-6 z-100 hidden md:block">
         <label class="theme-toggle-label relative inline-flex items-center cursor-pointer hover:scale-105 transition-transform focus-within:ring-2 focus-within:ring-brand-accent focus-within:ring-offset-2 rounded-full">
             <input type="checkbox" id="theme-toggle-fixed" class="sr-only peer" aria-label="Toggle dark mode">
             <div class="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-brand-accent transition-colors duration-300 shadow-inner"></div>
             <div class="absolute top-1 left-1 bg-white w-6 h-6 rounded-full peer-checked:translate-x-8 transition-transform duration-300 flex items-center justify-center shadow-md">
-                <i class="fas fa-sun text-xs text-orange-500 dark:hidden" aria-hidden="true"></i>
-                <i class="fas fa-moon text-xs text-indigo-600 hidden dark:block" aria-hidden="true"></i>
+                <i class="fas fa-sun text-xs text-orange-500 sun-icon" aria-hidden="true"></i>
+                <i class="fas fa-moon text-xs text-indigo-600 moon-icon" aria-hidden="true"></i>
             </div>
         </label>
     </div>
@@ -109,8 +79,8 @@
         <span class="font-bold text-lg tracking-tight text-warm-900 dark:text-white">Ciaran Cairns</span>
         <div class="flex items-center gap-4">
             <button id="mobile-theme-btn" aria-label="Toggle dark mode" class="text-warm-600 dark:text-gray-300 hover:text-brand-accent transition-colors p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent">
-                <i class="fas fa-sun dark:hidden text-lg" aria-hidden="true"></i>
-                <i class="fas fa-moon hidden dark:inline text-lg" aria-hidden="true"></i>
+                <i class="fas fa-sun text-lg sun-icon" aria-hidden="true"></i>
+                <i class="fas fa-moon text-lg moon-icon" aria-hidden="true"></i>
             </button>
             <button id="menu-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar" class="text-brand-accent p-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent">
                 <i class="fas fa-bars text-2xl" aria-hidden="true"></i>
@@ -120,63 +90,59 @@
 
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-45 hidden backdrop-blur-sm md:hidden" aria-hidden="true"></div>
 
-    <aside id="sidebar" aria-label="Main navigation" class="fixed inset-y-0 left-0 z-50 w-72 bg-warm-50 dark:bg-[#0b111e] border-r border-warm-200 dark:border-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:relative md:sticky md:top-0 h-[100dvh] overflow-y-auto flex flex-col shadow-2xl md:shadow-none custom-scrollbar will-change-transform">
+    <aside id="sidebar" aria-label="Main navigation" class="fixed inset-y-0 left-0 z-50 w-72 bg-warm-50 dark:bg-[#0b111e] border-r border-warm-200 dark:border-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:sticky md:top-0 h-dvh overflow-y-auto flex flex-col shadow-2xl md:shadow-none custom-scrollbar will-change-transform">
         <div class="p-8 pb-4 text-center">
             <div class="relative inline-block">
                 <img src="/static/images/about.png"
-                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Ciaran+Cairns&background=facc15&color=111827&size=128'"
                      class="w-32 h-32 mx-auto mb-4 rounded-2xl border-4 border-warm-100 dark:border-gray-800 object-cover shadow-lg"
-                     alt="Ciaran Cairns profile photo"
-                     width="1024" height="1024"
-                     loading="eager"
-                     decoding="async"
-                     fetchpriority="high">
+                     alt="Ciaran Cairns profile photo">
                 <span class="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full" role="img" aria-label="Available for work" title="Available for work"></span>
             </div>
             <h2 class="text-xl font-bold tracking-tight text-warm-900 dark:text-white">Ciaran Cairns</h2>
             <p class="text-xs text-warm-500 dark:text-gray-400 uppercase tracking-widest mt-1 font-medium">Software Developer</p>
         </div>
 
-        <nav class="px-4 py-4 space-y-1 flex-grow" aria-label="Main navigation">
-            <a href="#about" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+        <nav class="px-4 py-4 space-y-1 grow" aria-label="Main navigation">
+            <a href="#about" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group">
                 <span class="w-6 text-center"><i class="fas fa-user group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> About
             </a>
-            <a href="#experience" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+            <a href="#experience" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group">
                 <span class="w-6 text-center"><i class="fas fa-briefcase group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Experience
             </a>
-            <a href="#skills" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+            <a href="#skills" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group">
                 <span class="w-6 text-center"><i class="fas fa-code group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Tech Stack
             </a>
-            <a href="#projects" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+            <a href="#projects" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group">
                 <span class="w-6 text-center"><i class="fas fa-rocket group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Projects
             </a>
-            <a href="#education" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+            <a href="#education" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group">
                 <span class="w-6 text-center"><i class="fas fa-graduation-cap group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Education
             </a>
-            <a href="#certificates" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+            <a href="#certificates" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group">
                 <span class="w-6 text-center"><i class="fas fa-award group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Certifications
             </a>
-            <a href="#contact" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group focus:outline-none focus:ring-2 focus:ring-brand-accent">
+            <a href="#contact" class="nav-link flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-warm-600 dark:text-gray-400 hover:bg-warm-100 dark:hover:bg-gray-800 hover:text-brand-accent transition-all group">
                 <span class="w-6 text-center"><i class="fas fa-envelope group-hover:text-brand-accent transition-colors" aria-hidden="true"></i></span> Contact
             </a>
         </nav>
 
         <div class="p-6 border-t border-warm-200 dark:border-gray-800">
-            <p class="text-xs text-warm-500 dark:text-gray-400 text-center">&copy; <span id="year">2025</span> Ciaran Cairns</p>
+            <p class="text-xs text-warm-500 dark:text-gray-400 text-center">&copy; <span class="current-year">2025</span> Ciaran Cairns</p>
         </div>
     </aside>
 
     <main id="main-content" class="flex-1 min-w-0 md:pt-0 pt-16 transition-all duration-300" tabindex="-1">
 
-        <section id="about" class="min-h-[100dvh] flex items-center px-6 lg:px-12 bg-warm-50 dark:bg-gray-800 border-b border-warm-200 dark:border-gray-700 scroll-mt-16">
-            <div class="w-full max-w-7xl mx-auto py-12 md:py-0">
+        <section id="about" class="relative min-h-dvh flex items-center px-6 lg:px-12 bg-warm-50 dark:bg-gray-800 border-b border-warm-200 dark:border-gray-700 scroll-mt-16 overflow-hidden">
+            <i class="section-watermark fas fa-terminal text-warm-400 dark:text-gray-600" aria-hidden="true"></i>
+            <div class="w-full max-w-7xl mx-auto py-12 md:py-0 relative z-10">
                 <div class="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold mb-6 border border-amber-200 dark:border-amber-800">
                     <span class="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true"></span>
                     <span>Available for Work</span>
                 </div>
                 <h1 class="text-5xl sm:text-7xl lg:text-8xl font-black mb-6 tracking-tighter dark:text-white leading-[1.1]">
                     Ciaran Cairns<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-red-600">Software Developer.</span>
+                    <span class="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-red-600">Software Developer.</span>
                 </h1>
                 <p class="text-lg md:text-xl text-warm-600 dark:text-gray-300 mb-8 max-w-2xl leading-relaxed">
                     I'm a final-year Computing & IT student at the Open University specialising in building robust, user-centric software solutions.
@@ -186,257 +152,186 @@
                         hx-get="/fragment/cv"
                         hx-target="#modalContent"
                         hx-swap="innerHTML"
-                        aria-label="View my resume"
-                        class="js-only btn-lift bg-brand-dark text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-gray-800 flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+                        class="js-only btn-lift bg-brand-dark text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-gray-800 flex items-center gap-3">
                         <i class="fas fa-file-pdf text-brand-accent" aria-hidden="true"></i> View Resume
                     </button>
                     <noscript>
-                        <a href="/static/docs/Ciaran_Cairns_CV.pdf"
-                           class="btn-lift bg-brand-dark text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-gray-800 flex items-center gap-3"
-                           target="_blank" rel="noopener noreferrer">
-                            <i class="fas fa-file-pdf text-brand-accent" aria-hidden="true"></i> Download Resume
+                        <a href="/static/docs/Ciaran_Cairns_CV.pdf" class="btn-lift bg-brand-dark text-white font-bold py-3.5 px-8 rounded-xl" target="_blank">
+                            <i class="fas fa-file-pdf text-brand-accent"></i> Download Resume
                         </a>
                     </noscript>
-                    <a href="#contact"
-                        class="btn-lift bg-brand-accent text-brand-dark font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-brand-hover flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
+                    <a href="#contact" class="btn-lift bg-brand-accent text-brand-dark font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-brand-hover flex items-center gap-3">
                         <i class="fas fa-paper-plane" aria-hidden="true"></i> Get in Touch
                     </a>
                 </div>
             </div>
         </section>
 
-        <section id="experience" class="bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16" aria-labelledby="experience-heading">
-            <div class="w-full max-w-7xl mx-auto">
-                <h2 id="experience-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+        <section id="experience" class="relative bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16 overflow-hidden">
+            <i class="section-watermark fas fa-briefcase text-warm-400 dark:text-gray-600" aria-hidden="true"></i>
+            <div class="w-full max-w-7xl mx-auto relative z-10">
+                <h2 class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
                     <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Experience
                 </h2>
                 <div id="experience-container"
-                     aria-live="polite"
-                     aria-busy="false"
                      hx-get="/fragment/experience"
                      hx-trigger="intersect once threshold:0.1"
-                     hx-indicator="#experience-loader"
-                     class="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-
-                    <div id="experience-loader" class="htmx-indicator col-span-full text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-100 dark:bg-gray-900">
-                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
-                        <span class="sr-only">Loading experience...</span>
+                     class="grid grid-cols-1 md:grid-cols-2 gap-8 relative min-h-64">
+                     <div class="htmx-indicator col-span-full text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent"></i>
                     </div>
-
-                    <div class="skeleton h-64 js-only" aria-hidden="true"></div>
-                    <div class="skeleton h-64 js-only" aria-hidden="true"></div>
                 </div>
-                <noscript>
-                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view experience details, or <a href="/fragment/experience" class="text-brand-accent underline">view the raw content</a>.</p>
-                </noscript>
+                <noscript><p>Enable JS to view experience.</p></noscript>
             </div>
         </section>
 
-        <section id="skills" class="bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16" aria-labelledby="skills-heading">
-            <div class="w-full max-w-7xl mx-auto">
-                <h2 id="skills-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+        <section id="skills" class="relative bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16 overflow-hidden">
+            <i class="section-watermark fas fa-code text-warm-400 dark:text-gray-600" aria-hidden="true"></i>
+            <div class="w-full max-w-7xl mx-auto relative z-10">
+                <h2 class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
                     <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Tech Stack
                 </h2>
                 <div id="skills-container"
-                     aria-live="polite"
-                     aria-busy="false"
                      hx-get="/fragment/skills"
                      hx-trigger="intersect once threshold:0.1"
-                     hx-indicator="#skills-loader"
-                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
-
-                     <div id="skills-loader" class="htmx-indicator col-span-full text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-50 dark:bg-gray-800">
-                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
-                        <span class="sr-only">Loading skills...</span>
+                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative min-h-64">
+                     <div class="htmx-indicator col-span-full text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent"></i>
                     </div>
-
-                    <div class="skeleton h-40 js-only" aria-hidden="true"></div>
-                    <div class="skeleton h-40 js-only" aria-hidden="true"></div>
-                    <div class="skeleton h-40 js-only" aria-hidden="true"></div>
                 </div>
-                <noscript>
-                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view skills, or <a href="/fragment/skills" class="text-brand-accent underline">view the raw content</a>.</p>
-                </noscript>
             </div>
         </section>
 
-        <section id="projects" class="bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16" aria-labelledby="projects-heading">
-            <div class="w-full max-w-7xl mx-auto">
-                <h2 id="projects-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+        <section id="projects" class="relative bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16 overflow-hidden">
+            <i class="section-watermark fas fa-rocket text-warm-400 dark:text-gray-600" aria-hidden="true"></i>
+            <div class="w-full max-w-7xl mx-auto relative z-10">
+                <h2 class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
                     <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Featured Projects
                 </h2>
                 <div id="projects-container"
-                     aria-live="polite"
-                     aria-busy="false"
                      hx-get="/fragment/projects"
                      hx-trigger="intersect once threshold:0.1"
-                     hx-indicator="#projects-loader"
-                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
-
-                    <div id="projects-loader" class="htmx-indicator col-span-full text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-100 dark:bg-gray-900">
-                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
-                        <span class="sr-only">Loading projects...</span>
+                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative min-h-96">
+                     <div class="htmx-indicator col-span-full text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent"></i>
                     </div>
-
-                    <div class="skeleton h-80 js-only" aria-hidden="true"></div>
-                    <div class="skeleton h-80 js-only" aria-hidden="true"></div>
-                    <div class="skeleton h-80 js-only" aria-hidden="true"></div>
                 </div>
-                <noscript>
-                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view projects, or <a href="/fragment/projects" class="text-brand-accent underline">view the raw content</a>.</p>
-                </noscript>
             </div>
         </section>
 
-        <section id="education" class="bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16" aria-labelledby="education-heading">
-            <div class="w-full max-w-7xl mx-auto">
-                <h2 id="education-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+        <section id="education" class="relative bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16 overflow-hidden">
+            <i class="section-watermark fas fa-graduation-cap text-warm-400 dark:text-gray-600" aria-hidden="true"></i>
+            <div class="w-full max-w-7xl mx-auto relative z-10">
+                <h2 class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
                     <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Education
                 </h2>
                 <div id="education-container"
-                     aria-live="polite"
-                     aria-busy="false"
                      hx-get="/fragment/education"
                      hx-trigger="intersect once threshold:0.1"
-                     hx-indicator="#education-loader"
-                     class="relative min-h-[12rem]">
-
-                    <div id="education-loader" class="htmx-indicator text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-50 dark:bg-gray-800">
-                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
-                        <span class="sr-only">Loading education...</span>
+                     class="relative min-h-100">
+                     <div class="htmx-indicator text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent"></i>
                     </div>
-
-                    <div class="skeleton h-48 js-only" aria-hidden="true"></div>
                 </div>
-                <noscript>
-                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view education details, or <a href="/fragment/education" class="text-brand-accent underline">view the raw content</a>.</p>
-                </noscript>
             </div>
         </section>
 
-        <section id="certificates" class="bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16" aria-labelledby="certificates-heading">
-            <div class="w-full max-w-7xl mx-auto">
-                <h2 id="certificates-heading" class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
+        <section id="certificates" class="relative bg-warm-100 dark:bg-gray-900 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-800 scroll-mt-16 overflow-hidden">
+            <i class="section-watermark fas fa-award text-warm-400 dark:text-gray-600" aria-hidden="true"></i>
+            <div class="w-full max-w-7xl mx-auto relative z-10">
+                <h2 class="text-3xl md:text-4xl font-bold mb-12 dark:text-white flex items-center gap-3">
                     <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Certifications
                 </h2>
                 <div id="certificates-container"
-                     aria-live="polite"
-                     aria-busy="false"
                      hx-get="/fragment/certificates"
                      hx-trigger="intersect once threshold:0.1"
-                     hx-indicator="#certificates-loader"
-                     class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-
-                    <div id="certificates-loader" class="htmx-indicator col-span-full text-center py-12 absolute inset-0 z-10 flex items-center justify-center bg-warm-100 dark:bg-gray-900">
-                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent" aria-hidden="true"></i>
-                        <span class="sr-only">Loading certifications...</span>
+                     class="grid grid-cols-1 md:grid-cols-3 gap-6 relative min-h-88">
+                     <div class="htmx-indicator col-span-full text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl text-brand-accent"></i>
                     </div>
-
-                    <div class="skeleton h-48 js-only" aria-hidden="true"></div>
-                    <div class="skeleton h-48 js-only" aria-hidden="true"></div>
-                    <div class="skeleton h-48 js-only" aria-hidden="true"></div>
                 </div>
-                <noscript>
-                    <p class="text-warm-600 dark:text-gray-400">Please enable JavaScript to view certifications, or <a href="/fragment/certificates" class="text-brand-accent underline">view the raw content</a>.</p>
-                </noscript>
             </div>
         </section>
 
-        <section id="contact" class="bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16" aria-labelledby="contact-heading">
-            <div class="w-full max-w-7xl mx-auto">
+        <section id="contact" class="relative bg-warm-50 dark:bg-gray-800 py-24 px-6 lg:px-12 border-t border-warm-200 dark:border-gray-700 scroll-mt-16 overflow-hidden">
+            <i class="section-watermark fas fa-envelope text-warm-400 dark:text-gray-600" aria-hidden="true"></i>
+            <div class="w-full max-w-7xl mx-auto relative z-10">
                 <div class="grid lg:grid-cols-2 gap-12 lg:gap-24 items-start">
-
                     <div>
                         <div class="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold mb-6 border border-green-200 dark:border-green-800">
-                            <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" aria-hidden="true"></span>
+                            <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
                             <span>Available for new projects</span>
                         </div>
-
-                        <h2 id="contact-heading" class="text-3xl md:text-4xl font-bold mb-6 dark:text-white flex items-center gap-3">
-                            <span class="w-12 h-1 bg-brand-accent rounded-full" aria-hidden="true"></span> Let's Connect
+                        <h2 class="text-3xl md:text-4xl font-bold mb-6 dark:text-white flex items-center gap-3">
+                            <span class="w-12 h-1 bg-brand-accent rounded-full"></span> Let's Connect
                         </h2>
-
                         <p class="text-lg text-warm-600 dark:text-gray-300 mb-8 leading-relaxed">
-                            I'm currently looking for <strong>full-time roles</strong> or <strong>Internship opportunities</strong>.
-                            Whether you have a question, a project idea, or just want to say hi, I'll try my best to get back to you!
+                            I'm currently looking for <strong>full-time roles</strong> or <strong>internships</strong>.
                         </p>
 
                         <div class="mb-8">
                             <label class="block text-xs font-bold uppercase text-warm-500 dark:text-gray-400 tracking-wider mb-2">Direct Email</label>
                             <div class="flex items-center gap-3 p-2 bg-white dark:bg-gray-900 border border-warm-200 dark:border-gray-700 rounded-xl shadow-sm">
                                 <div class="w-10 h-10 bg-brand-accent/10 rounded-lg flex items-center justify-center text-brand-accent">
-                                    <i class="fas fa-envelope" aria-hidden="true"></i>
+                                    <i class="fas fa-envelope"></i>
                                 </div>
-                                <span class="flex-grow font-mono text-sm text-warm-800 dark:text-gray-200 truncate">ciarancairns@googlemail.com</span>
-                                <button onclick="copyToClipboard(this, 'ciarancairns@googlemail.com')"
-                                        class="p-2 text-warm-500 hover:text-brand-accent hover:bg-warm-50 dark:hover:bg-gray-800 rounded-lg transition-all"
-                                        aria-label="Copy email address">
+                                <span class="grow font-mono text-sm text-warm-800 dark:text-gray-200 truncate">ciarancairns@googlemail.com</span>
+                                <button class="copy-btn p-2 text-warm-500 hover:text-brand-accent transition-all"
+                                        data-email="ciarancairns@googlemail.com" aria-label="Copy email">
                                     <i class="far fa-copy text-lg"></i>
                                 </button>
                             </div>
                         </div>
 
                         <div class="flex gap-4">
-                            <a href="https://www.linkedin.com/in/ciarancairns" target="_blank" rel="noopener noreferrer"
-                               class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-warm-200 dark:border-gray-700 rounded-xl hover:border-brand-accent dark:hover:border-brand-accent group transition-all shadow-sm">
-                                <i class="fab fa-linkedin text-xl text-warm-400 group-hover:text-brand-accent transition-colors"></i>
+                            <a href="https://www.linkedin.com/in/ciarancairns" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-warm-200 dark:border-gray-700 rounded-xl hover:border-brand-accent transition-all group shadow-sm">
+                                <i class="fab fa-linkedin text-xl text-warm-400 group-hover:text-brand-accent"></i>
                                 <span class="font-medium text-warm-700 dark:text-gray-300">LinkedIn</span>
                             </a>
-                            <a href="https://github.com/CiaranC968" target="_blank" rel="noopener noreferrer"
-                               class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-warm-200 dark:border-gray-700 rounded-xl hover:border-brand-accent dark:hover:border-brand-accent group transition-all shadow-sm">
-                                <i class="fab fa-github text-xl text-warm-400 group-hover:text-brand-accent transition-colors"></i>
+                            <a href="https://github.com/CiaranC968" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-warm-200 dark:border-gray-700 rounded-xl hover:border-brand-accent transition-all group shadow-sm">
+                                <i class="fab fa-github text-xl text-warm-400 group-hover:text-brand-accent"></i>
                                 <span class="font-medium text-warm-700 dark:text-gray-300">GitHub</span>
                             </a>
                         </div>
                     </div>
 
                     <div class="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-xl border border-warm-100 dark:border-gray-800 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-
-                        <form hx-post="/contact"
-                              hx-swap="innerHTML"
-                              hx-target="#form-response"
-                              hx-indicator="#form-spinner"
-                              class="space-y-6 relative z-10">
-
+                        <!-- Maintenance Notice -->
+                        <div class="bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-tools text-amber-600 dark:text-amber-400" aria-hidden="true"></i>
+                                <p class="text-sm font-medium text-amber-800 dark:text-amber-300">
+                                    Contact form under maintenance. Please email me directly for now.
+                                </p>
+                            </div>
+                        </div>
+                        <form class="space-y-6 relative z-10 opacity-50 pointer-events-none" aria-disabled="true">
                             <div id="form-response"></div>
-
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label for="name" class="text-sm font-semibold text-warm-700 dark:text-gray-300">Name</label>
-                                    <input type="text" id="name" name="name" required
-                                           class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all dark:text-white"
-                                           placeholder="Your name">
+                                    <input type="text" id="name" name="name" disabled class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent outline-none transition-all dark:text-white">
                                 </div>
                                 <div class="space-y-2">
                                     <label for="email" class="text-sm font-semibold text-warm-700 dark:text-gray-300">Email</label>
-                                    <input type="email" id="email" name="email" required
-                                           class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all dark:text-white"
-                                           placeholder="john@example.com">
+                                    <input type="email" id="email" name="email" disabled class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent outline-none transition-all dark:text-white">
                                 </div>
                             </div>
-
                             <div class="space-y-2">
                                 <label for="subject" class="text-sm font-semibold text-warm-700 dark:text-gray-300">Subject</label>
-                                <select id="subject" name="subject" class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all dark:text-white">
-                                    <option value="Project Inquiry">Project Inquiry</option>
-                                    <option value="Job Opportunity">Job Opportunity</option>
-                                    <option value="General Question">General Question</option>
+                                <select id="subject" name="subject" disabled class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent outline-none transition-all dark:text-white">
+                                    <option>Project Inquiry</option>
+                                    <option>Job Opportunity</option>
+                                    <option>General Question</option>
                                 </select>
                             </div>
-
                             <div class="space-y-2">
                                 <label for="message" class="text-sm font-semibold text-warm-700 dark:text-gray-300">Message</label>
-                                <textarea id="message" name="message" rows="4" required
-                                          class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all resize-none dark:text-white"
-                                          placeholder="How can I help you?"></textarea>
+                                <textarea id="message" name="message" rows="4" disabled class="w-full px-4 py-3 rounded-xl bg-warm-50 dark:bg-gray-800 border border-warm-200 dark:border-gray-700 focus:border-brand-accent outline-none resize-none dark:text-white"></textarea>
                             </div>
-
-                            <button type="submit"
-                                    class="w-full btn-lift bg-brand-dark dark:bg-white text-white dark:text-brand-dark font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-gray-800 dark:hover:bg-gray-200 flex items-center justify-center gap-3 transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+                            <button type="submit" disabled class="w-full btn-lift bg-brand-dark dark:bg-white text-white dark:text-brand-dark font-bold py-4 px-8 rounded-xl shadow-lg flex items-center justify-center gap-3 cursor-not-allowed">
                                 <span>Send Message</span>
-                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
-                                <i id="form-spinner" class="fas fa-circle-notch fa-spin htmx-indicator" aria-hidden="true"></i>
+                                <i class="fas fa-paper-plane"></i>
                             </button>
                         </form>
                     </div>
@@ -444,35 +339,20 @@
             </div>
         </section>
 
-        <footer class="bg-warm-100 dark:bg-gray-900 border-t border-warm-200 dark:border-gray-800 py-12 text-center" role="contentinfo">
+        <footer class="bg-warm-100 dark:bg-gray-900 border-t border-warm-200 dark:border-gray-800 py-12 text-center">
             <div class="flex justify-center gap-8 mb-8">
-                <a href="https://github.com/CiaranC968" target="_blank" rel="noopener noreferrer" aria-label="Visit my GitHub profile" class="text-warm-500 hover:text-brand-accent transition-colors transform hover:scale-110 focus:outline-none focus:text-brand-accent">
-                    <i class="fab fa-github text-2xl" aria-hidden="true"></i>
-                </a>
-                <a href="https://www.linkedin.com/in/ciarancairns" target="_blank" rel="noopener noreferrer" aria-label="Visit my LinkedIn profile" class="text-warm-500 hover:text-brand-accent transition-colors transform hover:scale-110 focus:outline-none focus:text-brand-accent">
-                    <i class="fab fa-linkedin text-2xl" aria-hidden="true"></i>
-                </a>
-                <a href="mailto:ciarancairns@googlemail.com" aria-label="Send me an email" class="text-warm-500 hover:text-brand-accent transition-colors transform hover:scale-110 focus:outline-none focus:text-brand-accent">
-                    <i class="fas fa-envelope text-2xl" aria-hidden="true"></i>
-                </a>
+                <a href="https://github.com/CiaranC968" target="_blank" rel="noopener noreferrer" class="text-warm-500 hover:text-brand-accent transform hover:scale-110 transition-all" aria-label="GitHub Profile"><i class="fab fa-github text-2xl" aria-hidden="true"></i></a>
+                <a href="https://www.linkedin.com/in/ciarancairns" target="_blank" rel="noopener noreferrer" class="text-warm-500 hover:text-brand-accent transform hover:scale-110 transition-all" aria-label="LinkedIn Profile"><i class="fab fa-linkedin text-2xl" aria-hidden="true"></i></a>
             </div>
-            <p class="text-warm-600 dark:text-gray-400 text-sm">&copy; <span id="footer-year">2025</span> Ciaran Cairns. Built with Python and Flask.</p>
+            <p class="text-warm-600 dark:text-gray-400 text-sm">&copy; <span class="current-year">2025</span> Ciaran Cairns.</p>
         </footer>
-
     </main>
 
-    <div id="universalModal"
-         class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6"
-         role="dialog"
-         aria-modal="true"
-         aria-hidden="true"
-         aria-labelledby="modal-title">
+    <div id="universalModal" class="fixed inset-0 z-100 hidden items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop"></div>
-        <div class="relative w-full max-w-4xl bg-warm-50 dark:bg-gray-800 rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]" id="modalPanel" role="document">
+        <div class="relative w-full max-w-4xl bg-warm-50 dark:bg-gray-800 rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]" id="modalPanel">
             <div class="absolute top-4 right-4 z-10">
-                <button id="closeModalBtn"
-                        aria-label="Close modal"
-                        class="w-10 h-10 flex items-center justify-center rounded-full bg-warm-200 dark:bg-gray-700 text-warm-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
+                <button id="closeModalBtn" class="w-10 h-10 flex items-center justify-center rounded-full bg-warm-200 dark:bg-gray-700 text-warm-600 hover:text-red-500 transition-colors" aria-label="Close modal">
                     <i class="fas fa-times text-lg" aria-hidden="true"></i>
                 </button>
             </div>
@@ -480,9 +360,7 @@
         </div>
     </div>
 
-    <button id="scrollTopBtn"
-            aria-label="Scroll to top of page"
-            class="fixed bottom-6 right-6 translate-y-20 opacity-0 bg-brand-accent text-brand-dark w-12 h-12 rounded-xl shadow-xl z-40 flex items-center justify-center transition-all duration-300 hover:scale-110 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2">
+    <button id="scrollTopBtn" aria-label="Scroll to top" class="fixed bottom-6 right-6 translate-y-20 opacity-0 bg-brand-accent text-brand-dark w-12 h-12 rounded-xl shadow-xl z-40 flex items-center justify-center transition-all duration-300 hover:scale-110">
         <i class="fas fa-arrow-up" aria-hidden="true"></i>
     </button>
 

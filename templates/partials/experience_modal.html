@@ -1,11 +1,19 @@
+<!-- partials/experience_modal.html -->
 <div class="p-2 md:p-6">
-    <div class="flex flex-col md:flex-row justify-between items-start gap-6 border-b dark:border-gray-700 pb-8 mb-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start gap-6 border-b border-gray-200 dark:border-gray-700 pb-8 mb-8">
         <div class="flex-1">
             <div class="flex items-center gap-4 mb-4">
-                <div class="w-14 h-14 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center border dark:border-gray-700 shadow-sm">
-                    <i class="{{ exp.icon }} {{ exp.iconColor }} text-2xl"></i>
+                <div class="w-14 h-14 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center border border-gray-200 dark:border-gray-700 shadow-sm">
+                    {% if exp.logo %}
+                    <img src="{{ url_for('static', filename='images/' + exp.logo) }}"
+                         alt=""
+                         class="w-10 h-10 object-contain">
+                    {% else %}
+                    <i class="{{ exp.icon | default('fas fa-building') }} {{ exp.iconColor | default('text-gray-600') }} text-2xl" aria-hidden="true"></i>
+                    {% endif %}
                 </div>
-                <h2 class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight">
+                <h2 id="modal-title" class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight">
                     {{ exp.company }}
                 </h2>
             </div>
@@ -14,65 +22,87 @@
                 <span class="bg-brand-accent/10 dark:bg-brand-accent/5 text-brand-accent px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-brand-accent/20">
                     {{ exp.role }}
                 </span>
-                <span class="bg-gray-100 dark:bg-gray-800 text-gray-500 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">
-                    <i class="far fa-calendar-alt mr-2"></i>{{ exp.period }}
+                <span class="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">
+                    <i class="far fa-calendar-alt mr-2" aria-hidden="true"></i>
+                    <time>{{ exp.period | default(exp.duration) }}</time>
                 </span>
+                {% if exp.location %}
+                <span class="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">
+                    <i class="fas fa-map-marker-alt mr-2" aria-hidden="true"></i>{{ exp.location }}
+                </span>
+                {% endif %}
             </div>
         </div>
-    </div>
+    </header>
 
     <div class="prose dark:prose-invert max-w-none">
-        <h4 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">Role Overview</h4>
-
-        <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-10 bg-gray-50 dark:bg-gray-900/30 p-6 rounded-3xl border dark:border-gray-700">
-            {{ exp.brief }}
-        </p>
+        <!-- Role Overview -->
+        <section>
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">
+                <i class="fas fa-briefcase mr-2" aria-hidden="true"></i>Role Overview
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-10 bg-gray-50 dark:bg-gray-900/30 p-6 rounded-3xl border border-gray-100 dark:border-gray-700">
+                {{ exp.brief }}
+            </p>
+        </section>
 
         {% if exp.timeline %}
-        <div class="mt-8">
-            <h4 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-6">Career Progression</h4>
+        <!-- Career Progression Timeline -->
+        <section class="mt-8">
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-6">
+                <i class="fas fa-chart-line mr-2" aria-hidden="true"></i>Career Progression
+            </h3>
             <div class="relative pl-2">
-                <div class="absolute top-0 bottom-0 left-[7px] w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+                <div class="absolute top-0 bottom-0 left-1.75 w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></div>
                 <div class="space-y-8">
                     {% for item in exp.timeline %}
-                    <div class="relative pl-8 group">
-                        <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 {{ exp.bgColor }} z-10 shadow-sm"></div>
+                    <article class="relative pl-8 group">
+                        <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 {{ exp.bgColor | default('bg-brand-accent') }} z-10 shadow-sm" aria-hidden="true"></div>
 
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
                             <h4 class="text-lg font-bold text-gray-900 dark:text-white m-0">{{ item.role }}</h4>
-                            <span class="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded">{{ item.period }}</span>
+                            <span class="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded">
+                                <time>{{ item.period }}</time>
+                            </span>
                         </div>
 
                         <p class="text-xs text-brand-accent font-semibold mb-2 uppercase tracking-wide">
-                            <i class="fas fa-map-marker-alt mr-1"></i> {{ item.loc }}
+                            <i class="fas fa-map-marker-alt mr-1" aria-hidden="true"></i> {{ item.loc }}
                         </p>
 
                         <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed m-0">
                             {{ item.desc }}
                         </p>
-                    </div>
+                    </article>
                     {% endfor %}
                 </div>
             </div>
-        </div>
+        </section>
 
         {% else %}
-
-        <div class="mt-8">
-            <h4 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">Key Contributions</h4>
-            <ul class="space-y-3 list-none pl-0">
+        <!-- Key Contributions -->
+        {% if exp.details %}
+        <section class="mt-8">
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">
+                <i class="fas fa-check-double mr-2" aria-hidden="true"></i>Key Contributions
+            </h3>
+            <ul class="space-y-3 list-none pl-0" role="list">
                 {% for detail in exp.details %}
                 <li class="flex items-start gap-3 pl-0">
-                    <i class="fas fa-check-circle {{ exp.iconColor }} mt-1.5 text-sm flex-shrink-0"></i>
+                    <i class="fas fa-check-circle {{ exp.iconColor | default('text-brand-accent') }} mt-1.5 text-sm shrink-0" aria-hidden="true"></i>
                     <span class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ detail }}</span>
                 </li>
                 {% endfor %}
             </ul>
-        </div>
+        </section>
+        {% endif %}
 
+        <!-- Technologies & Tools -->
         {% if exp.tech_stack %}
-        <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
-            <h4 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">Technologies & Tools</h4>
+        <section class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">
+                <i class="fas fa-tools mr-2" aria-hidden="true"></i>Technologies & Tools
+            </h3>
             <div class="flex flex-wrap gap-2">
                 {% for tech in exp.tech_stack %}
                 <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase tracking-wider rounded-lg border border-gray-200 dark:border-gray-700">
@@ -80,7 +110,7 @@
                 </span>
                 {% endfor %}
             </div>
-        </div>
+        </section>
         {% endif %}
 
         {% endif %}

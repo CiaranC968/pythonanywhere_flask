@@ -1,25 +1,25 @@
 <!-- partials/experience_cards.html -->
 {% for exp in experience %}
-<article
-    hx-get="/fragment/experience/{{ exp.id }}"
+{% set exp_id = "exp-" ~ exp.id %}
+<a
+    href="{{ url_for('fragment_experience_detail', company_id=exp.id) }}"
+    hx-get="{{ url_for('fragment_experience_detail', company_id=exp.id) }}"
     hx-target="#modalContent"
     hx-swap="innerHTML"
-    hx-on::after-request="openModal()"
-    class="group relative cursor-pointer bg-white dark:bg-gray-800/50 rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-brand-accent/10 hover:-translate-y-1"
-    role="button"
-    tabindex="0"
-    aria-label="View experience: {{ exp.role }} at {{ exp.company }}">
+    class="group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 transition-all duration-500 motion-reduce:transition-none motion-reduce:hover:transform-none no-underline"
+    aria-labelledby="{{ exp_id }}-title"
+    aria-describedby="{{ exp_id }}-desc">
 
     <!-- Background decorative icon -->
-    <div class="absolute -top-4 -right-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500 pointer-events-none">
+    <div class="absolute -top-4 -right-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500 pointer-events-none" aria-hidden="true">
         <i class="{{ exp.bgIcon | default('fas fa-briefcase') }} text-[12rem] {{ exp.hoverColor | default('text-gray-900') }} transform group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-700"></i>
     </div>
 
     <!-- Gradient overlay on hover -->
-    <div class="absolute inset-0 bg-gradient-to-br from-brand-accent/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div class="absolute inset-0 bg-linear-to-br from-brand-accent/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden="true"></div>
 
     <!-- Top accent line -->
-    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-accent via-amber-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+    <div class="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-brand-accent via-amber-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" aria-hidden="true"></div>
 
     <div class="relative z-10">
         <!-- Header Row -->
@@ -28,17 +28,17 @@
             <div class="relative">
                 <div class="w-18 h-18 md:w-20 md:h-20 rounded-2xl {{ exp.bgColor | default('bg-gray-100') }} dark:bg-opacity-20 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:bg-brand-accent transition-all duration-300">
                     {% if exp.logo %}
-                    <img src="{{ url_for('static', filename='images/' + exp.logo) }}"
-                         alt="{{ exp.company }} logo"
+                    <img src="{{ url_for('static', filename='images/' ~ exp.logo) }}"
+                         alt=""
                          class="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300">
                     {% else %}
-                    <i class="{{ exp.icon | default('fas fa-building') }} text-3xl md:text-4xl {{ exp.iconColor | default('text-gray-600') }} group-hover:text-brand-dark transition-colors duration-300"></i>
+                    <i class="{{ exp.icon | default('fas fa-building') }} text-3xl md:text-4xl {{ exp.iconColor | default('text-gray-600') }} group-hover:text-brand-dark transition-colors duration-300" aria-hidden="true"></i>
                     {% endif %}
                 </div>
-                <!-- Current job indicator -->
                 {% if exp.current %}
-                <span class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white dark:border-gray-800 flex items-center justify-center">
+                <span class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white dark:border-gray-800 flex items-center justify-center" title="Current position">
                     <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                    <span class="sr-only">Current job</span>
                 </span>
                 {% endif %}
             </div>
@@ -48,7 +48,7 @@
                 <span class="hidden md:block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest group-hover:text-brand-accent transition-colors">
                     View Details
                 </span>
-                <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-brand-accent transition-all duration-300">
+                <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-brand-accent transition-all duration-300" aria-hidden="true">
                     <i class="fas fa-arrow-right text-gray-400 group-hover:text-brand-dark transition-all duration-300 text-lg -rotate-45 group-hover:rotate-0"></i>
                 </div>
             </div>
@@ -56,7 +56,7 @@
 
         <!-- Company & Role -->
         <div class="mb-6">
-            <h3 class="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight group-hover:text-brand-accent transition-colors duration-300">
+            <h3 id="{{ exp_id }}-title" class="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight group-hover:text-brand-accent transition-colors duration-300">
                 {{ exp.company }}
             </h3>
             <p class="text-brand-accent font-bold uppercase tracking-wider text-sm mt-2">
@@ -68,7 +68,7 @@
         <div class="flex flex-wrap items-center gap-3 mb-6">
             <span class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-700/50">
                 <i class="fas fa-calendar-alt text-xs text-gray-400" aria-hidden="true"></i>
-                {{ exp.duration }}
+                <time>{{ exp.duration }}</time>
             </span>
             {% if exp.location %}
             <span class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-700/50">
@@ -84,14 +84,14 @@
             {% endif %}
             {% if exp.current %}
             <span class="inline-flex items-center gap-2 text-sm font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-xl border border-green-200 dark:border-green-800">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true"></span>
                 Current
             </span>
             {% endif %}
         </div>
 
         <!-- Brief Description -->
-        <p class="text-gray-600 dark:text-gray-400 text-sm md:text-base leading-relaxed line-clamp-2">
+        <p id="{{ exp_id }}-desc" class="text-gray-600 dark:text-gray-400 text-sm md:text-base leading-relaxed line-clamp-2">
             {{ exp.brief }}
         </p>
 
@@ -113,12 +113,10 @@
     </div>
 
     <!-- Bottom decorative element -->
-    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-brand-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-</article>
-{% endfor %}
-
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-linear-to-r from-transparent via-brand-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden="true"></div>
+</a>
+{% else %}
 <!-- Empty State -->
-{% if not experience %}
 <div class="col-span-full text-center py-16">
     <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
         <i class="fas fa-briefcase text-4xl text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
@@ -126,4 +124,4 @@
     <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">No Experience Listed</h3>
     <p class="text-gray-500 dark:text-gray-400">Work experience will appear here.</p>
 </div>
-{% endif %}
+{% endfor %}

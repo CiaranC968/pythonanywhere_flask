@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* Force class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+
+  --color-brand-dark: #111827;
+  --color-brand-accent: #facc15;
+  --color-brand-hover: #f59e0b;
+
+  --color-warm-50: #fafaf8;
+  --color-warm-100: #f5f4f1;
+  --color-warm-200: #e8e6e1;
+  --color-warm-300: #d5d2cc;
+  --color-warm-400: #a8a49c;
+  --color-warm-500: #7a756c;
+  --color-warm-600: #5c574f;
+  --color-warm-700: #45413a;
+  --color-warm-800: #2d2a25;
+  --color-warm-900: #1a1815;
+}
+
+/* Theme toggle icons - reliable show/hide */
+.sun-icon {
+  display: block;
+}
+.moon-icon {
+  display: none;
+}
+.dark .sun-icon {
+  display: none;
+}
+.dark .moon-icon {
+  display: block;
+}

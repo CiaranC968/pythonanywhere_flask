@@ -1,18 +1,32 @@
-{# templates/partials/project_modal.html #}
+<!-- partials/project_modal.html -->
 <div class="p-2 md:p-6">
-    <div class="flex flex-col md:flex-row justify-between items-start gap-6 border-b dark:border-gray-700 pb-8 mb-8">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start gap-6 border-b border-gray-200 dark:border-gray-700 pb-8 mb-8">
         <div class="flex-1">
             <div class="flex items-center gap-4 mb-4">
-                <div class="w-14 h-14 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center {{ p.color }} text-2xl shadow-sm border dark:border-gray-700">
-                    <i class="{{ p.icon }}"></i>
+                <div class="w-14 h-14 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center shadow-sm border border-gray-200 dark:border-gray-700 {{ p.color | default('text-gray-600') }}">
+                    <i class="{{ p.icon | default('fas fa-folder') }} text-2xl" aria-hidden="true"></i>
                 </div>
-                <h2 id="modalTitle" class="text-4xl font-black text-gray-900 dark:text-white leading-tight">
+                <h2 id="modal-title" class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight">
                     {{ p.title }}
                 </h2>
             </div>
-            
-            <div id="modalStack" class="flex flex-wrap gap-2">
-                {% for t in p.stack or [] %}
+
+            {% if p.status %}
+            <div class="mb-4">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full
+                    {% if p.status == 'Live' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800
+                    {% elif p.status == 'In Progress' %}bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800
+                    {% elif p.status == 'Completed' %}bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800
+                    {% else %}bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700{% endif %}">
+                    {% if p.status == 'Live' %}<span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" aria-hidden="true"></span>{% endif %}
+                    {{ p.status }}
+                </span>
+            </div>
+            {% endif %}
+
+            <div class="flex flex-wrap gap-2">
+                {% for t in p.stack %}
                 <span class="bg-brand-accent/10 dark:bg-brand-accent/5 text-brand-accent px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-brand-accent/20">
                     {{ t }}
                 </span>
@@ -20,25 +34,103 @@
             </div>
         </div>
 
-        {% if p.link and p.link != "#" %}
-        <a href="{{ p.link }}" target="_blank" 
-           class="w-full md:w-auto bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-3">
-            <i class="fab fa-github text-xl"></i>
-            <span>View Source Code</span>
-        </a>
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            {% if p.github and p.github != "#" %}
+            <a href="{{ p.github }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="flex-1 md:flex-none bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+                <i class="fab fa-github text-xl" aria-hidden="true"></i>
+                <span>View Source</span>
+            </a>
+            {% endif %}
+            {% if p.demo and p.demo != "#" %}
+            <a href="{{ p.demo }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="flex-1 md:flex-none bg-brand-accent text-brand-dark font-bold py-3 px-6 rounded-2xl shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+                <i class="fas fa-external-link-alt text-lg" aria-hidden="true"></i>
+                <span>Live Demo</span>
+            </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="prose dark:prose-invert max-w-none">
+        <!-- Project Overview -->
+        <section>
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">
+                <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>Project Overview
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-10 bg-gray-50 dark:bg-gray-900/30 p-6 rounded-3xl border border-gray-100 dark:border-gray-700">
+                {{ p.desc | default(p.quickDesc) }}
+            </p>
+        </section>
+
+        <!-- Features -->
+        {% if p.features %}
+        <section class="mt-8">
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">
+                <i class="fas fa-star mr-2" aria-hidden="true"></i>Key Features
+            </h3>
+            <ul class="space-y-3 list-none pl-0" role="list">
+                {% for feature in p.features %}
+                <li class="flex items-start gap-3 pl-0">
+                    <i class="fas fa-check-circle text-brand-accent mt-1.5 text-sm shrink-0" aria-hidden="true"></i>
+                    <span class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ feature }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        <!-- Challenges & Solutions -->
+        {% if p.challenges %}
+        <section class="mt-8">
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">
+                <i class="fas fa-lightbulb mr-2" aria-hidden="true"></i>Challenges & Solutions
+            </h3>
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-6 rounded-3xl border border-gray-100 dark:border-gray-700">
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed">{{ p.challenges }}</p>
+            </div>
+        </section>
         {% endif %}
     </div>
 
-    <div class="prose dark:prose-invert max-w-none">
-        <h4 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">Project Overview</h4>
-        <p id="modalDescription" class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-10 bg-gray-50 dark:bg-gray-900/30 p-6 rounded-3xl border dark:border-gray-700">
-            {{ p.desc }}
-        </p>
-    </div>
-    
+    <!-- Project Screenshot -->
     {% if p.image %}
-    <div class="mt-8 rounded-[2rem] overflow-hidden border dark:border-gray-700 shadow-xl">
-        <img src="{{ url_for('static', filename='images/projects/' + p.image) }}" alt="{{ p.title }} Screenshot" class="w-full h-auto">
-    </div>
+    <figure class="mt-8 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-xl">
+        <img src="{{ url_for('static', filename='images/projects/' + p.image) }}"
+             alt="Screenshot of {{ p.title }}"
+             class="w-full h-auto"
+             loading="lazy">
+    </figure>
+    {% endif %}
+
+    <!-- Project Meta -->
+    {% if p.date or p.stars or p.forks %}
+    <footer class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+            {% if p.date %}
+            <span class="inline-flex items-center gap-2">
+                <i class="fas fa-calendar text-xs" aria-hidden="true"></i>
+                <time datetime="{{ p.date }}">{{ p.date }}</time>
+            </span>
+            {% endif %}
+            {% if p.stars %}
+            <span class="inline-flex items-center gap-2">
+                <i class="fas fa-star text-amber-400 text-xs" aria-hidden="true"></i>
+                {{ p.stars }} star{{ 's' if p.stars != 1 else '' }}
+            </span>
+            {% endif %}
+            {% if p.forks %}
+            <span class="inline-flex items-center gap-2">
+                <i class="fas fa-code-branch text-xs" aria-hidden="true"></i>
+                {{ p.forks }} fork{{ 's' if p.forks != 1 else '' }}
+            </span>
+            {% endif %}
+        </div>
+    </footer>
     {% endif %}
 </div>

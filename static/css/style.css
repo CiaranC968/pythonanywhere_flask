@@ -24,8 +24,8 @@
 :root {
     /* Brand Colors */
     --color-brand-dark: #111827;
-    --color-brand-accent: #facc15;
-    --color-brand-hover: #f59e0b;
+    --color-brand-accent: #caa820;
+    --color-brand-hover: #e11717;
 
     /* Light Mode - Softer, easier on eyes */
     --color-bg-primary: #f5f4f1;        /* Soft warm cream */
@@ -81,7 +81,7 @@
 
     /* Scrollbar */
     --scrollbar-width: 8px;
-    --scrollbar-thumb: #c9c5be;
+    --scrollbar-thumb: #e8aa3e;
     --scrollbar-thumb-hover: var(--color-brand-accent);
     --scrollbar-track: transparent;
 }
