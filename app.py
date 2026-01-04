@@ -10,13 +10,13 @@ from utils import load_json_file
 
 
 def create_app():
-    application = Flask(__name__, static_folder='static', static_url_path='/static')
+    app = Flask(__name__, static_folder="static", static_url_path="/static")
 
     # --- Configuration ---
     app.config.update(
         JSON_AS_ASCII=False,
         TEMPLATES_AUTO_RELOAD=os.environ.get("FLASK_ENV") == "development",
-        MAX_CONTENT_LENGTH=16 * 1024 * 1024
+        MAX_CONTENT_LENGTH=16 * 1024 * 1024,
     )
 
     # --- Load Data Once at Startup ---
@@ -43,7 +43,7 @@ def create_app():
 
     @app.errorhandler(500)
     def internal_error(error):
-        app.logger.error(error)
+        app.logger.exception(error)
         return render_template("partials/error_500.html"), 500
 
     # --- Context Processor ---
@@ -55,10 +55,12 @@ def create_app():
             "current_year": datetime.now().year,
         }
 
-    return application
+    return app
 
 
 app = create_app()
 
+
+# 🔧 Local development only
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
