@@ -10,7 +10,7 @@ from utils import load_json_file
 
 
 def create_app():
-    app = Flask(__name__, static_folder='static', static_url_path='/static')
+    application = Flask(__name__, static_folder='static', static_url_path='/static')
 
     # --- Configuration ---
     app.config.update(
@@ -55,9 +55,10 @@ def create_app():
             "current_year": datetime.now().year,
         }
 
-    return app
+    return application
 
+
+app = create_app()
 
 if __name__ == "__main__":
-    app = create_app()
     app.run(port=5000, debug=True)
