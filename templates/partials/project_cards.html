@@ -2,8 +2,8 @@
 {% for p in projects %}
 {% set project_id = "project-" ~ p.slug %}
 <a
-    href="{{ url_for('fragment_project_modal', slug=p.slug) }}"
-    hx-get="{{ url_for('fragment_project_modal', slug=p.slug) }}"
+    href="{{ url_for('fragments.project_modal', slug=p.slug) }}"
+    hx-get="{{ url_for('fragments.project_modal', slug=p.slug) }}"
     hx-target="#modalContent"
     hx-swap="innerHTML"
     class="project-card {% if loop.index > 6 %}project-card-hidden hidden{% endif %} group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 transition-all duration-500 motion-reduce:transition-none motion-reduce:hover:transform-none no-underline"
@@ -16,7 +16,7 @@
         <img src="{{ url_for('static', filename='images/projects/' ~ p.image) }}"
              alt=""
              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-             loading="lazy">
+             >
         <div class="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden="true"></div>
 
         <!-- Status Badge -->
