@@ -1,11 +1,11 @@
-<!-- partials/project_modal.html -->
+<!-- partials/modals/project_modal.html -->
 <div class="p-2 md:p-6">
     <!-- Header Section -->
     <header class="flex flex-col md:flex-row justify-between items-start gap-6 border-b border-gray-200 dark:border-gray-700 pb-8 mb-8">
         <div class="flex-1">
             <div class="flex items-center gap-4 mb-4">
-                <div class="w-14 h-14 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center shadow-sm border border-gray-200 dark:border-gray-700 {{ p.color | default('text-gray-600') }}">
-                    <i class="{{ p.icon | default('fas fa-folder') }} text-2xl" aria-hidden="true"></i>
+                <div class="w-14 h-14 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center shadow-sm border border-gray-200 dark:border-gray-700">
+                    <i class="{{ p.icon | default('fas fa-folder') }} text-2xl {{ p.iconColor | default('text-gray-600') }}" aria-hidden="true"></i>
                 </div>
                 <h2 id="modal-title" class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight">
                     {{ p.title }}
@@ -25,36 +25,41 @@
             </div>
             {% endif %}
 
+            {% if p.tags %}
             <div class="flex flex-wrap gap-2">
-                {% for t in p.stack %}
+                {% for tag in p.tags %}
                 <span class="bg-brand-accent/10 dark:bg-brand-accent/5 text-brand-accent px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-brand-accent/20">
-                    {{ t }}
+                    {{ tag }}
                 </span>
                 {% endfor %}
             </div>
+            {% endif %}
         </div>
 
         <!-- Action Buttons -->
+        {% if p.links %}
         <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            {% if p.github and p.github != "#" %}
-            <a href="{{ p.github }}"
-               target="_blank"
-               rel="noopener noreferrer"
-               class="flex-1 md:flex-none bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
-                <i class="fab fa-github text-xl" aria-hidden="true"></i>
-                <span>View Source</span>
-            </a>
-            {% endif %}
-            {% if p.demo and p.demo != "#" %}
-            <a href="{{ p.demo }}"
-               target="_blank"
-               rel="noopener noreferrer"
-               class="flex-1 md:flex-none bg-brand-accent text-brand-dark font-bold py-3 px-6 rounded-2xl shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
-                <i class="fas fa-external-link-alt text-lg" aria-hidden="true"></i>
-                <span>Live Demo</span>
-            </a>
-            {% endif %}
+            {% for link in p.links %}
+                {% if 'github' in link.icon %}
+                <a href="{{ link.url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="flex-1 md:flex-none bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+                    <i class="{{ link.icon }} text-xl" aria-hidden="true"></i>
+                    <span>{{ link.label | default('View Source') }}</span>
+                </a>
+                {% else %}
+                <a href="{{ link.url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="flex-1 md:flex-none bg-brand-accent text-brand-dark font-bold py-3 px-6 rounded-2xl shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2">
+                    <i class="{{ link.icon }} text-lg" aria-hidden="true"></i>
+                    <span>{{ link.label | default('View') }}</span>
+                </a>
+                {% endif %}
+            {% endfor %}
         </div>
+        {% endif %}
     </header>
 
     <div class="prose dark:prose-invert max-w-none">
@@ -64,7 +69,7 @@
                 <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>Project Overview
             </h3>
             <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-10 bg-gray-50 dark:bg-gray-900/30 p-6 rounded-3xl border border-gray-100 dark:border-gray-700">
-                {{ p.desc | default(p.quickDesc) }}
+                {{ p.desc }}
             </p>
         </section>
 
@@ -101,35 +106,23 @@
     <!-- Project Screenshot -->
     {% if p.image %}
     <figure class="mt-8 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-xl">
-        <img src="{{ url_for('static', filename='images/projects/' + p.image) }}"
+        <img src="{{ url_for('static', filename='images/projects/' ~ p.image) }}"
              alt="Screenshot of {{ p.title }}"
              class="w-full h-auto"
-             >
+             loading="lazy">
     </figure>
     {% endif %}
 
-    <!-- Project Meta -->
-    {% if p.date or p.stars or p.forks %}
+    <!-- Stats Footer -->
+    {% if p.stats %}
     <footer class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
         <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            {% if p.date %}
+            {% for stat in p.stats %}
             <span class="inline-flex items-center gap-2">
-                <i class="fas fa-calendar text-xs" aria-hidden="true"></i>
-                <time datetime="{{ p.date }}">{{ p.date }}</time>
+                <i class="{{ stat.icon | default('fas fa-info-circle') }} text-brand-accent text-xs" aria-hidden="true"></i>
+                {{ stat.value }}
             </span>
-            {% endif %}
-            {% if p.stars %}
-            <span class="inline-flex items-center gap-2">
-                <i class="fas fa-star text-amber-400 text-xs" aria-hidden="true"></i>
-                {{ p.stars }} star{{ 's' if p.stars != 1 else '' }}
-            </span>
-            {% endif %}
-            {% if p.forks %}
-            <span class="inline-flex items-center gap-2">
-                <i class="fas fa-code-branch text-xs" aria-hidden="true"></i>
-                {{ p.forks }} fork{{ 's' if p.forks != 1 else '' }}
-            </span>
-            {% endif %}
+            {% endfor %}
         </div>
     </footer>
     {% endif %}

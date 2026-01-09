@@ -6,10 +6,12 @@
 @theme {
   --font-sans: 'Inter', sans-serif;
 
+  /* Brand colors - single source of truth */
   --color-brand-dark: #111827;
   --color-brand-accent: #facc15;
   --color-brand-hover: #f59e0b;
 
+  /* Warm palette */
   --color-warm-50: #fafaf8;
   --color-warm-100: #f5f4f1;
   --color-warm-200: #e8e6e1;
@@ -20,6 +22,15 @@
   --color-warm-700: #45413a;
   --color-warm-800: #2d2a25;
   --color-warm-900: #1a1815;
+
+  /* Normalized z-index scale */
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
 }
 
 /* Theme toggle icons - reliable show/hide */
@@ -34,4 +45,19 @@
 }
 .dark .moon-icon {
   display: block;
+}
+
+/* Motion-safe animation utilities */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-safe\:animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .motion-safe\:hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+
+  .motion-safe\:hover\:scale-110:hover {
+    transform: scale(1.1);
+  }
 }

@@ -2,25 +2,53 @@
     {
         "id": "backend",
         "title": "Backend Engineering",
-        "iconClass": "fas fa-server text-blue-600",
-        "bgIcon": "fas fa-code",
+        "icon": "fas fa-server",
+        "iconColor": "text-blue-600",
         "desc": "Specializing in Python and Java environments for high-performance systems.",
-        "core": ["Python", "FastAPI", "Flask", "Java", "Spring Boot", "RESTful APIs"]
+        "tags": ["Python", "FastAPI", "Flask", "Java", "Spring Boot", "RESTful APIs"],
+        "progress": {
+            "label": "Experience",
+            "value": 3,
+            "unit": "years",
+            "max": 5
+        },
+        "stats": [
+            { "icon": "fas fa-folder", "value": 5, "label": "projects" },
+            { "icon": "fas fa-award", "value": 2, "label": "certs" }
+        ]
     },
     {
         "id": "devops",
         "title": "DevOps & Cloud",
-        "iconClass": "fas fa-cloud text-green-600",
-        "bgIcon": "fas fa-network-wired",
+        "icon": "fas fa-cloud",
+        "iconColor": "text-green-600",
         "desc": "Infrastructure management and automated deployment strategies.",
-        "core": ["Docker", "Git", "AWS (EC2, S3)", "CI/CD", "Linux"]
+        "tags": ["Docker", "Git", "AWS (EC2, S3)", "CI/CD", "Linux"],
+        "progress": {
+            "label": "Experience",
+            "value": 2,
+            "unit": "years",
+            "max": 5
+        },
+        "stats": [
+            { "icon": "fas fa-folder", "value": 3, "label": "projects" }
+        ]
     },
     {
         "id": "frontend",
         "title": "Frontend & UI",
-        "iconClass": "fas fa-laptop-code text-purple-500",
-        "bgIcon": "fas fa-layer-group",
+        "icon": "fas fa-laptop-code",
+        "iconColor": "text-purple-500",
         "desc": "Building intuitive user interfaces to bridge data and humans.",
-        "core": ["Tailwind CSS", "HTMX", "TypeScript", "React", "Responsive Design"]
+        "tags": ["Tailwind CSS", "HTMX", "TypeScript", "React", "Responsive Design"],
+        "progress": {
+            "label": "Experience",
+            "value": 2,
+            "unit": "years",
+            "max": 5
+        },
+        "stats": [
+            { "icon": "fas fa-folder", "value": 4, "label": "projects" }
+        ]
     }
 ]

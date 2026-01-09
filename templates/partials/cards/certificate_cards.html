@@ -1,0 +1,74 @@
+{% for cert in certificates %}
+{% set cert_id = "cert-" ~ cert.id %}
+<div
+    hx-get="{{ url_for('fragments.certificate_modal', cert_id=cert.id) }}"
+    hx-target="#modalContent"
+    hx-swap="innerHTML"
+    class="card-item group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm p-6 rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-1 transition-all duration-500"
+    role="button">
+
+    <div class="absolute -top-4 -right-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500 pointer-events-none" aria-hidden="true">
+        <i class="fas fa-award text-[10rem] text-gray-900 dark:text-white transform group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-700"></i>
+    </div>
+
+    <div class="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-amber-400 via-brand-accent to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" aria-hidden="true"></div>
+
+    <div class="relative z-10">
+        <div class="flex items-start justify-between gap-4 mb-4">
+            <div class="flex items-center gap-4 flex-1">
+                <div class="relative">
+                    <div class="w-14 h-14 rounded-2xl bg-[#111827] flex items-center justify-center shadow-lg border border-white/10 group-hover:bg-brand-accent transition-all duration-300">
+                        {% if cert.logo %}
+                        <img src="{{ url_for('static', filename='images/' ~ cert.logo) }}"
+                             alt=""
+                             class="w-8 h-8 object-contain group-hover:brightness-0 transition-all">
+                        {% else %}
+                        <i class="fas fa-award text-xl text-white group-hover:text-brand-dark transition-colors duration-300" aria-hidden="true"></i>
+                        {% endif %}
+                    </div>
+                    {% if cert.verified %}
+                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center" title="Verified credential">
+                        <i class="fas fa-check text-white text-[8px]" aria-hidden="true"></i>
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="flex-1 min-w-0">
+                    <h4 id="{{ cert_id }}-title" class="text-base md:text-lg font-black text-gray-900 dark:text-white group-hover:text-brand-accent transition-colors leading-tight line-clamp-1">
+                        {{ cert.title }}
+                    </h4>
+                    <p class="text-xs text-brand-accent font-bold uppercase tracking-wider mt-1">
+                        {{ cert.issuer }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-brand-accent transition-all duration-300" aria-hidden="true">
+                <i class="fas fa-arrow-right text-gray-400 group-hover:text-brand-dark transition-all duration-300 -rotate-45 group-hover:rotate-0"></i>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/50">
+            <div class="flex items-center gap-3">
+                {% if cert.date %}
+                <span class="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase">
+                    <i class="fas fa-calendar-alt text-brand-accent"></i>
+                    {{ cert.date }}
+                </span>
+                {% endif %}
+            </div>
+
+            {% if cert.skills %}
+            <div class="flex gap-1">
+                {% for skill in cert.skills[:2] %}
+                <span class="text-[9px] font-black uppercase tracking-tighter text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
+                    {{ skill }}
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% else %}
+{% endfor %}

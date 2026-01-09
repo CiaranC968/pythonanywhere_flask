@@ -8,7 +8,7 @@
   "theme_color": "#facc15",
   "icons": [
     {
-      "src": "/static/images/favicon.svg",
+      "src": "/static/favicon/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }

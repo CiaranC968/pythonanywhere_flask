@@ -1,66 +1,74 @@
 import os
 from datetime import datetime
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, current_app
 
+# Import Blueprints
 from blueprints.main import main_bp
 from blueprints.fragments import fragments_bp
 from blueprints.contact import contact_bp
 from blueprints.cv import cv_bp
+
+# Import Utility
 from utils import load_json_file
 
 
 def create_app():
-    app = Flask(__name__, static_folder="static", static_url_path="/static")
+    application = Flask(__name__, static_folder="static", static_url_path="/static")
 
     # --- Configuration ---
-    app.config.update(
+    application.config.update(
         JSON_AS_ASCII=False,
-        TEMPLATES_AUTO_RELOAD=os.environ.get("FLASK_ENV") == "development",
+        TEMPLATES_AUTO_RELOAD=True,
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,
     )
 
-    # --- Load Data Once at Startup ---
-    app.config["DATA"] = {
-        "projects": load_json_file(app.root_path, "projects.json"),
-        "experience": load_json_file(app.root_path, "experience.json"),
-        "education": load_json_file(app.root_path, "education.json"),
-        "skills": load_json_file(app.root_path, "skills.json"),
-        "certificates": load_json_file(app.root_path, "certificates.json"),
+    # --- Load Data Strategy ---
+    data_dir = os.path.join(application.root_path, 'data')
+
+    # Load all data into app.config so it persists in memory
+    application.config["DATA"] = {
+        "projects": load_json_file(data_dir, "projects.json"),
+        "experience": load_json_file(data_dir, "experience.json"),
+        "education": load_json_file(data_dir, "education.json"),
+        "skills": load_json_file(data_dir, "skills.json"),
+        "certificates": load_json_file(data_dir, "certificates.json"),
     }
 
-    # --- Blueprints ---
-    app.register_blueprint(main_bp)
-    app.register_blueprint(fragments_bp)
-    app.register_blueprint(contact_bp)
-    app.register_blueprint(cv_bp)
+    # --- Register Blueprints ---
+    application.register_blueprint(main_bp)
+    application.register_blueprint(fragments_bp)  # HTMX fragments
+    application.register_blueprint(contact_bp)
+    application.register_blueprint(cv_bp)
 
-    # --- Error Handlers ---
-    @app.errorhandler(404)
+    # --- Error Handlers (HTMX Aware) ---
+    @application.errorhandler(404)
     def not_found(error):
+        # If HTMX triggers a 404, send a partial, otherwise send full page
         if request.headers.get("HX-Request"):
-            return render_template("partials/error_404.html"), 404
-        return render_template("partials/404.html"), 404
+            return render_template("partials/error_pages/error_404.html"), 404
+        return render_template("partials/error_pages/404.html"), 404
 
-    @app.errorhandler(500)
+    @application.errorhandler(500)
     def internal_error(error):
-        app.logger.exception(error)
-        return render_template("partials/error_500.html"), 500
+        application.logger.exception(error)
+        if request.headers.get("HX-Request"):
+            return render_template("partials/error_pages/error_500.html"), 500
+        return render_template("partials/error_pages/500.html"), 500
 
-    # --- Context Processor ---
-    @app.context_processor
+    # --- Context Processors ---
+    @application.context_processor
     def inject_globals():
         return {
             "site_name": "Ciaran Cairns",
             "site_title": "Software Developer",
             "current_year": datetime.now().year,
+            "portfolio": application.config["DATA"]
         }
 
-    return app
+    return application
 
 
 app = create_app()
 
-
-# 🔧 Local development only
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

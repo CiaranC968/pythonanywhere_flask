@@ -1,110 +1,114 @@
 [
     {
-        "slug": "emerald",
+        "id": "emerald",
         "title": "Emerald",
-        "stack": ["Python", "FastAPI", "TanStack", "TypeScript", "WebSockets", "AWS"],
-        "quickDesc": "Real-time Energy Monitoring Dashboard",
-        "desc": "Named and developed 'Emerald', a full-stack platform to fetch, normalise, and visualise energy market time-series data. Features live updates via WebSockets integrated with TanStack Table, deployed on AWS Elastic Beanstalk for scalable data processing.",
-        "link": "#",
         "icon": "fas fa-bolt",
-        "bgIcon": "fas fa-bolt",
-        "color": "text-emerald-500",
-        "hoverColor": "group-hover:text-emerald-400"
+        "iconColor": "text-emerald-500",
+        "desc": "Real-time Energy Monitoring Dashboard. Full-stack platform to fetch, normalise, and visualise energy market time-series data.",
+        "tags": ["Python", "FastAPI", "TanStack", "TypeScript", "WebSockets", "AWS"],
+        "status": "Completed",
+        "stats": [
+            { "icon": "fas fa-calendar", "value": "2024" }
+        ]
     },
     {
-        "slug": "trailstoneconfig",
+        "id": "trailstoneconfig",
         "title": "Trailstone Config Service",
-        "stack": ["Python", "React", "AWS"],
-        "quickDesc": "Dynamic Configuration Management",
-        "desc": "Collaborated on a config service enabling dynamic application tuning. Allows users to modify config settings and inject new TSIDs into the Emerald tables instantly, removing the need to submit developer tickets for code redeployment.",
-        "link": "#",
         "icon": "fas fa-cogs",
-        "bgIcon": "fas fa-cogs",
-        "color": "text-blue-500",
-        "hoverColor": "group-hover:text-blue-400"
+        "iconColor": "text-blue-500",
+        "desc": "Dynamic Configuration Management. Enables dynamic application tuning without code redeployment.",
+        "tags": ["Python", "React", "AWS"],
+        "status": "Completed",
+        "stats": [
+            { "icon": "fas fa-calendar", "value": "2024" }
+        ]
     },
     {
-        "slug": "laochra",
+        "id": "laochra",
         "title": "Laochra 2D Game",
-        "stack": ["Python", "Pygame"],
-        "quickDesc": "A Viking-themed 2D adventure built with Pygame.",
-        "desc": "A top-down adventure game demonstrating Object-Oriented Programming principles. Features a custom engine for sprite animation, AABB collision detection, and complex state management.",
-        "link": "https://github.com/CiaranC968/laochra_2d",
         "icon": "fas fa-gamepad",
-        "bgIcon": "fas fa-shield-alt",
-        "color": "text-blue-600",
-        "hoverColor": "group-hover:text-blue-400"
+        "iconColor": "text-blue-600",
+        "desc": "A Viking-themed 2D adventure built with Pygame demonstrating OOP principles, custom sprite animation, and AABB collision detection.",
+        "tags": ["Python", "Pygame"],
+        "status": "Completed",
+        "links": [
+            { "icon": "fab fa-github", "url": "https://github.com/CiaranC968/laochra_2d", "label": "GitHub" }
+        ],
+        "stats": [
+            { "icon": "fas fa-calendar", "value": "2023" }
+        ]
     },
     {
-        "slug": "tacocloud",
+        "id": "tacocloud",
         "title": "TacoCloud",
-        "stack": ["Java", "Spring Boot", "Spring Security", "H2"],
-        "quickDesc": "Full-stack system based on 'Spring in Action'.",
-        "desc": "A comprehensive study application developed following the 'Spring in Action' curriculum. Demonstrates mastery of the Spring ecosystem, utilising Spring MVC for the web layer, Spring Security for authentication, and Spring Data JPA for persistence.",
-        "link": "https://github.com/CiaranC968/TacoCloud",
         "icon": "fas fa-cloud",
-        "bgIcon": "fas fa-book-reader",
-        "color": "text-orange-600",
-        "hoverColor": "group-hover:text-orange-400"
+        "iconColor": "text-orange-600",
+        "desc": "Full-stack system based on 'Spring in Action'. Demonstrates mastery of Spring MVC, Security, and Data JPA.",
+        "tags": ["Java", "Spring Boot", "Spring Security", "H2"],
+        "status": "Completed",
+        "links": [
+            { "icon": "fab fa-github", "url": "https://github.com/CiaranC968/TacoCloud", "label": "GitHub" }
+        ],
+        "stats": [
+            { "icon": "fas fa-calendar", "value": "2023" }
+        ]
     },
     {
-        "slug": "nutrition",
+        "id": "nutrition",
         "title": "Nutrition Meal App",
-        "stack": ["Java", "Spring Boot", "React"],
-        "quickDesc": "Nutrition tracking and meal planning application.",
-        "desc": "A comprehensive tool for dietary management. Allows users to create recipe databases, track daily caloric intake against targets, and auto-generate shopping lists from weekly meal plans.",
-        "link": "https://github.com/CiaranC968/NutritionProject",
         "icon": "fas fa-utensils",
-        "bgIcon": "fas fa-apple-alt",
-        "color": "text-green-600",
-        "hoverColor": "group-hover:text-green-400"
+        "iconColor": "text-green-600",
+        "desc": "Comprehensive dietary management tool for recipe databases, caloric tracking, and auto-generated shopping lists.",
+        "tags": ["Java", "Spring Boot", "React"],
+        "status": "In Progress",
+        "links": [
+            { "icon": "fab fa-github", "url": "https://github.com/CiaranC968/NutritionProject", "label": "GitHub" }
+        ]
     },
     {
-        "slug": "staffrota",
+        "id": "staffrota",
         "title": "Staff Rota System (TM356)",
-        "stack": ["PHP", "SQL", "JavaScript"],
-        "quickDesc": "Modernising a legacy scheduling system.",
-        "desc": "Re-engineered a workplace legacy system for the TM356 module. Focused on modernising the UI and optimising backend logic to resolve scheduling conflicts and improve staff management efficiency.",
-        "link": "#",
         "icon": "fas fa-calendar-alt",
-        "bgIcon": "fas fa-calendar-check",
-        "color": "text-purple-600",
-        "hoverColor": "group-hover:text-purple-400"
+        "iconColor": "text-purple-600",
+        "desc": "Re-engineered workplace legacy system focusing on UI modernisation and backend optimisation.",
+        "tags": ["PHP", "SQL", "JavaScript"],
+        "status": "Completed",
+        "stats": [
+            { "icon": "fas fa-calendar", "value": "2024" }
+        ]
     },
     {
-        "slug": "tm470",
+        "id": "tm470",
         "title": "Major Project (TM470)",
-        "stack": ["Research Phase", "TBD"],
-        "quickDesc": "Upcoming Capstone Computing Project.",
-        "desc": "The final capstone project for my degree. Currently in the research and proposal phase, defining scope and architectural requirements.",
-        "link": "#",
         "icon": "fas fa-flask",
-        "bgIcon": "fas fa-graduation-cap",
-        "color": "text-rose-500",
-        "hoverColor": "group-hover:text-rose-400"
+        "iconColor": "text-rose-500",
+        "desc": "Final capstone project for degree. Currently in research and proposal phase.",
+        "tags": ["Research Phase", "TBD"],
+        "status": "In Progress"
     },
     {
-        "slug": "thisapp",
+        "id": "thisapp",
         "title": "ciaranc.dev",
-        "stack": ["Python", "Flask", "Tailwind", "HTMX"],
-        "quickDesc": "Personal Developer Portfolio",
-        "desc": "A server-side rendered portfolio built with Flask and Python. Utilises Tailwind CSS for styling and HTMX for lightweight, dynamic frontend interactions. Hosted on PythonAnywhere.",
-        "link": "https://github.com/CiaranC968/pythonanywhere_flask",
         "icon": "fas fa-code",
-        "bgIcon": "fas fa-laptop-code",
-        "color": "text-indigo-500",
-        "hoverColor": "group-hover:text-indigo-400"
+        "iconColor": "text-indigo-500",
+        "desc": "Personal Developer Portfolio. Server-side rendered with Flask, styled with Tailwind CSS and HTMX interactions.",
+        "tags": ["Python", "Flask", "Tailwind", "HTMX"],
+        "status": "Live",
+        "links": [
+            { "icon": "fab fa-github", "url": "https://github.com/CiaranC968/pythonanywhere_flask", "label": "GitHub" },
+            { "icon": "fas fa-external-link-alt", "url": "https://www.ciaranc.dev", "label": "Website url" }
+        ]
     },
     {
-        "slug": "bankingapp",
+        "id": "bankingapp",
         "title": "Desktop Banking Suite",
-        "stack": ["Java", "Swing/AWT", "OOP"],
-        "quickDesc": "Object-Oriented Banking GUI Application",
-        "desc": "A desktop-based financial application demonstrating core Object-Oriented Programming principles. Features a graphical user interface for secure account creation, transaction processing, and real-time balance management.",
-        "link": "#",
         "icon": "fas fa-university",
-        "bgIcon": "fas fa-wallet",
-        "color": "text-gray-600",
-        "hoverColor": "group-hover:text-gray-500"
+        "iconColor": "text-gray-600",
+        "desc": "Desktop financial application demonstrating OOP principles with GUI for account management and transactions.",
+        "tags": ["Java", "Swing/AWT", "OOP"],
+        "status": "Completed",
+        "stats": [
+            { "icon": "fas fa-calendar", "value": "2022" }
+        ]
     }
 ]

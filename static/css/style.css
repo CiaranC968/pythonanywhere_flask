@@ -15,27 +15,26 @@
    11. High Contrast Mode
    12. Reduced Motion
    13. Print Styles
-   14. Performance Optimizations
    ========================================= */
 
 /* =========================================
    1. CSS CUSTOM PROPERTIES (Design Tokens)
    ========================================= */
 :root {
-    /* Brand Colors */
+    /* Brand Colors - aligned with Tailwind config */
     --color-brand-dark: #111827;
-    --color-brand-accent: #caa820;
-    --color-brand-hover: #e11717;
+    --color-brand-accent: #facc15;
+    --color-brand-hover: #f59e0b;
 
     /* Light Mode - Softer, easier on eyes */
-    --color-bg-primary: #f5f4f1;        /* Soft warm cream */
-    --color-bg-secondary: #eceae6;      /* Muted warm gray */
-    --color-bg-tertiary: #e4e2dd;       /* Deeper warm gray */
-    --color-text-primary: #1a1a1a;      /* Near black for better contrast */
-    --color-text-secondary: #404040;    /* Darker gray */
-    --color-text-tertiary: #666666;     /* Medium gray */
-    --color-border: #d8d5cf;            /* Warm border */
-    --color-border-light: #e0ddd8;      /* Lighter warm border */
+    --color-bg-primary: #f5f4f1;
+    --color-bg-secondary: #eceae6;
+    --color-bg-tertiary: #e4e2dd;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #404040;
+    --color-text-tertiary: #666666;
+    --color-border: #d8d5cf;
+    --color-border-light: #e0ddd8;
 
     /* Card backgrounds */
     --color-card-bg: #faf9f7;
@@ -58,7 +57,7 @@
     --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Dimensions & Spacing */
-    --header-height: 4rem; /* Used for scroll padding */
+    --header-height: 4rem;
     --spacing-section: 6rem;
     --spacing-container: 1.5rem;
 
@@ -70,18 +69,19 @@
     --radius-2xl: 1.5rem;
     --radius-full: 9999px;
 
-    /* Z-Index Scale */
+    /* Z-Index Scale - normalized */
+    --z-base: 0;
     --z-dropdown: 10;
     --z-sticky: 20;
     --z-fixed: 30;
     --z-overlay: 40;
     --z-modal: 50;
-    --z-popover: 60;
+    --z-toast: 60;
     --z-tooltip: 70;
 
     /* Scrollbar */
     --scrollbar-width: 8px;
-    --scrollbar-thumb: #e8aa3e;
+    --scrollbar-thumb: #d5cfc5;
     --scrollbar-thumb-hover: var(--color-brand-accent);
     --scrollbar-track: transparent;
 }
@@ -120,7 +120,6 @@ html {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
     scroll-behavior: smooth;
-    /* Prevents fixed header from covering anchor targets */
     scroll-padding-top: var(--header-height);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -184,7 +183,6 @@ p {
 /* =========================================
    4. SCROLLBAR STYLES
    ========================================= */
-/* Webkit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
     width: var(--scrollbar-width);
     height: var(--scrollbar-width);
@@ -206,11 +204,9 @@ p {
     background-color: var(--scrollbar-thumb-hover);
 }
 
-/* Custom scrollbar for Sidebar/Modal */
 .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-    /* Prevents background page from scrolling when sidebar reaches end */
     overscroll-behavior: contain;
 }
 
@@ -252,7 +248,6 @@ p {
     border-radius: var(--radius-sm);
 }
 
-/* Enhanced focus for interactive elements */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -399,6 +394,13 @@ select:focus-visible,
                 color var(--transition-fast);
 }
 
+/* Conditional will-change: only applied during active transitions */
+#sidebar.is-transitioning,
+#modalPanel.is-transitioning,
+#scrollTopBtn.is-visible {
+    will-change: transform, opacity;
+}
+
 /* =========================================
    8. LOADING STATES
    ========================================= */
@@ -529,6 +531,12 @@ select:focus-visible,
     .animate-fade-in-up {
         animation: none;
     }
+
+    /* Disable transform effects for motion-sensitive users */
+    .btn-lift:hover,
+    .contact-card:hover {
+        transform: none;
+    }
 }
 
 /* =========================================
@@ -567,7 +575,6 @@ select:focus-visible,
         text-decoration: underline !important;
     }
 
-    /* Improved: Only show URLs for external links, not internal hashes */
     a[href^="http"]:not([href*="ciaranc.dev"])::after {
         content: " (" attr(href) ")";
         font-size: 0.75em;
@@ -593,28 +600,4 @@ select:focus-visible,
         max-width: 100% !important;
         page-break-inside: avoid;
     }
-}
-
-/* =========================================
-   14. PERFORMANCE OPTIMIZATIONS
-   ========================================= */
-#sidebar,
-#modalPanel,
-#scrollTopBtn,
-.nav-link,
-.contact-card {
-    will-change: transform;
-}
-
-/* Updated: content-visibility for better rendering performance on long pages */
-section {
-    content-visibility: auto;
-    contain-intrinsic-size: 1px 1000px; /* Approximation prevents scroll bar jump */
-}
-
-/* Optimized font loading fallback */
-@font-face {
-    font-display: swap;
-    font-family: 'Inter';
-    src: local('Inter');
 }
