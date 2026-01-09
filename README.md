@@ -101,4 +101,4 @@ The Open University - Final Year
 
 ---
 
-Built with ❤️ and Flask
+Built with Flask, htmx and javascript
