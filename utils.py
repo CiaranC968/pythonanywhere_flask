@@ -1,5 +1,8 @@
 import json
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 
 def load_json_file(base_path, filename):
@@ -10,10 +13,10 @@ def load_json_file(base_path, filename):
         with open(path, encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
-        print(f"⚠️ Warning: Could not find file: {path}")
+        logger.warning("Could not find file: %s", path)
         return []
     except json.JSONDecodeError:
-        print(f"⚠️ Error: Could not decode JSON in: {path}")
+        logger.error("Could not decode JSON in: %s", path)
         return []
 
 
