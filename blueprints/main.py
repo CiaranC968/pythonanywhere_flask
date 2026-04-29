@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from flask import Blueprint, current_app, render_template
+from flask import Blueprint, render_template
+
+from models import Certificate, Education, Experience, Project, Skill
 
 
 main_bp = Blueprint("main", __name__)
@@ -12,14 +14,12 @@ def index():
 
 @main_bp.route('/health')
 def health():
-    data = current_app.config.get("DATA", {})
-
     checks = {
-        'projects': bool(data.get('projects')),
-        'experience': bool(data.get('experience')),
-        'education': bool(data.get('education')),
-        'skills': bool(data.get('skills')),
-        'certificates': bool(data.get('certificates')),
+        'projects': Project.query.filter_by(is_visible=True).count() > 0,
+        'experience': Experience.query.filter_by(is_visible=True).count() > 0,
+        'education': Education.query.filter_by(is_visible=True).count() > 0,
+        'skills': Skill.query.filter_by(is_visible=True).count() > 0,
+        'certificates': Certificate.query.filter_by(is_visible=True).count() > 0,
     }
 
     all_healthy = all(checks.values())

@@ -19,6 +19,12 @@ Final-year Computing & IT student at The Open University, specialising in Python
 
 ## Features
 
+### Database-backed content
+- MySQL-compatible SQLAlchemy models for profile, jobs, education, skills, projects, and certificates
+- Unlinked, password-protected `/admin` editor for adding, editing, hiding, sorting, and deleting portfolio content
+- First-run seeding from the existing JSON files so the current site content is preserved
+- Generated `/get-cv` PDF built from the database content
+
 ### Architecture
 - **Application Factory Pattern** - Scalable Flask application structure
 - **Blueprint-based Routing** - Modular route organisation
@@ -59,11 +65,67 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Optional local admin/database settings can go in an untracked .env file.
+# Do not commit real secrets.
+SECRET_KEY="<generate-a-secret>"
+ADMIN_PASSWORD="<choose-a-local-admin-password>"
+DATABASE_URL="sqlite:///portfolio.db"
+
 # Run the application
 python app.py
 ```
 
-Visit `http://127.0.0.1:5000` in your browser.
+Visit `http://127.0.0.1:8080` in your browser.
+
+Open `http://127.0.0.1:8080/admin` directly to edit the portfolio content. It is intentionally not linked from the public website. Admin login is disabled until `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH` is set.
+
+## PythonAnywhere MySQL Setup
+
+Set these environment variables in your PythonAnywhere web app. Do not commit real values to Git:
+
+```bash
+SECRET_KEY="<generate-a-secret>"
+ADMIN_PASSWORD="<choose-an-admin-password>"
+DATABASE_URL="mysql+pymysql://<mysql-user>:<mysql-password>@<mysql-host>/<mysql-database>"
+```
+
+If your MySQL password contains symbols such as `@`, `#`, `/`, or `:`, use separate variables instead of a single URL:
+
+```bash
+SECRET_KEY="<generate-a-secret>"
+ADMIN_PASSWORD="<choose-an-admin-password>"
+MYSQL_USER="<mysql-user>"
+MYSQL_PASSWORD="<mysql-password>"
+MYSQL_HOST="<mysql-host>"
+MYSQL_DATABASE="<mysql-database>"
+```
+
+On PythonAnywhere, make sure these are set for the web app process itself. If you only export them in a Bash console, the website may not see them after reload.
+
+Prefer PythonAnywhere's environment-variable support if available. If you use a file, store it outside Git, for example `/home/ciaranc88/.env`, and point the WSGI file at it:
+
+```python
+import os
+import sys
+
+project_home = "/home/ciaranc88/pythonanywhere_flask"
+if project_home not in sys.path:
+    sys.path.insert(0, project_home)
+
+os.environ["ENV_FILE"] = "/home/ciaranc88/.env"
+
+from app import application
+```
+
+After installing `requirements.txt` and reloading the web app, the tables are created automatically. If the database is empty, the current JSON content is imported once. Future edits should be made through `/admin`.
+
+After logging in, open `/admin/diagnostics` to confirm the app can run `SELECT 1`, see the masked database URI, and list the tables.
+
+The admin editor manages:
+- Profile: name, title, CV subtitle, email, phone, address, links, about text, and hero text
+- Experience: companies, jobs, timelines/promotions, bullet points, tech stack, logos, icons, visibility, and order
+- Education: degrees, universities, years, modules/stages, progress, and results
+- Skills, projects, and certificates, including JSON-powered links, tags, stats, and credential data
 
 ## Deployment
 

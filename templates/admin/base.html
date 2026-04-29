@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <title>{{ title | default('Portfolio Admin') }}</title>
+    <link rel="stylesheet" href="/static/css/output.css">
+    <style>
+        .admin-input {
+            width: 100%;
+            border-radius: 0.75rem;
+            border: 1px solid #e8e6e1;
+            background: #fff;
+            padding: 0.75rem 1rem;
+            outline: none;
+        }
+        .admin-input:focus {
+            border-color: #facc15;
+            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.25);
+        }
+        .structured-row {
+            border-radius: 1rem;
+            border: 1px solid #e8e6e1;
+            background: #fafaf8;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body class="min-h-dvh bg-warm-100 text-warm-800">
+    <header class="border-b border-warm-200 bg-white">
+        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+            <a href="{{ url_for('admin.dashboard') }}" class="text-xl font-black text-warm-900">Portfolio Admin</a>
+            {% if session.get('admin_authenticated') %}
+            <form method="post" action="{{ url_for('admin.logout') }}">
+                <button class="rounded-lg bg-warm-800 px-4 py-2 text-sm font-bold text-white hover:bg-warm-700">Log out</button>
+            </form>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-6 py-8">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="mb-6 space-y-3">
+                {% for category, message in messages %}
+                <div class="rounded-xl border px-4 py-3 text-sm font-semibold {% if category == 'error' %}border-red-200 bg-red-50 text-red-700{% else %}border-green-200 bg-green-50 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+    <script src="/static/js/admin.js" defer></script>
+</body>
+</html>

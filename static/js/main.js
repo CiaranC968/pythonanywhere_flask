@@ -15,8 +15,10 @@ const CONFIG = {
         modalBackdrop: '#modalBackdrop',
         modalContent: '#modalContent',
         scrollTopBtn: '#scrollTopBtn',
+        scrollProgress: '#scroll-progress',
         navLinks: '.nav-link',
-        sections: 'section[id]'
+        sections: 'section[id]',
+        revealItems: 'section[id] > div, .card-item'
     }
 };
 
@@ -65,6 +67,10 @@ const Utils = {
         const handleKey = (e) => {
             if (e.key === 'Escape' && onEscape) return onEscape();
             if (e.key !== 'Tab') return;
+            if (!first || !last) {
+                e.preventDefault();
+                return;
+            }
 
             if (e.shiftKey && document.activeElement === first) {
                 e.preventDefault();
@@ -77,6 +83,23 @@ const Utils = {
 
         container.addEventListener('keydown', handleKey);
         return () => container.removeEventListener('keydown', handleKey);
+    },
+
+    async copyText(value) {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(value);
+            return;
+        }
+
+        const field = document.createElement('textarea');
+        field.value = value;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.appendChild(field);
+        field.select();
+        document.execCommand('copy');
+        field.remove();
     }
 };
 
@@ -123,7 +146,7 @@ const GlobalEvents = {
             const copyBtn = target.closest('.copy-btn');
             if (copyBtn) {
                 const email = copyBtn.dataset.email;
-                navigator.clipboard.writeText(email).then(() => {
+                Utils.copyText(email).then(() => {
                     // Visual Feedback
                     const icon = copyBtn.querySelector('i');
                     const originalClass = icon.className;
@@ -134,6 +157,8 @@ const GlobalEvents = {
                     setTimeout(() => {
                         icon.className = originalClass;
                     }, 2000);
+                }).catch(() => {
+                    Utils.announce('Could not copy email address');
                 });
             }
         });
@@ -154,8 +179,7 @@ const GlobalEvents = {
 const ThemeManager = {
     init() {
         // Sync checkbox state on load
-        const toggle = Utils.$('#theme-toggle-fixed');
-        if (toggle) toggle.checked = document.documentElement.classList.contains('dark');
+        this.sync();
     },
 
     toggle() {
@@ -166,8 +190,7 @@ const ThemeManager = {
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
 
         // 3. Sync Desktop Checkbox
-        const desktopToggle = Utils.$('#theme-toggle-fixed');
-        if (desktopToggle) desktopToggle.checked = isDark;
+        this.sync();
 
         // 4. Update Meta Theme Color
         document.querySelector('meta[name="theme-color"]')?.setAttribute(
@@ -175,6 +198,11 @@ const ThemeManager = {
         );
 
         Utils.announce(isDark ? 'Dark mode enabled' : 'Light mode enabled');
+    },
+
+    sync() {
+        const isDark = document.documentElement.classList.contains('dark');
+        Utils.$$('#theme-toggle-fixed').forEach(toggle => toggle.checked = isDark);
     }
 };
 
@@ -196,11 +224,13 @@ const SidebarManager = {
         this.isOpen = true;
         sidebar.classList.remove('-translate-x-full');
         overlay?.classList.remove('hidden');
+        sidebar.classList.add('is-transitioning');
 
         // Update aria-expanded
         menuToggle?.setAttribute('aria-expanded', 'true');
 
         requestAnimationFrame(() => overlay?.classList.add('visible'));
+        setTimeout(() => sidebar.classList.remove('is-transitioning'), CONFIG.animation.normal);
 
         document.body.style.overflow = 'hidden';
         this.trapCleanup = Utils.trapFocus(sidebar, () => this.close());
@@ -220,7 +250,10 @@ const SidebarManager = {
         // Update aria-expanded
         menuToggle?.setAttribute('aria-expanded', 'false');
 
-        setTimeout(() => overlay?.classList.add('hidden'), CONFIG.animation.normal);
+        setTimeout(() => {
+            overlay?.classList.add('hidden');
+            sidebar?.classList.remove('is-transitioning');
+        }, CONFIG.animation.normal);
 
         document.body.style.overflow = '';
         if (this.trapCleanup) this.trapCleanup();
@@ -290,6 +323,7 @@ const ModalManager = {
         modal.classList.remove('hidden', 'opacity-0');
         modal.classList.add('flex');
         modal.removeAttribute('aria-hidden');
+        Utils.$(CONFIG.selectors.modalPanel)?.classList.add('is-transitioning');
 
         // Animation
         requestAnimationFrame(() => {
@@ -321,6 +355,7 @@ const ModalManager = {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             modal.setAttribute('aria-hidden', 'true');
+            panel.classList.remove('is-transitioning');
             document.body.style.overflow = '';
         }, CONFIG.animation.normal);
 
@@ -353,12 +388,69 @@ const ScrollToTop = {
 };
 
 // =========================================
-// 8. HTMX ERROR HANDLING
+// 8. SCROLL PROGRESS
+// =========================================
+const ScrollProgress = {
+    init() {
+        const bar = Utils.$(CONFIG.selectors.scrollProgress);
+        if (!bar) return;
+
+        const update = Utils.throttle(() => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+            bar.style.transform = `scaleX(${progress})`;
+        });
+
+        update();
+        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+    }
+};
+
+// =========================================
+// 9. REVEAL ANIMATIONS
+// =========================================
+const RevealManager = {
+    observer: null,
+
+    init() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        this.observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('reveal-visible');
+                this.observer.unobserve(entry.target);
+            });
+        }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+
+        this.observe();
+        document.body.addEventListener('htmx:afterSwap', (event) => this.observe(event.detail.target));
+    },
+
+    observe(root = document) {
+        if (!this.observer) return;
+        const items = [
+            ...(root.matches?.(CONFIG.selectors.revealItems) ? [root] : []),
+            ...root.querySelectorAll(CONFIG.selectors.revealItems)
+        ];
+        items.forEach(item => {
+            if (item.classList.contains('reveal-ready')) return;
+            item.classList.add('reveal-ready');
+            this.observer.observe(item);
+        });
+    }
+};
+
+// =========================================
+// 10. HTMX ERROR HANDLING
 // =========================================
 const HtmxErrors = {
     init() {
         document.body.addEventListener('htmx:responseError', (e) => this.handle(e.detail));
         document.body.addEventListener('htmx:sendError', (e) => this.handle(e.detail, 'Network Error'));
+        document.body.addEventListener('htmx:beforeRequest', (e) => e.detail.elt?.classList.add('is-loading'));
+        document.body.addEventListener('htmx:afterRequest', (e) => e.detail.elt?.classList.remove('is-loading'));
     },
 
     handle(detail, customMsg) {
@@ -383,7 +475,7 @@ const HtmxErrors = {
 };
 
 // =========================================
-// 9. INITIALIZATION
+// 11. INITIALIZATION
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Set Footer Year
@@ -396,6 +488,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ScrollSpy.init();
     ModalManager.init();
     ScrollToTop.init();
+    ScrollProgress.init();
+    RevealManager.init();
     HtmxErrors.init();
 
     console.log('Portfolio Ready');

@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent">Back to dashboard</a>
+        <h1 class="mt-2 text-4xl font-black text-warm-900">{{ config.label }}</h1>
+    </div>
+    <a href="{{ url_for('admin.new_item', section=section) }}" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">Add item</a>
+</div>
+
+<div class="overflow-hidden rounded-2xl border border-warm-200 bg-white shadow-sm">
+    <table class="w-full text-left text-sm">
+        <thead class="bg-warm-50 text-xs uppercase tracking-wider text-warm-500">
+            <tr>
+                <th class="px-5 py-3">Item</th>
+                <th class="px-5 py-3">Sort</th>
+                <th class="px-5 py-3">Visible</th>
+                <th class="px-5 py-3 text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-warm-100">
+            {% for item in items %}
+            <tr>
+                <td class="px-5 py-4">
+                    <div class="font-black text-warm-900">{{ item | attr(config.title_field) }}</div>
+                    <div class="font-mono text-xs text-warm-400">{{ item.id }}</div>
+                </td>
+                <td class="px-5 py-4">{{ item.sort_order }}</td>
+                <td class="px-5 py-4">{{ "Yes" if item.is_visible else "No" }}</td>
+                <td class="px-5 py-4">
+                    <div class="flex justify-end gap-2">
+                        <a href="{{ url_for('admin.edit_item', section=section, item_id=item.id) }}" class="rounded-lg border border-warm-200 px-3 py-2 font-bold text-warm-700 hover:border-brand-accent">Edit</a>
+                        <form method="post" action="{{ url_for('admin.delete_item', section=section, item_id=item.id) }}" onsubmit="return confirm('Delete this item?');">
+                            <button class="rounded-lg border border-red-200 px-3 py-2 font-bold text-red-600 hover:bg-red-50">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="px-5 py-12 text-center text-warm-500">No items yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

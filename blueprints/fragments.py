@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template, abort, current_app
-from utils import find_item_by_id
+from flask import Blueprint, render_template, abort
+
+from portfolio_data import get_section_item, visible_items
+from models import Certificate, Education, Experience, Project, Skill
 
 fragments_bp = Blueprint("fragments", __name__, url_prefix="/fragment")
 
@@ -8,14 +10,14 @@ fragments_bp = Blueprint("fragments", __name__, url_prefix="/fragment")
 def projects():
     return render_template(
         "partials/cards/unified_cards.html",
-        items=current_app.config["DATA"]["projects"],
+        items=visible_items(Project),
         type="project"
     )
 
 
 @fragments_bp.route("/project-modal/<project_id>")
 def project_modal(project_id):
-    project = find_item_by_id(current_app.config["DATA"]["projects"], project_id, "id")
+    project = get_section_item("projects", project_id)
     if not project:
         abort(404)
     return render_template("partials/modals/project_modal.html", p=project)
@@ -25,13 +27,13 @@ def project_modal(project_id):
 def experience():
     return render_template(
         "partials/cards/experience_cards.html",
-        experience=current_app.config["DATA"]["experience"]
+        experience=visible_items(Experience)
     )
 
 
 @fragments_bp.route("/experience/<company_id>")
 def experience_detail(company_id):
-    job = find_item_by_id(current_app.config["DATA"]["experience"], company_id)
+    job = get_section_item("experience", company_id)
     if not job:
         abort(404)
     return render_template("partials/modals/experience_modal.html", exp=job)
@@ -41,13 +43,13 @@ def experience_detail(company_id):
 def education():
     return render_template(
         "partials/cards/education_cards.html",
-        education=current_app.config["DATA"]["education"]
+        education=visible_items(Education)
     )
 
 
 @fragments_bp.route("/education/<edu_id>")
 def education_detail(edu_id):
-    edu = find_item_by_id(current_app.config["DATA"]["education"], edu_id)
+    edu = get_section_item("education", edu_id)
     if not edu:
         abort(404)
     return render_template("partials/modals/education_modal.html", edu=edu)
@@ -57,13 +59,13 @@ def education_detail(edu_id):
 def skills():
     return render_template(
         "partials/cards/unified_cards.html",
-        items=current_app.config["DATA"]["skills"],
+        items=visible_items(Skill),
         type="skill"
     )
 
 @fragments_bp.route("/skill-modal/<skill_id>")
 def skill_modal(skill_id):
-    skill = find_item_by_id(current_app.config["DATA"]["skills"], skill_id)
+    skill = get_section_item("skills", skill_id)
     if not skill:
         abort(404)
     return render_template("partials/modals/skill_modal.html", skill=skill)
@@ -73,13 +75,13 @@ def skill_modal(skill_id):
 def certificates():
     return render_template(
         "partials/cards/certificate_cards.html",
-        certificates=current_app.config["DATA"]["certificates"]
+        certificates=visible_items(Certificate)
     )
 
 
 @fragments_bp.route("/certificate-modal/<cert_id>")
 def certificate_modal(cert_id):
-    cert = find_item_by_id(current_app.config["DATA"]["certificates"], cert_id)
+    cert = get_section_item("certificates", cert_id)
     if not cert:
         abort(404)
     return render_template("partials/modals/certificate_modal.html", cert=cert)

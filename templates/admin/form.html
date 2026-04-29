@@ -1,0 +1,74 @@
+{% extends "admin/base.html" %}
+
+{% macro render_value(item, name, field_type) -%}
+    {%- if field_type == 'json' -%}
+        {{- (item | attr(name)) | tojson(indent=2) -}}
+    {%- else -%}
+        {{- item | attr(name) or '' -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro structured_editor(name, label, value, kind) -%}
+    <textarea id="{{ name }}" name="{{ name }}" class="structured-json-value hidden">{{ value | tojson }}</textarea>
+    <div class="structured-editor rounded-2xl border border-warm-200 bg-warm-50 p-4"
+         data-target="{{ name }}"
+         data-kind="{{ kind }}"
+         data-label="{{ label }}">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h3 class="font-black text-warm-900">{{ label }}</h3>
+                <p class="text-xs font-medium text-warm-500">
+                    {% if kind == 'list' %}Add one item per row.
+                    {% elif kind == 'timeline' %}Add jobs, promotions, or roles for this company.
+                    {% elif kind == 'stages' %}Add modules and group them by stage.
+                    {% elif kind == 'progress' %}Set the label and progress value.
+                    {% else %}Add structured rows with normal form controls.
+                    {% endif %}
+                </p>
+            </div>
+            {% if kind != 'progress' %}
+            <button type="button" data-action="add-row" class="rounded-xl bg-brand-accent px-4 py-2 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">Add</button>
+            {% endif %}
+        </div>
+        <div data-role="rows" class="mt-4 space-y-3"></div>
+    </div>
+{%- endmacro %}
+
+{% block content %}
+<div class="mb-8">
+    <a href="{{ url_for('admin.dashboard') if config.singleton else url_for('admin.list_items', section=section) }}" class="text-sm font-bold text-brand-accent">Back</a>
+    <h1 class="mt-2 text-4xl font-black text-warm-900">{{ action }} {{ config.label }}</h1>
+    <p class="mt-2 text-warm-500">This page is not linked from the public site. Add content with simple fields, repeatable rows, and tags-style controls.</p>
+</div>
+
+<form method="post" class="space-y-5 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm" data-admin-form>
+    {% for name, label, field_type in config.fields %}
+        {% set value = item | attr(name) %}
+        <div>
+            {% if field_type == 'checkbox' %}
+            <label class="inline-flex items-center gap-3 rounded-xl border border-warm-200 px-4 py-3 font-bold text-warm-700">
+                <input type="checkbox" name="{{ name }}" value="1" {% if value %}checked{% endif %} class="h-5 w-5 rounded border-warm-300">
+                {{ label }}
+            </label>
+            {% else %}
+            <label for="{{ name }}" class="mb-2 block text-sm font-black text-warm-700">{{ label }}</label>
+                {% if field_type == 'json' %}
+                {{ structured_editor(name, label, value, json_editor_kinds.get(name, 'list')) }}
+                {% elif field_type == 'textarea' %}
+                <textarea id="{{ name }}" name="{{ name }}" rows="4" class="admin-input" {% if name == 'id' and action == 'Save' %}readonly{% endif %}>{{ render_value(item, name, field_type) }}</textarea>
+                {% else %}
+                <input id="{{ name }}" name="{{ name }}" type="{{ 'number' if field_type == 'integer' else 'text' }}" value="{{ value or '' }}" class="admin-input" {% if name == 'id' and action == 'Save' %}readonly{% endif %}>
+                {% endif %}
+                {% if field_help.get(name) %}
+                <p class="mt-2 text-xs font-medium text-warm-500">{{ field_help.get(name) }}</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <div class="flex flex-wrap gap-3 border-t border-warm-100 pt-5">
+        <button class="rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">{{ action }}</button>
+        <a href="{{ url_for('admin.dashboard') if config.singleton else url_for('admin.list_items', section=section) }}" class="rounded-xl border border-warm-200 px-6 py-3 font-black text-warm-700 hover:border-brand-accent">Cancel</a>
+    </div>
+</form>
+{% endblock %}
