@@ -1,5 +1,6 @@
 import logging
 import os
+from types import SimpleNamespace
 
 from extensions import db
 from models import Certificate, Education, Experience, Profile, Project, Skill
@@ -14,6 +15,73 @@ COLLECTIONS = {
     "education": Education,
     "skills": Skill,
     "certificates": Certificate,
+}
+MODEL_SECTIONS = {model: section for section, model in COLLECTIONS.items()}
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+
+FALLBACK_DEFAULTS = {
+    "projects": {
+        "desc": "",
+        "status": "Completed",
+        "icon": "fas fa-folder",
+        "iconColor": "text-gray-600",
+        "bgColor": "bg-gray-100",
+        "tags": [],
+        "links": [],
+        "stats": [],
+        "features": [],
+        "challenges": "",
+        "image": "",
+    },
+    "skills": {
+        "desc": "",
+        "icon": "fas fa-code",
+        "iconColor": "text-gray-600",
+        "bgColor": "bg-gray-100",
+        "tags": [],
+        "progress": None,
+        "stats": [],
+    },
+    "experience": {
+        "role": "",
+        "period": "",
+        "brief": "",
+        "details": [],
+        "tech_stack": [],
+        "timeline": [],
+        "skills": [],
+        "logo": "",
+        "location": "",
+        "type": "",
+        "icon": "fas fa-building",
+        "bgIcon": "fas fa-briefcase",
+        "iconColor": "text-gray-600",
+        "bgColor": "bg-gray-100",
+        "hoverColor": "text-gray-900",
+        "current": False,
+    },
+    "education": {
+        "year": "",
+        "logo": "",
+        "description": "",
+        "stages": {},
+        "progress": None,
+        "current": False,
+        "status": "",
+        "total_credits": None,
+        "gpa": "",
+        "modules_completed": None,
+    },
+    "certificates": {
+        "date": "",
+        "desc": "",
+        "image_path": "",
+        "logo": "",
+        "link": "#",
+        "credential_id": "",
+        "skills": [],
+        "verified": False,
+    },
 }
 
 
@@ -46,11 +114,17 @@ def get_profile():
 
 
 def visible_items(model):
-    return (
-        model.query.filter_by(is_visible=True)
-        .order_by(model.sort_order.asc(), model.id.asc())
-        .all()
-    )
+    try:
+        return (
+            model.query.filter_by(is_visible=True)
+            .order_by(model.sort_order.asc(), model.id.asc())
+            .all()
+        )
+    except Exception:
+        _rollback_session()
+        section = MODEL_SECTIONS.get(model, model.__name__)
+        logger.exception("Database query failed for %s; using JSON fallback.", section)
+        return _json_items(section)
 
 
 def get_portfolio():
@@ -59,10 +133,18 @@ def get_portfolio():
 
 def get_section_item(section, item_id, visible_only=True):
     model = COLLECTIONS[section]
-    query = model.query
-    if visible_only:
-        query = query.filter_by(is_visible=True)
-    return query.filter_by(id=item_id).first()
+    try:
+        query = model.query
+        if visible_only:
+            query = query.filter_by(is_visible=True)
+        item = query.filter_by(id=item_id).first()
+        if item:
+            return item
+    except Exception:
+        _rollback_session()
+        logger.exception("Database lookup failed for %s/%s; using JSON fallback.", section, item_id)
+
+    return _json_item(section, item_id, visible_only=visible_only)
 
 
 def seed_database_from_json(app):
@@ -88,3 +170,41 @@ def seed_database_from_json(app):
 def _filter_model_fields(model, record):
     columns = {column.name for column in model.__table__.columns}
     return {key: value for key, value in record.items() if key in columns}
+
+
+def _rollback_session():
+    try:
+        db.session.rollback()
+    except Exception:
+        logger.exception("Could not roll back the database session.")
+
+
+def _json_items(section):
+    records = load_json_file(DATA_DIR, f"{section}.json")
+    items = []
+    for index, record in enumerate(records):
+        if record.get("is_visible", True):
+            items.append(_namespace_item(section, record, index))
+    return items
+
+
+def _json_item(section, item_id, visible_only=True):
+    for index, record in enumerate(load_json_file(DATA_DIR, f"{section}.json")):
+        if record.get("id") != item_id:
+            continue
+        if visible_only and not record.get("is_visible", True):
+            return None
+        return _namespace_item(section, record, index)
+    return None
+
+
+def _namespace_item(section, record, index):
+    data = {
+        **FALLBACK_DEFAULTS.get(section, {}),
+        **record,
+        "sort_order": record.get("sort_order", index),
+        "is_visible": record.get("is_visible", True),
+    }
+    if section == "experience":
+        data["duration"] = data.get("period", "")
+    return SimpleNamespace(**data)
