@@ -140,7 +140,7 @@ def create_app():
             db.create_all()
             ensure_schema()
             seed_database_from_json(application)
-        except SQLAlchemyError as exc:
+        except Exception as exc:
             application.logger.exception("Database startup failed: %s", exc)
 
     # --- Register Blueprints ---
@@ -171,7 +171,7 @@ def create_app():
         try:
             profile = get_profile()
             portfolio = get_portfolio()
-        except SQLAlchemyError:
+        except Exception:
             application.logger.exception("Could not load database-backed page context.")
             profile = fallback_profile()
             portfolio = {

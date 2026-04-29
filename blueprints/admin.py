@@ -280,15 +280,22 @@ def logout():
 @admin_required
 def dashboard():
     counts = {}
-    for section, config in SECTIONS.items():
-        model = config["model"]
-        counts[section] = 1 if config.get("singleton") else model.query.count()
+    database_error = ""
+    try:
+        for section, config in SECTIONS.items():
+            model = config["model"]
+            counts[section] = 1 if config.get("singleton") else model.query.count()
+    except Exception as exc:
+        database_error = str(exc)
+        counts = {section: 0 for section in SECTIONS}
+
     admin_password_missing = not current_app.config.get("ADMIN_PASSWORD_HASH") and not current_app.config.get("ADMIN_PASSWORD")
     return render_template(
         "admin/dashboard.html",
         sections=SECTIONS,
         counts=counts,
         admin_password_missing=admin_password_missing,
+        database_error=database_error,
     )
 
 
@@ -302,7 +309,7 @@ def diagnostics():
     try:
         db.session.execute(text("SELECT 1"))
         table_names = sqlalchemy_inspect(db.engine).get_table_names()
-    except SQLAlchemyError as exc:
+    except Exception as exc:
         database_status = "error"
         database_error = str(exc)
 

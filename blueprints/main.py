@@ -14,13 +14,21 @@ def index():
 
 @main_bp.route('/health')
 def health():
-    checks = {
-        'projects': Project.query.filter_by(is_visible=True).count() > 0,
-        'experience': Experience.query.filter_by(is_visible=True).count() > 0,
-        'education': Education.query.filter_by(is_visible=True).count() > 0,
-        'skills': Skill.query.filter_by(is_visible=True).count() > 0,
-        'certificates': Certificate.query.filter_by(is_visible=True).count() > 0,
-    }
+    try:
+        checks = {
+            'projects': Project.query.filter_by(is_visible=True).count() > 0,
+            'experience': Experience.query.filter_by(is_visible=True).count() > 0,
+            'education': Education.query.filter_by(is_visible=True).count() > 0,
+            'skills': Skill.query.filter_by(is_visible=True).count() > 0,
+            'certificates': Certificate.query.filter_by(is_visible=True).count() > 0,
+        }
+    except Exception as exc:
+        return {
+            'status': 'degraded',
+            'timestamp': datetime.now().isoformat(),
+            'error': str(exc),
+            'checks': {}
+        }, 503
 
     all_healthy = all(checks.values())
 
