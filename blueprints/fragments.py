@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, abort
 
-from portfolio_data import get_section_item, visible_items
+from portfolio_data import get_section_item, skills_with_dynamic_metrics, visible_items
 from models import Certificate, Education, Experience, Project, Skill
 
 fragments_bp = Blueprint("fragments", __name__, url_prefix="/fragment")
@@ -57,15 +57,32 @@ def education_detail(edu_id):
 
 @fragments_bp.route("/skills")
 def skills():
+    skill_items = skills_with_dynamic_metrics(
+        visible_items(Skill),
+        visible_items(Project),
+        visible_items(Certificate),
+        visible_items(Experience),
+    )
     return render_template(
         "partials/cards/unified_cards.html",
-        items=visible_items(Skill),
+        items=skill_items,
         type="skill"
     )
 
 @fragments_bp.route("/skill-modal/<skill_id>")
 def skill_modal(skill_id):
-    skill = get_section_item("skills", skill_id)
+    skill = next(
+        (
+            item for item in skills_with_dynamic_metrics(
+                visible_items(Skill),
+                visible_items(Project),
+                visible_items(Certificate),
+                visible_items(Experience),
+            )
+            if item.id == skill_id
+        ),
+        None,
+    )
     if not skill:
         abort(404)
     return render_template("partials/modals/skill_modal.html", skill=skill)

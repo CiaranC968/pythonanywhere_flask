@@ -1,5 +1,7 @@
 import logging
 import os
+import re
+from datetime import date
 from types import SimpleNamespace
 
 from extensions import db
@@ -128,7 +130,26 @@ def visible_items(model):
 
 
 def get_portfolio():
-    return {name: visible_items(model) for name, model in COLLECTIONS.items()}
+    portfolio = {name: visible_items(model) for name, model in COLLECTIONS.items()}
+    portfolio["skills"] = skills_with_dynamic_metrics(
+        portfolio["skills"],
+        portfolio["projects"],
+        portfolio["certificates"],
+        portfolio["experience"],
+    )
+    return portfolio
+
+
+def skills_with_dynamic_metrics(skills, projects, certificates, experience):
+    metrics = [
+        _skill_metrics(skill, projects, certificates, experience)
+        for skill in skills
+    ]
+    max_years = max([metric["years"] for metric in metrics] + [1])
+    return [
+        _skill_with_metrics(skill, metric, max_years)
+        for skill, metric in zip(skills, metrics)
+    ]
 
 
 def get_section_item(section, item_id, visible_only=True):
@@ -208,3 +229,152 @@ def _namespace_item(section, record, index):
     if section == "experience":
         data["duration"] = data.get("period", "")
     return SimpleNamespace(**data)
+
+
+def _skill_metrics(skill, projects, certificates, experience):
+    terms = _term_bag([getattr(skill, "title", ""), *(getattr(skill, "tags", None) or [])])
+    matching_projects = [
+        project for project in projects
+        if _bags_overlap(terms, _term_bag(getattr(project, "tags", None) or []))
+    ]
+    matching_certificates = [
+        cert for cert in certificates
+        if _bags_overlap(
+            terms,
+            _term_bag([
+                getattr(cert, "title", ""),
+                getattr(cert, "desc", ""),
+                *(getattr(cert, "skills", None) or []),
+            ]),
+        )
+    ]
+    matching_experience = [
+        item for item in experience
+        if _bags_overlap(terms, _experience_terms(item))
+    ]
+
+    years = []
+    for project in matching_projects:
+        years.extend(_project_years(project))
+    for cert in matching_certificates:
+        years.extend(_years_from_text(getattr(cert, "date", "")))
+    for item in matching_experience:
+        years.extend(_experience_years(item))
+
+    first_year = min(years) if years else None
+    return {
+        "project_count": len(matching_projects),
+        "certificate_count": len(matching_certificates),
+        "years": _inclusive_years(first_year),
+    }
+
+
+def _skill_with_metrics(skill, metric, max_years):
+    progress = dict(getattr(skill, "progress", None) or {})
+    progress.update(
+        {
+            "label": progress.get("label") or "Experience",
+            "value": metric["years"],
+            "unit": progress.get("unit") or "years",
+            "max": max(max_years, metric["years"], 1),
+        }
+    )
+
+    stats = [
+        stat for stat in (getattr(skill, "stats", None) or [])
+        if not _is_dynamic_skill_stat(stat)
+    ]
+    if metric["project_count"]:
+        stats.append({"icon": "fas fa-folder", "value": metric["project_count"], "label": "projects"})
+    if metric["certificate_count"]:
+        stats.append({"icon": "fas fa-award", "value": metric["certificate_count"], "label": "certs"})
+
+    return _clone_item(skill, progress=progress, stats=stats)
+
+
+def _is_dynamic_skill_stat(stat):
+    icon = _normalise_term(stat.get("icon", ""))
+    label = _normalise_term(stat.get("label", ""))
+    return "folder" in icon or "award" in icon or "certificate" in icon or label in {"project", "projects", "cert", "certs", "certificate", "certificates"}
+
+
+def _clone_item(item, **overrides):
+    if hasattr(item, "__table__"):
+        data = {column.name: getattr(item, column.name) for column in item.__table__.columns}
+    else:
+        data = {
+            key: value
+            for key, value in vars(item).items()
+            if not key.startswith("_")
+        }
+    data.update(overrides)
+    return SimpleNamespace(**data)
+
+
+def _experience_terms(item):
+    values = [
+        getattr(item, "role", ""),
+        getattr(item, "brief", ""),
+        *(getattr(item, "tech_stack", None) or []),
+        *(getattr(item, "skills", None) or []),
+    ]
+    for timeline_item in getattr(item, "timeline", None) or []:
+        values.extend([
+            timeline_item.get("role", ""),
+            timeline_item.get("desc", ""),
+            *(timeline_item.get("tech_stack", []) or []),
+            *(timeline_item.get("skills", []) or []),
+        ])
+    return _term_bag(values)
+
+
+def _experience_years(item):
+    years = _years_from_text(getattr(item, "period", ""))
+    for timeline_item in getattr(item, "timeline", None) or []:
+        years.extend(_years_from_text(timeline_item.get("period", "")))
+    return years
+
+
+def _project_years(project):
+    years = []
+    for stat in getattr(project, "stats", None) or []:
+        years.extend(_years_from_text(stat.get("value", "")))
+    if not years and getattr(project, "status", "") in {"Live", "In Progress"}:
+        years.append(date.today().year)
+    return years
+
+
+def _inclusive_years(first_year):
+    if not first_year:
+        return 0
+    return max(1, date.today().year - first_year + 1)
+
+
+def _years_from_text(value):
+    return [
+        int(match.group(0))
+        for match in re.finditer(r"\b(?:19|20)\d{2}\b", str(value))
+    ]
+
+
+def _term_bag(values):
+    phrases = set()
+    tokens = set()
+    for value in values:
+        text = _normalise_term(value)
+        if not text:
+            continue
+        phrases.add(text)
+        tokens.update(part for part in text.split() if len(part) > 1)
+    return {"phrases": phrases, "tokens": tokens}
+
+
+def _normalise_term(value):
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", str(value).lower())).strip()
+
+
+def _bags_overlap(left, right):
+    return bool(
+        left["phrases"] & right["phrases"]
+        or left["tokens"] & right["tokens"]
+    )
