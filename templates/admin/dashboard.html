@@ -10,6 +10,7 @@
         <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">CV Builder</a>
         <a href="{{ url_for('admin.resume_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Resume Builder</a>
         <a href="{{ url_for('admin.diagnostics') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Diagnostics</a>
+        <a href="{{ url_for('admin.deployment_checklist') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Deployment</a>
         <a href="{{ url_for('cv.get_cv') }}" target="_blank" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Preview PDF</a>
     </div>
 </div>
@@ -55,6 +56,15 @@
                 <p class="mt-2 text-sm text-warm-500">Create a company-specific resume letter using reusable sentence templates.</p>
             </div>
             <span class="rounded-xl border border-warm-200 px-4 py-2 text-sm font-black text-warm-700">Build Resume</span>
+        </div>
+    </a>
+    <a href="{{ url_for('admin.deployment_checklist') }}" class="block rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-black text-warm-900">Deployment Checklist</h2>
+                <p class="mt-2 text-sm text-warm-500">Check database, tables, PDF libraries, environment, and upload path before publishing.</p>
+            </div>
+            <span class="rounded-xl border border-warm-200 px-4 py-2 text-sm font-black text-warm-700">Check</span>
         </div>
     </a>
 </div>
