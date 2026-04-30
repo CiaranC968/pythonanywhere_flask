@@ -190,4 +190,62 @@
         </button>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const companyInput = document.getElementById('company_name');
+    const roleInput = document.getElementById('target_role');
+
+    // Helper function to replace placeholders with current input values
+    function processPlaceholders(rawText, presetRole = null) {
+        if (!rawText) return '';
+
+        // Use current input values, or fallback to a visible placeholder if left blank
+        const companyValue = companyInput.value.trim() || '[Company]';
+        const roleValue = presetRole || roleInput.value.trim() || '[Role]';
+        return rawText
+            .replace(/\{company/gi, companyValue)
+            .replace(/\{role/gi, roleValue);
+    }
+
+    // Handle individual template sentence buttons
+    const templateButtons = document.querySelectorAll('button[data-template-target]');
+    templateButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-template-target');
+            const rawText = JSON.parse(button.getAttribute('data-template-text'));
+            const targetTextarea = document.getElementById(targetId);
+
+            if (!targetTextarea) return;
+
+            const processedText = processPlaceholders(rawText);
+
+            // Append the text safely. Add a double newline if there's already text.
+            if (targetTextarea.value.trim() !== '') {
+                targetTextarea.value += '\n\n' + processedText;
+            } else {
+                targetTextarea.value = processedText;
+            }
+        });
+    });
+
+    // Handle the Role Preset buttons
+    const rolePresetButtons = document.querySelectorAll('button[data-role-preset]');
+    rolePresetButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const preset = JSON.parse(button.getAttribute('data-role-preset'));
+
+            document.getElementById('header_subtitle').value = preset.header_subtitle || '';
+            document.getElementById('target_role').value = preset.target_role || '';
+            document.getElementById('resume_keywords').value = preset.resume_keywords || '';
+
+            const presetRole = preset.target_role;
+
+            document.getElementById('resume_summary').value = processPlaceholders(preset.resume_summary, presetRole);
+            document.getElementById('company_details').value = processPlaceholders(preset.company_details, presetRole);
+            document.getElementById('resume_conclusion').value = processPlaceholders(preset.resume_conclusion, presetRole);
+        });
+    });
+});
+</script>
 {% endblock %}
