@@ -386,14 +386,16 @@
 
             tbody.addEventListener('dragstart', (event) => {
                 const row = event.target.closest('tr[data-sortable-id]');
-                if (!row || !event.target.closest('[data-drag-handle]')) {
+                if (!row) {
                     event.preventDefault();
                     return;
                 }
                 draggedRow = row;
                 row.classList.add('opacity-50');
-                event.dataTransfer.effectAllowed = 'move';
-                event.dataTransfer.setData('text/plain', row.dataset.sortableId);
+                if (event.dataTransfer) {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', row.dataset.sortableId);
+                }
             });
 
             tbody.addEventListener('dragover', (event) => {
@@ -413,6 +415,10 @@
                 draggedRow.classList.remove('opacity-50');
                 draggedRow = null;
                 saveSortableOrder(tbody);
+            });
+
+            tbody.addEventListener('drop', (event) => {
+                if (draggedRow) event.preventDefault();
             });
         });
     }

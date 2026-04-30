@@ -35,7 +35,7 @@
                 {% if section == 'projects' %}
                 <td class="px-5 py-4 align-middle">
                     {% if item.is_visible %}
-                    <button type="button" class="cursor-grab rounded-lg border border-warm-200 bg-white px-2 py-1.5 text-warm-500 hover:border-brand-accent hover:text-warm-900" data-drag-handle aria-label="Drag {{ item | attr(config.title_field) }}">
+                    <button type="button" class="cursor-grab rounded-lg border border-warm-200 bg-white px-2 py-1.5 text-warm-500 hover:border-brand-accent hover:text-warm-900" data-drag-handle draggable="false" aria-label="Drag {{ item | attr(config.title_field) }}">
                         <i class="fas fa-grip-vertical" aria-hidden="true"></i>
                     </button>
                     {% endif %}
