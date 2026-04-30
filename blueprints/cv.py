@@ -734,19 +734,17 @@ def _draw_pills(ctx, labels, x, y, width, font_size=8, max_y=45):
         if start_y - y > max_y:
             break
         label = _truncate(_text(label), 46)
-        pill_w = min(ctx["string_width"](label, "Helvetica-Bold", font_size) + 9, width)
-        if cursor_x + pill_w > x + width:
+        label_w = min(ctx["string_width"](label, "Helvetica-Bold", font_size), width)
+        if cursor_x + label_w > x + width:
             cursor_x = x
             y -= row_h
             if start_y - y > max_y:
                 break
 
-        pdf.setStrokeColor(theme["line"])
-        pdf.roundRect(cursor_x, y - 3, pill_w, font_size + 5.5, 3, fill=0, stroke=1)
         pdf.setFillColor(theme["muted"])
         pdf.setFont("Helvetica-Bold", font_size)
-        pdf.drawString(cursor_x + 5, y, label)
-        cursor_x += pill_w + 3
+        pdf.drawString(cursor_x, y, label)
+        cursor_x += label_w + 9
 
     return y - row_h
 
