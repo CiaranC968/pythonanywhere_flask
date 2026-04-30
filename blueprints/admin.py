@@ -1040,8 +1040,8 @@ def _resume_options():
         c_val = company_name if company_name else "your organisation"
         r_val = target_role if target_role else "the advertised role"
 
-        text = re.sub(r'\{company', c_val, text, flags=re.IGNORECASE)
-        text = re.sub(r'\{role', r_val, text, flags=re.IGNORECASE)
+        text = re.sub(r'\{company\}', c_val, text, flags=re.IGNORECASE)
+        text = re.sub(r'\{role\}', r_val, text, flags=re.IGNORECASE)
         return text
 
     return {
