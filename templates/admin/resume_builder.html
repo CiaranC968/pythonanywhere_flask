@@ -31,7 +31,7 @@
         <h2 class="text-xl font-black text-warm-900">Add Template Sentence</h2>
         <p class="mt-1 text-sm text-warm-500">Saved sentences appear as buttons in the matching section below.</p>
     </div>
-    <div class="grid gap-4 lg:grid-cols-[0.8fr_1fr_2fr_auto] lg:items-end">
+    <div class="grid gap-4 lg:grid-cols-2">
         <label class="block">
             <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Section</span>
             <select name="template_target" class="admin-input">
@@ -44,12 +44,14 @@
             <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Button label</span>
             <input name="template_label" class="admin-input" placeholder="Python strength">
         </label>
-        <label class="block">
+        <label class="block lg:col-span-2">
             <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sentence</span>
             <textarea name="template_text" rows="2" class="admin-input" placeholder="Use {company} and {role} as placeholders."></textarea>
         </label>
+    </div>
+    <div class="mt-4 flex justify-end">
         <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-warm-900 px-5 py-3 font-black text-white hover:bg-warm-700">
-            Add
+            Save Template Sentence
         </button>
     </div>
 </form>
