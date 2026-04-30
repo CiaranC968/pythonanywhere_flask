@@ -2,7 +2,7 @@ import os
 import secrets
 from datetime import datetime
 from types import SimpleNamespace
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus
 
 from flask import Flask, render_template, request
 from sqlalchemy import inspect, text
@@ -19,8 +19,10 @@ from portfolio_data import get_portfolio, get_profile, seed_database_from_json
 
 
 def load_dotenv(path=None):
-    """Tiny .env loader for local dev; PythonAnywhere uses WSGI env values."""
-    path = path or os.environ.get("ENV_FILE", ".env")
+    """Tiny .env loader for local dev and simple PythonAnywhere deployments."""
+    path = path or os.environ.get("ENV_FILE")
+    if not path:
+        path = ".env" if os.path.exists(".env") else "/home/ciaranc88/mysite/.env"
     if not os.path.exists(path):
         return
 
@@ -30,7 +32,7 @@ def load_dotenv(path=None):
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
+            os.environ[key.strip()] = value.strip().strip("\"'")
 
 
 def ensure_schema():
@@ -233,7 +235,7 @@ def build_database_url():
         return (
             "mysql+pymysql://"
             f"{quote_plus(mysql_user)}:{quote_plus(mysql_password)}"
-            f"@{host_part}/{quote_plus(mysql_database)}?charset=utf8mb4"
+            f"@{host_part}/{quote(mysql_database, safe='$')}?charset=utf8mb4"
         )
 
     return "sqlite:///portfolio.db"
