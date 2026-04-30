@@ -11,7 +11,9 @@ def projects():
     return render_template(
         "partials/cards/unified_cards.html",
         items=visible_items(Project),
-        type="project"
+        type="project",
+        limit=6,
+        toggle_label="projects",
     )
 
 

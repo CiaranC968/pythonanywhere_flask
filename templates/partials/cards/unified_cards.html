@@ -1,5 +1,6 @@
 {% set max_tags = max_tags | default(3) %}
 {% set limit = limit | default(items | length) %}
+{% set toggle_label = toggle_label | default(type ~ 's') %}
 
 {% for item in items %}
     {% set card_id = type ~ "-" ~ item.id %}
@@ -117,3 +118,18 @@
     <p class="text-gray-500 dark:text-gray-400">Content will appear here.</p>
 </div>
 {% endfor %}
+
+{% if items | length > limit %}
+    {% set remaining = (items | length) - limit %}
+    <div class="col-span-full flex justify-center pt-2">
+        <button type="button"
+                class="inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-black text-gray-700 shadow-sm transition hover:border-brand-accent hover:text-brand-accent dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                data-card-toggle
+                data-show-label="Show {{ remaining }} more {{ toggle_label }}"
+                data-hide-label="Show fewer {{ toggle_label }}"
+                aria-expanded="false">
+            <span data-card-toggle-text>Show {{ remaining }} more {{ toggle_label }}</span>
+            <i class="fas fa-chevron-down text-brand-accent transition-transform" data-card-toggle-icon aria-hidden="true"></i>
+        </button>
+    </div>
+{% endif %}

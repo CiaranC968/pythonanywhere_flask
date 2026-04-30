@@ -9,6 +9,7 @@ from flask import (
     abort,
     current_app,
     flash,
+    jsonify,
     make_response,
     redirect,
     render_template,
@@ -803,6 +804,32 @@ def resume_builder_pdf():
     profile = get_profile()
     filename = _document_filename(profile.full_name, "resume", resume_options, _safe_filename)
     return _pdf_response(pdf_bytes, filename)
+
+
+@admin_bp.route("/projects/reorder", methods=["POST"])
+@admin_required
+def reorder_projects():
+    payload = request.get_json(silent=True) or {}
+    item_ids = [str(item_id) for item_id in payload.get("ids", []) if item_id]
+    if not item_ids:
+        return jsonify({"ok": False, "error": "No project ids supplied."}), 400
+
+    projects = {
+        project.id: project
+        for project in Project.query.filter(Project.id.in_(item_ids)).all()
+    }
+    for index, item_id in enumerate(item_ids, start=1):
+        project = projects.get(item_id)
+        if project and project.is_visible:
+            project.sort_order = index * 10
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        return jsonify({"ok": False, "error": str(exc)}), 500
+
+    return jsonify({"ok": True})
 
 
 @admin_bp.route("/<section>")

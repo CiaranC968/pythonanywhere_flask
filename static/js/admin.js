@@ -380,8 +380,80 @@
         });
     }
 
+    function initSortableLists() {
+        document.querySelectorAll('[data-sortable-section]').forEach((tbody) => {
+            let draggedRow = null;
+
+            tbody.addEventListener('dragstart', (event) => {
+                const row = event.target.closest('tr[data-sortable-id]');
+                if (!row || !event.target.closest('[data-drag-handle]')) {
+                    event.preventDefault();
+                    return;
+                }
+                draggedRow = row;
+                row.classList.add('opacity-50');
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', row.dataset.sortableId);
+            });
+
+            tbody.addEventListener('dragover', (event) => {
+                if (!draggedRow) return;
+                event.preventDefault();
+                const afterElement = dragAfterElement(tbody, event.clientY);
+                if (afterElement) tbody.insertBefore(draggedRow, afterElement);
+                else {
+                    const firstLockedRow = tbody.querySelector('tr:not([data-sortable-id])');
+                    if (firstLockedRow) tbody.insertBefore(draggedRow, firstLockedRow);
+                    else tbody.appendChild(draggedRow);
+                }
+            });
+
+            tbody.addEventListener('dragend', () => {
+                if (!draggedRow) return;
+                draggedRow.classList.remove('opacity-50');
+                draggedRow = null;
+                saveSortableOrder(tbody);
+            });
+        });
+    }
+
+    function dragAfterElement(container, y) {
+        return [...container.querySelectorAll('tr[data-sortable-id]:not(.opacity-50)')]
+            .reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset, element: child };
+                }
+                return closest;
+            }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+    }
+
+    async function saveSortableOrder(tbody) {
+        const ids = [...tbody.querySelectorAll('tr[data-sortable-id]')].map((row) => row.dataset.sortableId);
+        if (!ids.length || !tbody.dataset.sortUrl) return;
+
+        tbody.classList.add('opacity-70');
+        try {
+            const response = await fetch(tbody.dataset.sortUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids })
+            });
+            if (!response.ok) throw new Error('Could not save order');
+            tbody.querySelectorAll('[data-sort-order-cell]').forEach((cell, index) => {
+                cell.textContent = String((index + 1) * 10);
+            });
+        } catch (_error) {
+            window.alert('Could not save the new project order. Refresh and try again.');
+        } finally {
+            tbody.classList.remove('opacity-70');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.structured-editor').forEach(initEditor);
+        initSortableLists();
         renderIconPicker();
         activateFormTab(0);
 

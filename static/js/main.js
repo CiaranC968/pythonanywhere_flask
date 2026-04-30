@@ -142,6 +142,12 @@ const GlobalEvents = {
                 return;
             }
 
+            const cardToggle = target.closest('[data-card-toggle]');
+            if (cardToggle) {
+                CardToggle.toggle(cardToggle);
+                return;
+            }
+
             // F. Copy Email Button
             const copyBtn = target.closest('.copy-btn');
             if (copyBtn) {
@@ -443,7 +449,28 @@ const RevealManager = {
 };
 
 // =========================================
-// 10. HTMX ERROR HANDLING
+// 10. CARD SHOW MORE TOGGLE
+// =========================================
+const CardToggle = {
+    toggle(button) {
+        const container = button.closest('.grid');
+        if (!container) return;
+
+        const expanded = button.getAttribute('aria-expanded') === 'true';
+        container.querySelectorAll('.card-overflow').forEach((card) => {
+            card.classList.toggle('hidden', expanded);
+        });
+
+        button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        const label = expanded ? button.dataset.showLabel : button.dataset.hideLabel;
+        button.querySelector('[data-card-toggle-text]').textContent = label;
+        button.querySelector('[data-card-toggle-icon]')?.classList.toggle('rotate-180', !expanded);
+        Utils.announce(label);
+    }
+};
+
+// =========================================
+// 11. HTMX ERROR HANDLING
 // =========================================
 const HtmxErrors = {
     init() {
@@ -475,7 +502,7 @@ const HtmxErrors = {
 };
 
 // =========================================
-// 11. INITIALIZATION
+// 12. INITIALIZATION
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Set Footer Year
