@@ -20,15 +20,6 @@
             border-color: #facc15;
             box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.25);
         }
-        .bg-warm-800 {
-            background-color: var(--color-warm-800, #27231f);
-        }
-        .bg-warm-900 {
-            background-color: var(--color-warm-900, #1a1815);
-        }
-        .hover\:bg-warm-700:hover {
-            background-color: var(--color-warm-700, #45413a);
-        }
         .structured-row {
             border-radius: 1rem;
             border: 1px solid #e8e6e1;
@@ -63,7 +54,7 @@
             <a href="{{ url_for('admin.dashboard') }}" class="text-xl font-black text-warm-900">Portfolio Admin</a>
             {% if session.get('admin_authenticated') %}
             <form method="post" action="{{ url_for('admin.logout') }}">
-                <button class="rounded-lg bg-warm-800 px-4 py-2 text-sm font-bold text-white hover:bg-warm-700">Log out</button>
+                <button class="rounded-lg border border-warm-200 bg-white px-4 py-2 text-sm font-bold text-warm-800 hover:border-brand-accent">Log out</button>
             </form>
             {% endif %}
         </div>
