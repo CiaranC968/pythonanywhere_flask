@@ -23,7 +23,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import check_password_hash
 
 from extensions import db
-from models import Certificate, Education, Experience, Profile, Project, Skill
+from models import Certificate, Education, Experience, Profile, Project, ResumeTemplate, Skill
 from portfolio_data import get_portfolio, get_profile
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -574,8 +574,35 @@ def resume_builder():
     return render_template(
         "admin/resume_builder.html",
         profile=get_profile(),
-        sentence_templates=RESUME_SENTENCE_TEMPLATES,
+        sentence_templates=_resume_sentence_templates(),
     )
+
+
+@admin_bp.route("/resume-builder/templates", methods=["POST"])
+@admin_required
+def add_resume_template():
+    target = request.form.get("template_target", "").strip()
+    label = request.form.get("template_label", "").strip()
+    text_value = request.form.get("template_text", "").strip()
+    allowed_targets = {"resume_summary", "company_details", "resume_conclusion"}
+
+    if target not in allowed_targets or not label or not text_value:
+        flash("Choose a section, label, and sentence before saving a template.", "error")
+        return redirect(url_for("admin.resume_builder"))
+
+    max_order = db.session.query(func.max(ResumeTemplate.sort_order)).scalar()
+    db.session.add(
+        ResumeTemplate(
+            target=target,
+            label=label,
+            text=text_value,
+            sort_order=(max_order or 0) + 10,
+            is_visible=True,
+        )
+    )
+    if _commit_or_flash():
+        flash("Template sentence added.", "success")
+    return redirect(url_for("admin.resume_builder"))
 
 
 @admin_bp.route("/resume-builder/pdf", methods=["POST"])
@@ -697,6 +724,28 @@ def _document_sections(portfolio):
         ]
         sections.append({**config, "item_list": item_list})
     return sections
+
+
+def _resume_sentence_templates():
+    templates = [dict(template) for template in RESUME_SENTENCE_TEMPLATES]
+    try:
+        custom_templates = (
+            ResumeTemplate.query.filter_by(is_visible=True)
+            .order_by(ResumeTemplate.sort_order.asc(), ResumeTemplate.id.asc())
+            .all()
+        )
+        templates.extend(
+            {
+                "target": template.target,
+                "label": template.label,
+                "text": template.text,
+            }
+            for template in custom_templates
+        )
+    except Exception as exc:
+        current_app.logger.exception("Could not load resume templates: %s", exc)
+        db.session.rollback()
+    return templates
 
 
 def _document_item_label(section, item):

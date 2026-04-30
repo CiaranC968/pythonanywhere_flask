@@ -1,14 +1,14 @@
 {% extends "admin/base.html" %}
 
-{% macro template_buttons(group) %}
+{% macro template_buttons(target, label) %}
 <div class="rounded-2xl border border-warm-200 bg-warm-50 p-4">
-    <h3 class="text-sm font-black uppercase tracking-wider text-warm-500">{{ group.label }}</h3>
+    <h3 class="text-sm font-black uppercase tracking-wider text-warm-500">{{ label }}</h3>
     <div class="mt-3 flex flex-wrap gap-2">
-        {% for sentence in group.sentences %}
+        {% for sentence in sentence_templates if sentence.target == target %}
         <button type="button"
                 class="rounded-lg border border-warm-200 bg-white px-3 py-2 text-left text-xs font-black text-warm-700 hover:border-brand-accent hover:bg-brand-accent/10"
-                data-template-target="{{ group.target }}"
-                data-template-text="{{ sentence.text }}">
+                data-template-target="{{ target }}"
+                data-template-text="{{ sentence.text|tojson|forceescape }}">
             {{ sentence.label }}
         </button>
         {% endfor %}
@@ -25,6 +25,34 @@
     </div>
     <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Custom CV Builder</a>
 </div>
+
+<form method="post" action="{{ url_for('admin.add_resume_template') }}" class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+    <div class="mb-4">
+        <h2 class="text-xl font-black text-warm-900">Add Template Sentence</h2>
+        <p class="mt-1 text-sm text-warm-500">Saved sentences appear as buttons in the matching section below.</p>
+    </div>
+    <div class="grid gap-4 lg:grid-cols-[0.8fr_1fr_2fr_auto] lg:items-end">
+        <label class="block">
+            <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Section</span>
+            <select name="template_target" class="admin-input">
+                <option value="resume_summary">Introduction</option>
+                <option value="company_details">What I bring</option>
+                <option value="resume_conclusion">Conclusion</option>
+            </select>
+        </label>
+        <label class="block">
+            <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Button label</span>
+            <input name="template_label" class="admin-input" placeholder="Python strength">
+        </label>
+        <label class="block">
+            <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sentence</span>
+            <textarea name="template_text" rows="2" class="admin-input" placeholder="Use {company} and {role} as placeholders."></textarea>
+        </label>
+        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-warm-900 px-5 py-3 font-black text-white hover:bg-warm-700">
+            Add
+        </button>
+    </div>
+</form>
 
 <form method="post" action="{{ url_for('admin.resume_builder_pdf') }}" class="space-y-6" data-resume-builder>
     <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
@@ -68,9 +96,9 @@
         </section>
 
         <aside class="space-y-4">
-            {% for group in sentence_template_groups %}
-                {{ template_buttons(group) }}
-            {% endfor %}
+            {{ template_buttons('resume_summary', 'Introduction sentences') }}
+            {{ template_buttons('company_details', 'What I bring sentences') }}
+            {{ template_buttons('resume_conclusion', 'Conclusion sentences') }}
         </aside>
     </div>
 

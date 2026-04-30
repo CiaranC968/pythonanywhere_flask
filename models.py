@@ -107,3 +107,10 @@ class Certificate(db.Model, SortableMixin):
     credential_id = db.Column(db.String(180), nullable=False, default="")
     skills = db.Column(db.JSON, nullable=False, default=list)
     verified = db.Column(db.Boolean, nullable=False, default=False)
+
+
+class ResumeTemplate(db.Model, SortableMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    target = db.Column(db.String(80), nullable=False, default="company_details")
+    label = db.Column(db.String(120), nullable=False, default="")
+    text = db.Column(db.Text, nullable=False, default="")
