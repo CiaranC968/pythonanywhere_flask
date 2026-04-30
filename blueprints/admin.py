@@ -41,19 +41,23 @@ STYLE_FIELDS = {"iconColor", "bgColor", "hoverColor"}
 FIELD_GROUPS = {
     "profile": [
         ("Profile", ["full_name", "title", "tagline", "cv_subtitle", "about"]),
-        ("Contact", ["email", "phone", "address", "linkedin_url", "github_url", "website_url", "location", "availability_text", "contact_intro"]),
+        ("Contact",
+         ["email", "phone", "address", "linkedin_url", "github_url", "website_url", "location", "availability_text",
+          "contact_intro"]),
         ("Media", ["profile_image"]),
         ("Icon", ["hero_icon"]),
     ],
     "experience": [
-        ("Core", ["id", "company", "role", "period", "brief", "location", "type", "current", "sort_order", "is_visible"]),
+        ("Core",
+         ["id", "company", "role", "period", "brief", "location", "type", "current", "sort_order", "is_visible"]),
         ("Details", ["details", "tech_stack", "timeline", "skills"]),
         ("Media", ["logo"]),
         ("Icon", ["icon", "bgIcon"]),
         ("Colour customisation", ["iconColor", "bgColor", "hoverColor"]),
     ],
     "education": [
-        ("Core", ["id", "degree", "university", "year", "description", "current", "status", "progress", "sort_order", "is_visible"]),
+        ("Core", ["id", "degree", "university", "year", "description", "current", "status", "progress", "sort_order",
+                  "is_visible"]),
         ("Modules & results", ["stages", "total_credits", "gpa", "modules_completed"]),
         ("Media", ["logo"]),
     ],
@@ -63,13 +67,15 @@ FIELD_GROUPS = {
         ("Colour customisation", ["iconColor", "bgColor"]),
     ],
     "projects": [
-        ("Core", ["id", "title", "desc", "status", "tags", "links", "stats", "features", "challenges", "sort_order", "is_visible"]),
+        ("Core", ["id", "title", "desc", "status", "tags", "links", "stats", "features", "challenges", "sort_order",
+                  "is_visible"]),
         ("Media", ["image"]),
         ("Icon", ["icon"]),
         ("Colour customisation", ["iconColor", "bgColor"]),
     ],
     "certificates": [
-        ("Core", ["id", "title", "issuer", "date", "desc", "link", "credential_id", "skills", "verified", "sort_order", "is_visible"]),
+        ("Core", ["id", "title", "issuer", "date", "desc", "link", "credential_id", "skills", "verified", "sort_order",
+                  "is_visible"]),
         ("Media", ["image_path", "logo"]),
     ],
 }
@@ -542,7 +548,8 @@ def dashboard():
         database_error = str(exc)
         counts = {section: 0 for section in SECTIONS}
 
-    admin_password_missing = not current_app.config.get("ADMIN_PASSWORD_HASH") and not current_app.config.get("ADMIN_PASSWORD")
+    admin_password_missing = not current_app.config.get("ADMIN_PASSWORD_HASH") and not current_app.config.get(
+        "ADMIN_PASSWORD")
     return render_template(
         "admin/dashboard.html",
         sections=SECTIONS,
@@ -929,7 +936,8 @@ def _document_sections(portfolio):
         ]
         warning = ""
         if max_items and len(source_items) > max_items:
-            warning = config.get("overflow_warning") or f"This section is capped at {max_items} items to protect the PDF layout."
+            warning = config.get(
+                "overflow_warning") or f"This section is capped at {max_items} items to protect the PDF layout."
         sections.append({**config, "item_list": item_list, "warning": warning})
     return sections
 
@@ -955,7 +963,8 @@ def _custom_resume_templates(include_hidden=False):
         query = ResumeTemplate.query
         if not include_hidden:
             query = query.filter_by(is_visible=True)
-        return query.order_by(ResumeTemplate.is_visible.desc(), ResumeTemplate.sort_order.asc(), ResumeTemplate.id.asc()).all()
+        return query.order_by(ResumeTemplate.is_visible.desc(), ResumeTemplate.sort_order.asc(),
+                              ResumeTemplate.id.asc()).all()
     except SQLAlchemyError as exc:
         current_app.logger.exception("Could not load custom resume templates: %s", exc)
         db.session.rollback()
@@ -1020,17 +1029,29 @@ def _resume_options():
     header_subtitle = request.form.get("header_subtitle", "").strip()
     company_name = request.form.get("company_name", "").strip()
     target_role = request.form.get("target_role", "").strip()
+
     if not header_subtitle:
         header_subtitle = target_role or "Resume Letter"
+
+    def replace_tags(text):
+        if not text:
+            return text
+
+        c_val = company_name if company_name else "your organisation"
+        r_val = target_role if target_role else "the advertised role"
+
+        text = re.sub(r'\{company', c_val, text, flags=re.IGNORECASE)
+        text = re.sub(r'\{role', r_val, text, flags=re.IGNORECASE)
+        return text
 
     return {
         "header_subtitle": header_subtitle,
         "company_name": company_name,
         "target_role": target_role,
-        "summary": request.form.get("resume_summary", "").strip(),
-        "details": request.form.get("company_details", "").strip(),
+        "summary": replace_tags(request.form.get("resume_summary", "").strip()),
+        "details": replace_tags(request.form.get("company_details", "").strip()),
         "keywords": request.form.get("resume_keywords", "").strip(),
-        "conclusion": request.form.get("resume_conclusion", "").strip(),
+        "conclusion": replace_tags(request.form.get("resume_conclusion", "").strip()),
         "document_title": " | ".join(part for part in ["Resume Letter", company_name] if part),
     }
 
@@ -1049,7 +1070,8 @@ def _document_max_items(config: dict) -> int:
 
 
 def _pdf_response(pdf_bytes, filename):
-    disposition = "inline" if request.form.get("disposition") == "inline" or request.args.get("disposition") == "inline" else "attachment"
+    disposition = "inline" if request.form.get("disposition") == "inline" or request.args.get(
+        "disposition") == "inline" else "attachment"
     response = make_response(pdf_bytes)
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = f'{disposition}; filename="{filename}"'
