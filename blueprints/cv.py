@@ -131,7 +131,7 @@ def build_resume_letter_pdf(profile=None, resume_options=None):
 
     pdf.setFillColor(theme["background"])
     pdf.rect(0, 0, width, height, fill=1, stroke=0)
-    _draw_letter_header(ctx, profile, width, height)
+    _draw_letter_header(ctx, profile, height)
     y = height - 166
     y = _draw_letter_section(ctx, "Introduction", y, _letter_intro(resume_options))
     y = _draw_letter_section(ctx, "What I Bring to the Team", y - 12, _letter_bullets(resume_options), bullets=True)
@@ -145,7 +145,7 @@ def build_resume_letter_pdf(profile=None, resume_options=None):
     return buffer.getvalue()
 
 
-def _draw_letter_header(ctx, profile, width, height):
+def _draw_letter_header(ctx, profile, height):
     pdf = ctx["pdf"]
     theme = ctx["theme"]
     name_parts = _text(profile.full_name).split()
@@ -390,7 +390,7 @@ def _draw_resume_target(ctx, options, y, page_width):
 
     keywords = _custom_keywords(options.get("keywords", ""))[:12]
     if keywords:
-        y = _draw_pills(ctx, keywords, ctx["left_x"], y - 1, full_width, font_size=7.2, max_y=22)
+        y = _draw_pills(ctx, keywords, ctx["left_x"], y - 1, full_width, font_size=7, max_y=22)
 
     return y - 8
 
@@ -624,7 +624,7 @@ def _draw_projects(ctx, projects, y):
 
         tags = (project.tags or [])[:5]
         if tags:
-            y = _draw_pills(ctx, tags, ctx["left_x"], y - 1, ctx["left_w"], font_size=6.8, max_y=15)
+            y = _draw_pills(ctx, tags, ctx["left_x"], y - 1, ctx["left_w"], font_size=7, max_y=15)
 
         _dotted_rule(ctx, ctx["left_x"], y + 3, ctx["left_w"])
         y -= 8

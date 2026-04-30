@@ -2,6 +2,7 @@ import json
 import os
 import re
 from functools import wraps
+from importlib import import_module
 
 from flask import (
     Blueprint,
@@ -302,6 +303,7 @@ DOCUMENT_SECTION_CONFIG = [
         "label": "Projects",
         "description": "Selected portfolio projects and their tags. The PDF prints up to 3.",
         "max_items": 3,
+        "overflow_warning": "Project sections are capped at 3 items so the one-page PDF does not overflow.",
     },
     {
         "key": "skills",
@@ -319,6 +321,12 @@ DOCUMENT_SECTION_CONFIG = [
         "description": "Certificates, issuers, dates, and credentials.",
     },
 ]
+
+ALLOWED_RESUME_TEMPLATE_TARGETS = {
+    "resume_summary": "Introduction",
+    "company_details": "What I bring",
+    "resume_conclusion": "Conclusion",
+}
 
 RESUME_SENTENCE_TEMPLATES = [
     {
@@ -370,6 +378,45 @@ RESUME_SENTENCE_TEMPLATES = [
         "target": "resume_conclusion",
         "label": "Engineering close",
         "text": "I would be excited to support your engineering team, learn from experienced developers, and contribute to high-quality, reliable software at {company}.\n\nYours sincerely,\n\nCiaran Cairns",
+    },
+]
+
+RESUME_ROLE_PRESETS = [
+    {
+        "label": "Software Developer",
+        "header_subtitle": "Software Developer Application",
+        "target_role": "Software Developer",
+        "resume_keywords": "Python, Flask, SQL, APIs, JavaScript, testing",
+        "resume_summary": "I am writing to apply for the {role} position at {company}. I bring practical experience building database-backed web applications, APIs, and automation tools, alongside my BSc Computing and IT studies.",
+        "company_details": "Experience building maintainable Flask and Python applications with SQL-backed data.\nComfortable working across frontend and backend code, including HTML, CSS, JavaScript, TypeScript, and REST APIs.\nUsed to debugging issues carefully, documenting decisions, and improving existing systems.",
+        "resume_conclusion": "I would welcome the opportunity to discuss how my software development experience, motivation, and practical project work could support {company}.\n\nYours sincerely,\n\nCiaran Cairns",
+    },
+    {
+        "label": "QA / Test Engineer",
+        "header_subtitle": "QA / Test Engineer Application",
+        "target_role": "QA / Test Engineer",
+        "resume_keywords": "Testing, debugging, documentation, APIs, Agile, SQL",
+        "resume_summary": "I am writing to apply for the {role} position at {company}. I am interested in quality-focused engineering and bring hands-on experience testing, debugging, documenting, and improving software projects.",
+        "company_details": "Practical understanding of integration testing, API validation, edge cases, and clear bug reporting.\nExperience working with Python, Flask, SQL, Git, and Agile-style project delivery.\nStrong attention to detail from combining academic projects with real workplace software tasks.",
+        "resume_conclusion": "I would be excited to help {company} deliver reliable, well-tested software while continuing to grow my engineering skills.\n\nYours sincerely,\n\nCiaran Cairns",
+    },
+    {
+        "label": "Backend Developer",
+        "header_subtitle": "Backend Developer Application",
+        "target_role": "Backend Developer",
+        "resume_keywords": "Python, Flask, FastAPI, MySQL, REST APIs, Docker",
+        "resume_summary": "I am writing to apply for the {role} position at {company}. My strongest experience is in backend development, including Python services, Flask applications, SQL databases, and API-driven workflows.",
+        "company_details": "Built and maintained backend features using Python, Flask, MySQL, and structured data models.\nComfortable designing practical APIs, handling validation, and connecting frontend workflows to database-backed systems.\nInterested in writing clear, maintainable code that is easy to support and extend.",
+        "resume_conclusion": "I would welcome the opportunity to bring my backend development experience and steady problem-solving approach to {company}.\n\nYours sincerely,\n\nCiaran Cairns",
+    },
+    {
+        "label": "Placement / Internship",
+        "header_subtitle": "Placement / Internship Application",
+        "target_role": "Placement Software Developer",
+        "resume_keywords": "Learning mindset, Python, teamwork, Agile, documentation",
+        "resume_summary": "I am writing to apply for the {role} opportunity at {company}. As a Stage 2 BSc Computing and IT student, I am keen to apply my software development skills in a professional team and learn from experienced engineers.",
+        "company_details": "Strong foundation in programming, databases, web development, and software engineering principles.\nPractical project experience using Python, Flask, Java, TypeScript, Git, and documentation-led development.\nMotivated, reliable, and quick to learn new tools, with a collaborative approach to team work.",
+        "resume_conclusion": "Thank you for considering my application. I would be grateful for the chance to discuss how I could contribute to {company} during a placement or internship.\n\nYours sincerely,\n\nCiaran Cairns",
     },
 ]
 
@@ -484,8 +531,14 @@ def dashboard():
     try:
         for section, config in SECTIONS.items():
             model = config["model"]
-            counts[section] = 1 if config.get("singleton") else model.query.count()
-    except Exception as exc:
+            if config.get("singleton"):
+                counts[section] = 1
+            else:
+                query = model.query
+                if hasattr(model, "is_visible"):
+                    query = query.filter_by(is_visible=True)
+                counts[section] = query.count()
+    except SQLAlchemyError as exc:
         database_error = str(exc)
         counts = {section: 0 for section in SECTIONS}
 
@@ -509,7 +562,7 @@ def diagnostics():
     try:
         db.session.execute(text("SELECT 1"))
         table_names = sqlalchemy_inspect(db.engine).get_table_names()
-    except Exception as exc:
+    except SQLAlchemyError as exc:
         database_status = "error"
         database_error = str(exc)
 
@@ -520,6 +573,83 @@ def diagnostics():
         database_uri=_mask_database_uri(current_app.config["SQLALCHEMY_DATABASE_URI"]),
         table_names=table_names,
         engine_options=current_app.config.get("SQLALCHEMY_ENGINE_OPTIONS", {}),
+    )
+
+
+@admin_bp.route("/deployment-checklist")
+@admin_required
+def deployment_checklist():
+    table_names = []
+    database_error = ""
+    database_ok = False
+    database_dialect = "unknown"
+    required_tables = {
+        "profile",
+        "experience",
+        "project",
+        "skill",
+        "education",
+        "certificate",
+        "resume_template",
+    }
+
+    try:
+        db.session.execute(text("SELECT 1"))
+        inspector = sqlalchemy_inspect(db.engine)
+        table_names = inspector.get_table_names()
+        database_dialect = db.engine.dialect.name
+        database_ok = True
+    except SQLAlchemyError as exc:
+        database_error = str(exc)
+
+    table_set = set(table_names)
+    upload_root = _static_upload_root()
+    checks = [
+        {
+            "label": "Database connection",
+            "ok": database_ok,
+            "detail": database_error or f"{database_dialect} connection is responding.",
+        },
+        {
+            "label": "Required tables",
+            "ok": required_tables.issubset(table_set),
+            "detail": "Missing: " + ", ".join(sorted(required_tables - table_set))
+            if required_tables - table_set
+            else "All portfolio and resume-template tables are present.",
+        },
+        {
+            "label": "Admin password",
+            "ok": bool(current_app.config.get("ADMIN_PASSWORD_HASH") or current_app.config.get("ADMIN_PASSWORD")),
+            "detail": "ADMIN_PASSWORD_HASH or ADMIN_PASSWORD is configured.",
+        },
+        {
+            "label": "Secret key",
+            "ok": bool(current_app.config.get("SECRET_KEY")),
+            "detail": "SECRET_KEY is configured for sessions.",
+        },
+        {
+            "label": "Static upload path",
+            "ok": bool(upload_root and os.path.isdir(upload_root)),
+            "detail": upload_root or "No upload path found.",
+        },
+        {
+            "label": "ReportLab PDF library",
+            "ok": _module_available("reportlab"),
+            "detail": "Needed for CV and resume PDF exports.",
+        },
+        {
+            "label": "Pillow image library",
+            "ok": _module_available("PIL"),
+            "detail": "Needed for image handling in generated PDFs.",
+        },
+    ]
+
+    return render_template(
+        "admin/deployment_checklist.html",
+        checks=checks,
+        database_uri=_mask_database_uri(current_app.config["SQLALCHEMY_DATABASE_URI"]),
+        database_dialect=database_dialect,
+        table_names=table_names,
     )
 
 
@@ -562,11 +692,7 @@ def cv_builder_pdf():
 
     profile = get_profile()
     filename = _document_filename(profile.full_name, "cv", resume_options, _safe_filename)
-    response = make_response(pdf_bytes)
-    response.headers["Content-Type"] = "application/pdf"
-    response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
-    response.headers["Cache-Control"] = "no-store"
-    return response
+    return _pdf_response(pdf_bytes, filename)
 
 
 @admin_bp.route("/resume-builder")
@@ -576,6 +702,9 @@ def resume_builder():
         "admin/resume_builder.html",
         profile=get_profile(),
         sentence_templates=_resume_sentence_templates(),
+        custom_sentence_templates=_custom_resume_templates(include_hidden=True),
+        role_presets=RESUME_ROLE_PRESETS,
+        template_targets=ALLOWED_RESUME_TEMPLATE_TARGETS,
     )
 
 
@@ -585,24 +714,70 @@ def add_resume_template():
     target = request.form.get("template_target", "").strip()
     label = request.form.get("template_label", "").strip()
     text_value = request.form.get("template_text", "").strip()
-    allowed_targets = {"resume_summary", "company_details", "resume_conclusion"}
 
-    if target not in allowed_targets or not label or not text_value:
+    if target not in ALLOWED_RESUME_TEMPLATE_TARGETS or not label or not text_value:
         flash("Choose a section, label, and sentence before saving a template.", "error")
         return redirect(url_for("admin.resume_builder"))
 
     max_order = db.session.query(func.max(ResumeTemplate.sort_order)).scalar()
-    db.session.add(
-        ResumeTemplate(
-            target=target,
-            label=label,
-            text=text_value,
-            sort_order=(max_order or 0) + 10,
-            is_visible=True,
-        )
-    )
+    template = ResumeTemplate()
+    template.target = target
+    template.label = label
+    template.text = text_value
+    template.sort_order = (max_order or 0) + 10
+    template.is_visible = True
+    db.session.add(template)
     if _commit_or_flash():
         flash("Template sentence added.", "success")
+    return redirect(url_for("admin.resume_builder"))
+
+
+@admin_bp.route("/resume-builder/templates/<int:template_id>/edit", methods=["POST"])
+@admin_required
+def edit_resume_template(template_id: int):
+    template = db.session.get(ResumeTemplate, template_id)
+    if not template:
+        abort(404)
+
+    target = request.form.get("template_target", "").strip()
+    label = request.form.get("template_label", "").strip()
+    text_value = request.form.get("template_text", "").strip()
+    if target not in ALLOWED_RESUME_TEMPLATE_TARGETS or not label or not text_value:
+        flash("Choose a section, label, and sentence before saving the template.", "error")
+        return redirect(url_for("admin.resume_builder"))
+
+    template.target = target
+    template.label = label
+    template.text = text_value
+    template.sort_order = _form_integer("sort_order", template.sort_order)
+    if _commit_or_flash():
+        flash("Template sentence saved.", "success")
+    return redirect(url_for("admin.resume_builder"))
+
+
+@admin_bp.route("/resume-builder/templates/<int:template_id>/delete", methods=["POST"])
+@admin_required
+def delete_resume_template(template_id: int):
+    template = db.session.get(ResumeTemplate, template_id)
+    if not template:
+        abort(404)
+
+    template.is_visible = False
+    if _commit_or_flash():
+        flash("Template sentence archived.", "success")
+    return redirect(url_for("admin.resume_builder"))
+
+
+@admin_bp.route("/resume-builder/templates/<int:template_id>/restore", methods=["POST"])
+@admin_required
+def restore_resume_template(template_id: int):
+    template = db.session.get(ResumeTemplate, template_id)
+    if not template:
+        abort(404)
+
+    template.is_visible = True
+    if _commit_or_flash():
+        flash("Template sentence restored.", "success")
     return redirect(url_for("admin.resume_builder"))
 
 
@@ -620,28 +795,27 @@ def resume_builder_pdf():
 
     profile = get_profile()
     filename = _document_filename(profile.full_name, "resume", resume_options, _safe_filename)
-    response = make_response(pdf_bytes)
-    response.headers["Content-Type"] = "application/pdf"
-    response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
-    response.headers["Cache-Control"] = "no-store"
-    return response
+    return _pdf_response(pdf_bytes, filename)
 
 
 @admin_bp.route("/<section>")
 @admin_required
-def list_items(section):
+def list_items(section: str):
     config = _section_config(section)
     if config.get("singleton"):
         return redirect(url_for("admin.edit_item", section=section, item_id=1))
 
     model = config["model"]
-    items = model.query.order_by(model.sort_order.asc(), model.id.asc()).all()
+    order_by = [model.sort_order.asc(), model.id.asc()]
+    if hasattr(model, "is_visible"):
+        order_by.insert(0, model.is_visible.desc())
+    items = model.query.order_by(*order_by).all()
     return render_template("admin/list.html", section=section, config=config, items=items)
 
 
 @admin_bp.route("/<section>/new", methods=["GET", "POST"])
 @admin_required
-def new_item(section):
+def new_item(section: str):
     config = _section_config(section)
     if config.get("singleton"):
         abort(404)
@@ -667,11 +841,12 @@ def new_item(section):
 
 @admin_bp.route("/<section>/<item_id>/edit", methods=["GET", "POST"])
 @admin_required
-def edit_item(section, item_id):
+def edit_item(section: str, item_id: str):
     config = _section_config(section)
-    item = db.session.get(config["model"], int(item_id) if section == "profile" else item_id)
+    item = db.session.get(config["model"], _identity_for_section(section, item_id))
     if not item and config.get("singleton"):
-        item = Profile(id=1)
+        item = Profile()
+        item.id = 1
         db.session.add(item)
         db.session.commit()
     if not item:
@@ -681,7 +856,9 @@ def edit_item(section, item_id):
         if _populate_item(item, config, is_new=False):
             if _commit_or_flash():
                 flash(f"{config['label']} item saved.", "success")
-                return redirect(url_for("admin.dashboard" if config.get("singleton") else "admin.list_items", section=section))
+                if config.get("singleton"):
+                    return redirect(url_for("admin.dashboard"))
+                return redirect(url_for("admin.list_items", section=section))
 
     return render_template(
         "admin/form.html",
@@ -695,19 +872,43 @@ def edit_item(section, item_id):
 
 @admin_bp.route("/<section>/<item_id>/delete", methods=["POST"])
 @admin_required
-def delete_item(section, item_id):
+def delete_item(section: str, item_id: str):
     config = _section_config(section)
     if config.get("singleton"):
         abort(404)
 
-    item = db.session.get(config["model"], item_id)
+    item = db.session.get(config["model"], _identity_for_section(section, item_id))
     if not item:
         abort(404)
 
-    db.session.delete(item)
+    if hasattr(item, "is_visible"):
+        item.is_visible = False
+    else:
+        db.session.delete(item)
     if not _commit_or_flash():
         return redirect(url_for("admin.list_items", section=section))
-    flash(f"{config['label']} item deleted.", "success")
+    flash(f"{config['label']} item archived.", "success")
+    return redirect(url_for("admin.list_items", section=section))
+
+
+@admin_bp.route("/<section>/<item_id>/restore", methods=["POST"])
+@admin_required
+def restore_item(section: str, item_id: str):
+    config = _section_config(section)
+    if config.get("singleton"):
+        abort(404)
+
+    item = db.session.get(config["model"], _identity_for_section(section, item_id))
+    if not item:
+        abort(404)
+
+    if not hasattr(item, "is_visible"):
+        abort(404)
+
+    item.is_visible = True
+    if not _commit_or_flash():
+        return redirect(url_for("admin.list_items", section=section))
+    flash(f"{config['label']} item restored.", "success")
     return redirect(url_for("admin.list_items", section=section))
 
 
@@ -715,7 +916,8 @@ def _document_sections(portfolio):
     sections = []
     for config in DOCUMENT_SECTION_CONFIG:
         key = config["key"]
-        max_items = config.get("max_items")
+        max_items = _document_max_items(config)
+        source_items = portfolio.get(key, [])
         item_list = [
             {
                 "id": str(getattr(item, "id", "")),
@@ -723,32 +925,41 @@ def _document_sections(portfolio):
                 "meta": _document_item_meta(key, item),
                 "checked": not max_items or index < max_items,
             }
-            for index, item in enumerate(portfolio.get(key, []))
+            for index, item in enumerate(source_items)
         ]
-        sections.append({**config, "item_list": item_list})
+        warning = ""
+        if max_items and len(source_items) > max_items:
+            warning = config.get("overflow_warning") or f"This section is capped at {max_items} items to protect the PDF layout."
+        sections.append({**config, "item_list": item_list, "warning": warning})
     return sections
 
 
 def _resume_sentence_templates():
-    templates = [dict(template) for template in RESUME_SENTENCE_TEMPLATES]
-    try:
-        custom_templates = (
-            ResumeTemplate.query.filter_by(is_visible=True)
-            .order_by(ResumeTemplate.sort_order.asc(), ResumeTemplate.id.asc())
-            .all()
-        )
-        templates.extend(
-            {
-                "target": template.target,
-                "label": template.label,
-                "text": template.text,
-            }
-            for template in custom_templates
-        )
-    except Exception as exc:
-        current_app.logger.exception("Could not load resume templates: %s", exc)
-        db.session.rollback()
+    templates = [{**template, "id": None, "is_custom": False} for template in RESUME_SENTENCE_TEMPLATES]
+    custom_templates = _custom_resume_templates()
+    templates.extend(
+        {
+            "id": template.id,
+            "is_custom": True,
+            "target": template.target,
+            "label": template.label,
+            "text": template.text,
+        }
+        for template in custom_templates
+    )
     return templates
+
+
+def _custom_resume_templates(include_hidden=False):
+    try:
+        query = ResumeTemplate.query
+        if not include_hidden:
+            query = query.filter_by(is_visible=True)
+        return query.order_by(ResumeTemplate.is_visible.desc(), ResumeTemplate.sort_order.asc(), ResumeTemplate.id.asc()).all()
+    except SQLAlchemyError as exc:
+        current_app.logger.exception("Could not load custom resume templates: %s", exc)
+        db.session.rollback()
+        return []
 
 
 def _document_item_label(section, item):
@@ -792,7 +1003,7 @@ def _selected_document_portfolio(portfolio, include_sections):
             for item in portfolio.get(key, [])
             if str(getattr(item, "id", "")) in selected_ids
         ]
-        max_items = config.get("max_items")
+        max_items = _document_max_items(config)
         if max_items:
             selected[key] = selected[key][:max_items]
     return selected
@@ -832,10 +1043,30 @@ def _document_filename(full_name, document_type, options, safe_filename):
     return f"{base}_Custom_CV.pdf"
 
 
-def _section_config(section):
+def _document_max_items(config: dict) -> int:
+    value = config.get("max_items", 0)
+    return value if isinstance(value, int) else 0
+
+
+def _pdf_response(pdf_bytes, filename):
+    disposition = "inline" if request.form.get("disposition") == "inline" or request.args.get("disposition") == "inline" else "attachment"
+    response = make_response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = f'{disposition}; filename="{filename}"'
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+def _section_config(section: str):
     if section not in SECTIONS:
         abort(404)
     return SECTIONS[section]
+
+
+def _identity_for_section(section: str, item_id: str | int) -> str | int:
+    if section == "profile":
+        return int(item_id)
+    return str(item_id)
 
 
 def _form_context(section):
@@ -899,6 +1130,24 @@ def _json_default(field_name):
 
 def _integer_default(field_name):
     return 0 if field_name == "sort_order" else None
+
+
+def _form_integer(field_name, default=0):
+    raw_value = request.form.get(field_name, "").strip()
+    if not raw_value:
+        return default or 0
+    try:
+        return int(raw_value)
+    except ValueError:
+        return default or 0
+
+
+def _module_available(module_name):
+    try:
+        import_module(module_name)
+    except ImportError:
+        return False
+    return True
 
 
 def _apply_new_defaults(item, config):

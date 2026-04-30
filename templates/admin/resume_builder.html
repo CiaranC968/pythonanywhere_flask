@@ -1,5 +1,11 @@
 {% extends "admin/base.html" %}
 
+{% macro template_target_options(selected_target) %}
+    {% for target_value, target_label in template_targets.items() %}
+    <option value="{{ target_value }}" {% if selected_target == target_value %}selected{% endif %}>{{ target_label }}</option>
+    {% endfor %}
+{% endmacro %}
+
 {% macro template_buttons(target, label) %}
 <div class="rounded-2xl border border-warm-200 bg-warm-50 p-4">
     <h3 class="text-sm font-black uppercase tracking-wider text-warm-500">{{ label }}</h3>
@@ -10,6 +16,9 @@
                 data-template-target="{{ target }}"
                 data-template-text="{{ sentence.text|tojson|forceescape }}">
             {{ sentence.label }}
+            {% if sentence.is_custom %}
+            <span class="ml-1 text-[10px] uppercase text-brand-accent">Saved</span>
+            {% endif %}
         </button>
         {% endfor %}
     </div>
@@ -26,6 +35,22 @@
     <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Custom CV Builder</a>
 </div>
 
+<section class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+    <div class="mb-4">
+        <h2 class="text-xl font-black text-warm-900">Role Presets</h2>
+        <p class="mt-1 text-sm text-warm-500">Start from a role type, then tailor the company and wording.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        {% for preset in role_presets %}
+        <button type="button"
+                class="rounded-xl border border-warm-200 bg-warm-50 px-4 py-2 text-sm font-black text-warm-700 hover:border-brand-accent hover:bg-brand-accent/10"
+                data-role-preset="{{ preset|tojson|forceescape }}">
+            {{ preset.label }}
+        </button>
+        {% endfor %}
+    </div>
+</section>
+
 <form method="post" action="{{ url_for('admin.add_resume_template') }}" class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
     <div class="mb-4">
         <h2 class="text-xl font-black text-warm-900">Add Template Sentence</h2>
@@ -35,9 +60,7 @@
         <label class="block">
             <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Section</span>
             <select name="template_target" class="admin-input">
-                <option value="resume_summary">Introduction</option>
-                <option value="company_details">What I bring</option>
-                <option value="resume_conclusion">Conclusion</option>
+                {{ template_target_options("resume_summary") }}
             </select>
         </label>
         <label class="block">
@@ -56,20 +79,73 @@
     </div>
 </form>
 
+<section class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+    <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h2 class="text-xl font-black text-warm-900">Saved Template Sentences</h2>
+            <p class="mt-1 text-sm text-warm-500">Edit, archive, or restore your reusable sentence buttons.</p>
+        </div>
+    </div>
+    <div class="space-y-4">
+        {% for template in custom_sentence_templates %}
+        <div class="rounded-2xl border border-warm-200 bg-warm-50 p-4 {% if not template.is_visible %}opacity-70{% endif %}">
+            <div class="grid gap-3 lg:grid-cols-[0.8fr_1fr_1fr_auto]">
+                <form id="template-edit-{{ template.id }}" method="post" action="{{ url_for('admin.edit_resume_template', template_id=template.id) }}" class="contents">
+                    <label class="block">
+                        <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Section</span>
+                        <select name="template_target" class="admin-input">
+                            {{ template_target_options(template.target) }}
+                        </select>
+                    </label>
+                    <label class="block">
+                        <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Button label</span>
+                        <input name="template_label" value="{{ template.label }}" class="admin-input">
+                    </label>
+                    <label class="block">
+                        <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sort order</span>
+                        <input name="sort_order" value="{{ template.sort_order }}" type="number" class="admin-input">
+                    </label>
+                    <div class="flex items-end justify-end">
+                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-4 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">Save</button>
+                    </div>
+                    <label class="block lg:col-span-4">
+                        <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sentence</span>
+                        <textarea name="template_text" rows="2" class="admin-input">{{ template.text }}</textarea>
+                    </label>
+                </form>
+                <div class="lg:col-span-4 flex justify-end">
+                    {% if template.is_visible %}
+                    <form method="post" action="{{ url_for('admin.delete_resume_template', template_id=template.id) }}" onsubmit="return confirm('Archive this template sentence?');">
+                        <button class="rounded-xl border border-warm-200 bg-white px-4 py-2 text-sm font-black text-warm-700 hover:border-brand-accent">Archive</button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{{ url_for('admin.restore_resume_template', template_id=template.id) }}">
+                        <button class="rounded-xl border border-green-200 bg-green-50 px-4 py-2 text-sm font-black text-green-700 hover:border-green-300">Restore</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p class="rounded-xl border border-warm-200 bg-warm-50 p-4 text-sm font-bold text-warm-500">No custom template sentences saved yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
 <form method="post" action="{{ url_for('admin.resume_builder_pdf') }}" class="space-y-6" data-resume-builder>
     <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
         <div class="grid gap-4 lg:grid-cols-3">
             <label class="block">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Resume subtitle</span>
-                <input name="header_subtitle" value="{{ profile.title }}" class="admin-input">
+                <input id="header_subtitle" name="header_subtitle" value="{{ profile.title }}" class="admin-input">
             </label>
             <label class="block">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Company name</span>
-                <input name="company_name" class="admin-input" data-template-company placeholder="Black Duck">
+                <input id="company_name" name="company_name" class="admin-input" data-template-company placeholder="Black Duck">
             </label>
             <label class="block">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Target role</span>
-                <input name="target_role" class="admin-input" data-template-role placeholder="Software Intern">
+                <input id="target_role" name="target_role" class="admin-input" data-template-role placeholder="Software Intern">
             </label>
         </div>
     </section>
@@ -93,7 +169,7 @@
 
             <label class="block">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Keywords / focus skills</span>
-                <input name="resume_keywords" class="admin-input" placeholder="Python, Flask, SQL, React">
+                <input id="resume_keywords" name="resume_keywords" class="admin-input" placeholder="Python, Flask, SQL, React">
             </label>
         </section>
 
@@ -106,7 +182,10 @@
 
     <div class="sticky bottom-4 flex flex-col gap-3 rounded-2xl border border-warm-200 bg-white/95 p-4 shadow-xl backdrop-blur sm:flex-row sm:justify-end">
         <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 px-6 py-3 font-black text-warm-700 hover:border-brand-accent">Cancel</a>
-        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">
+        <button type="submit" name="disposition" value="inline" formtarget="_blank" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-6 py-3 font-black text-warm-800 hover:border-brand-accent">
+            Preview Resume Letter
+        </button>
+        <button type="submit" name="disposition" value="attachment" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">
             Download Resume Letter
         </button>
     </div>

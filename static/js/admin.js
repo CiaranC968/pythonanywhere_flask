@@ -308,10 +308,8 @@
         const container = document.querySelector(`[data-document-section-items="${key}"]`);
         if (!container) return;
         container.classList.toggle('opacity-50', !master.checked);
-        container.querySelectorAll('[data-document-item]').forEach((input) => {
-            input.disabled = !master.checked;
-        });
-        if (master.checked) syncDocumentLimit(key);
+        container.dataset.documentEnabled = master.checked ? 'true' : 'false';
+        syncDocumentLimit(key);
     }
 
     function syncDocumentLimit(key) {
@@ -319,18 +317,22 @@
         if (!container) return;
 
         const max = Number(container.dataset.documentMax || 0);
-        if (!max) return;
-
+        const enabled = container.dataset.documentEnabled !== 'false';
         const inputs = [...container.querySelectorAll(`[data-document-item="${key}"]`)];
-        const checkedCount = inputs.filter((input) => input.checked).length;
-        const limitReached = checkedCount >= max;
+        const checkedCount = enabled ? inputs.filter((input) => input.checked).length : 0;
+        const limitReached = Boolean(enabled && max && checkedCount >= max);
         inputs.forEach((input) => {
-            if (!input.checked) input.disabled = limitReached;
+            input.disabled = !enabled || (!input.checked && limitReached);
         });
+
+        const countMessage = document.querySelector(`[data-document-count-message="${key}"]`);
+        if (countMessage) {
+            countMessage.textContent = max ? `${checkedCount}/${max} selected` : `${checkedCount}/${inputs.length} selected`;
+        }
 
         const message = document.querySelector(`[data-document-limit-message="${key}"]`);
         if (message) {
-            message.textContent = `${checkedCount}/${max} selected`;
+            message.textContent = limitReached ? `Limit reached: ${checkedCount}/${max} selected` : `Choose up to ${max}.`;
         }
     }
 
@@ -348,6 +350,34 @@
         target.value = `${target.value.trim()}${separator}${sentence}`;
         target.focus();
         target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function applyRolePreset(button) {
+        const preset = parseJson(button.dataset.rolePreset, null);
+        if (!preset) return;
+
+        const company = document.querySelector('[data-template-company]')?.value.trim() || '{company}';
+        const replacements = {
+            header_subtitle: preset.header_subtitle,
+            target_role: preset.target_role,
+            resume_keywords: preset.resume_keywords,
+            resume_summary: preset.resume_summary,
+            company_details: preset.company_details,
+            resume_conclusion: preset.resume_conclusion
+        };
+
+        Object.entries(replacements).forEach(([id, value]) => {
+            const field = document.getElementById(id);
+            if (!field || value === undefined) return;
+            field.value = String(value).replaceAll('{company}', company).replaceAll('{role}', preset.target_role || 'the role');
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        document.querySelectorAll('[data-role-preset]').forEach((presetButton) => {
+            const active = presetButton === button;
+            presetButton.classList.toggle('border-brand-accent', active);
+            presetButton.classList.toggle('bg-brand-accent/10', active);
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -385,6 +415,12 @@
             const templateButton = event.target.closest('[data-template-target]');
             if (templateButton) {
                 insertTemplateSentence(templateButton);
+                return;
+            }
+
+            const rolePreset = event.target.closest('[data-role-preset]');
+            if (rolePreset) {
+                applyRolePreset(rolePreset);
             }
         });
 

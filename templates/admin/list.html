@@ -21,19 +21,29 @@
         </thead>
         <tbody class="divide-y divide-warm-100">
             {% for item in items %}
-            <tr>
+            <tr class="{% if item.is_visible is defined and not item.is_visible %}bg-warm-50 opacity-70{% endif %}">
                 <td class="px-5 py-4">
                     <div class="font-black text-warm-900">{{ item | attr(config.title_field) }}</div>
                     <div class="font-mono text-xs text-warm-400">{{ item.id }}</div>
                 </td>
                 <td class="px-5 py-4">{{ item.sort_order }}</td>
-                <td class="px-5 py-4">{{ "Yes" if item.is_visible else "No" }}</td>
+                <td class="px-5 py-4">
+                    <span class="rounded-full px-3 py-1 text-xs font-black uppercase {% if item.is_visible %}bg-green-100 text-green-700{% else %}bg-warm-200 text-warm-600{% endif %}">
+                        {{ "Visible" if item.is_visible else "Archived" }}
+                    </span>
+                </td>
                 <td class="px-5 py-4">
                     <div class="flex justify-end gap-2">
                         <a href="{{ url_for('admin.edit_item', section=section, item_id=item.id) }}" class="rounded-lg border border-warm-200 px-3 py-2 font-bold text-warm-700 hover:border-brand-accent">Edit</a>
-                        <form method="post" action="{{ url_for('admin.delete_item', section=section, item_id=item.id) }}" onsubmit="return confirm('Delete this item?');">
-                            <button class="rounded-lg border border-red-200 px-3 py-2 font-bold text-red-600 hover:bg-red-50">Delete</button>
+                        {% if item.is_visible %}
+                        <form method="post" action="{{ url_for('admin.delete_item', section=section, item_id=item.id) }}" onsubmit="return confirm('Archive this item?');">
+                            <button class="rounded-lg border border-warm-200 px-3 py-2 font-bold text-warm-700 hover:border-brand-accent">Archive</button>
                         </form>
+                        {% else %}
+                        <form method="post" action="{{ url_for('admin.restore_item', section=section, item_id=item.id) }}">
+                            <button class="rounded-lg border border-green-200 bg-green-50 px-3 py-2 font-bold text-green-700 hover:border-green-300">Restore</button>
+                        </form>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
