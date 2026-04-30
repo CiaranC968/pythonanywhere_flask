@@ -1,4 +1,6 @@
 from io import BytesIO
+from functools import lru_cache
+import os
 import re
 import unicodedata
 
@@ -27,6 +29,7 @@ def get_cv():
 
 def build_cv_pdf():
     from reportlab.lib import colors
+    from reportlab.lib.utils import ImageReader
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfbase.pdfmetrics import stringWidth
     from reportlab.pdfgen import canvas
@@ -52,6 +55,7 @@ def build_cv_pdf():
     }
     ctx = {
         "pdf": pdf,
+        "image_reader": ImageReader,
         "string_width": stringWidth,
         "theme": theme,
         "margin": 27,
@@ -61,6 +65,9 @@ def build_cv_pdf():
         "right_w": 195,
         "bottom": 32,
     }
+
+    pdf.setFillColor(theme["white"])
+    pdf.rect(0, 0, width, height, fill=1, stroke=0)
 
     _draw_header(ctx, profile, width, height)
     section_top = height - 136
@@ -121,6 +128,21 @@ def _draw_contact(ctx, x, y, label, value):
 def _draw_contact_icon(ctx, label, x, y):
     pdf = ctx["pdf"]
     theme = ctx["theme"]
+    icon_size = 7.6
+
+    if label != "@":
+        icon = _contact_icon_image(label, _hex_colour(theme["accent"]))
+        if icon:
+            pdf.drawImage(
+                ctx["image_reader"](BytesIO(icon)),
+                x - icon_size / 2,
+                y - icon_size / 2,
+                width=icon_size,
+                height=icon_size,
+                mask="auto",
+            )
+            return
+
     pdf.saveState()
     pdf.setStrokeColor(theme["accent"])
     pdf.setFillColor(theme["accent"])
@@ -160,6 +182,46 @@ def _draw_contact_icon(ctx, label, x, y):
         pdf.circle(x, y, 2.2, fill=1, stroke=0)
 
     pdf.restoreState()
+
+
+@lru_cache(maxsize=16)
+def _contact_icon_image(label, colour):
+    glyphs = {
+        "tel": "\ue98a",
+        "mail": "\ue066",
+        "pin": "\ue942",
+        "web": "\ue0b2",
+        "git": "\ueae0",
+        "in": "\ueaf9",
+    }
+    glyph = glyphs.get(label)
+    font_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "fonts", "icomoon", "icomoon.ttf")
+    if not glyph or not os.path.exists(font_path):
+        return None
+
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        return None
+
+    size = 96
+    font = ImageFont.truetype(font_path, 72)
+    image = Image.new("RGBA", (size, size), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(image)
+    bbox = draw.textbbox((0, 0), glyph, font=font)
+    x = (size - (bbox[2] - bbox[0])) / 2 - bbox[0]
+    y = (size - (bbox[3] - bbox[1])) / 2 - bbox[1]
+    draw.text((x, y), glyph, font=font, fill=colour)
+
+    output = BytesIO()
+    image.save(output, format="PNG")
+    output.seek(0)
+    return output.getvalue()
+
+
+def _hex_colour(colour):
+    red, green, blue = colour.red, colour.green, colour.blue
+    return tuple(int(channel * 255) for channel in (red, green, blue)) + (255,)
 
 
 def _draw_globe_badge(ctx, x, y):
