@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from functools import wraps
 
@@ -13,6 +14,7 @@ from flask import (
     session,
     url_for,
 )
+from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from sqlalchemy import inspect as sqlalchemy_inspect
 from sqlalchemy import text
@@ -23,6 +25,116 @@ from extensions import db
 from models import Certificate, Education, Experience, Profile, Project, Skill
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+IMAGE_FIELDS = {
+    "profile_image": {"subdir": "images", "store": "filename"},
+    "logo": {"subdir": "images", "store": "filename"},
+    "image": {"subdir": "images/projects", "store": "filename"},
+    "image_path": {"subdir": "images", "store": "static_url"},
+}
+
+ICON_FIELDS = {"hero_icon", "icon", "bgIcon"}
+STYLE_FIELDS = {"iconColor", "bgColor", "hoverColor"}
+FIELD_GROUPS = {
+    "profile": [
+        ("Profile", ["full_name", "title", "tagline", "cv_subtitle", "about"]),
+        ("Contact", ["email", "phone", "address", "linkedin_url", "github_url", "website_url", "location", "availability_text", "contact_intro"]),
+        ("Media & style", ["profile_image", "hero_icon"]),
+    ],
+    "experience": [
+        ("Core", ["id", "company", "role", "period", "brief", "location", "type", "current", "sort_order", "is_visible"]),
+        ("Details", ["details", "tech_stack", "timeline", "skills"]),
+        ("Media", ["logo"]),
+        ("Style settings", ["icon", "bgIcon", "iconColor", "bgColor", "hoverColor"]),
+    ],
+    "education": [
+        ("Core", ["id", "degree", "university", "year", "description", "current", "status", "progress", "sort_order", "is_visible"]),
+        ("Modules & results", ["stages", "total_credits", "gpa", "modules_completed"]),
+        ("Media", ["logo"]),
+    ],
+    "skills": [
+        ("Core", ["id", "title", "desc", "tags", "progress", "stats", "sort_order", "is_visible"]),
+        ("Style settings", ["icon", "iconColor", "bgColor"]),
+    ],
+    "projects": [
+        ("Core", ["id", "title", "desc", "status", "tags", "links", "stats", "features", "challenges", "sort_order", "is_visible"]),
+        ("Media", ["image"]),
+        ("Style settings", ["icon", "iconColor", "bgColor"]),
+    ],
+    "certificates": [
+        ("Core", ["id", "title", "issuer", "date", "desc", "link", "credential_id", "skills", "verified", "sort_order", "is_visible"]),
+        ("Media", ["image_path", "logo"]),
+    ],
+}
+
+ICON_CHOICES = [
+    ("fas fa-terminal", "Terminal"),
+    ("fas fa-code", "Code"),
+    ("fas fa-laptop-code", "Developer"),
+    ("fas fa-folder", "Folder"),
+    ("fas fa-bolt", "Energy"),
+    ("fas fa-cogs", "Settings"),
+    ("fas fa-gamepad", "Game"),
+    ("fas fa-cloud", "Cloud"),
+    ("fas fa-flask", "Research"),
+    ("fas fa-university", "Education"),
+    ("fas fa-building", "Company"),
+    ("fas fa-briefcase", "Briefcase"),
+    ("fas fa-store", "Store"),
+    ("fas fa-wine-bottle", "Retail"),
+    ("fas fa-award", "Award"),
+    ("fas fa-certificate", "Certificate"),
+    ("fas fa-calendar", "Calendar"),
+    ("fas fa-chart-line", "Growth"),
+    ("fas fa-database", "Database"),
+    ("fas fa-server", "Server"),
+    ("fas fa-shield-alt", "Security"),
+    ("fab fa-python", "Python"),
+    ("fab fa-java", "Java"),
+    ("fab fa-react", "React"),
+    ("fab fa-github", "GitHub"),
+]
+
+STYLE_CHOICES = {
+    "iconColor": [
+        ("text-gray-600", "Graphite"),
+        ("text-brand-accent", "Accent"),
+        ("text-blue-600", "Blue"),
+        ("text-indigo-600", "Indigo"),
+        ("text-emerald-500", "Emerald"),
+        ("text-green-600", "Green"),
+        ("text-orange-600", "Orange"),
+        ("text-red-600", "Red"),
+        ("text-purple-600", "Purple"),
+        ("text-rose-500", "Rose"),
+    ],
+    "bgColor": [
+        ("bg-gray-100", "Graphite"),
+        ("bg-brand-accent/10", "Accent"),
+        ("bg-blue-100", "Blue"),
+        ("bg-indigo-100", "Indigo"),
+        ("bg-emerald-100", "Emerald"),
+        ("bg-green-100", "Green"),
+        ("bg-orange-100", "Orange"),
+        ("bg-red-100", "Red"),
+        ("bg-purple-100", "Purple"),
+        ("bg-rose-100", "Rose"),
+    ],
+    "hoverColor": [
+        ("text-gray-900", "Graphite"),
+        ("text-brand-accent", "Accent"),
+        ("text-blue-600", "Blue"),
+        ("text-indigo-600", "Indigo"),
+        ("text-emerald-500", "Emerald"),
+        ("text-green-600", "Green"),
+        ("text-orange-600", "Orange"),
+        ("text-red-600", "Red"),
+        ("text-purple-600", "Purple"),
+        ("text-rose-500", "Rose"),
+        ("group-hover:text-yellow-400", "Hover yellow"),
+        ("group-hover:text-green-600", "Hover green"),
+    ],
+}
 
 
 @admin_bp.after_request
@@ -357,9 +469,7 @@ def new_item(section):
         config=config,
         item=item,
         action="Create",
-        field_help=FIELD_HELP,
-        json_examples=JSON_EXAMPLES,
-        json_editor_kinds=JSON_EDITOR_KINDS,
+        **_form_context(section),
     )
 
 
@@ -387,9 +497,7 @@ def edit_item(section, item_id):
         config=config,
         item=item,
         action="Save",
-        field_help=FIELD_HELP,
-        json_examples=JSON_EXAMPLES,
-        json_editor_kinds=JSON_EDITOR_KINDS,
+        **_form_context(section),
     )
 
 
@@ -417,6 +525,29 @@ def _section_config(section):
     return SECTIONS[section]
 
 
+def _form_context(section):
+    return {
+        "field_help": FIELD_HELP,
+        "json_examples": JSON_EXAMPLES,
+        "json_editor_kinds": JSON_EDITOR_KINDS,
+        "field_groups": _field_groups(section),
+        "image_fields": IMAGE_FIELDS,
+        "icon_fields": ICON_FIELDS,
+        "style_fields": STYLE_FIELDS,
+        "icon_choices": ICON_CHOICES,
+        "style_choices": STYLE_CHOICES,
+    }
+
+
+def _field_groups(section):
+    configured = FIELD_GROUPS.get(section)
+    if configured:
+        return configured
+
+    fields = [name for name, _label, _field_type in SECTIONS[section]["fields"]]
+    return [("Content", fields)]
+
+
 def _populate_item(item, config, is_new):
     try:
         for name, _label, field_type in config["fields"]:
@@ -431,6 +562,8 @@ def _populate_item(item, config, is_new):
             elif field_type == "json":
                 raw_value = request.form.get(name, "").strip()
                 value = json.loads(raw_value) if raw_value else _json_default(name)
+            elif name in IMAGE_FIELDS:
+                value = _uploaded_asset_value(name) or request.form.get(name, "").strip()
             else:
                 value = request.form.get(name, "").strip()
 
@@ -483,6 +616,54 @@ def _unique_slug(model, value):
         slug = f"{base}-{counter}"
         counter += 1
     return slug
+
+
+def _uploaded_asset_value(field_name):
+    upload = request.files.get(f"{field_name}_upload")
+    if not upload or not upload.filename:
+        return ""
+
+    filename = secure_filename(upload.filename)
+    if not filename:
+        return ""
+
+    _name, extension = os.path.splitext(filename)
+    if extension.lower() not in {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}:
+        raise ValueError("Images must be JPG, PNG, GIF, WebP, or SVG files.")
+
+    field_config = IMAGE_FIELDS[field_name]
+    upload_root = _static_upload_root()
+    target_dir = os.path.join(upload_root, field_config["subdir"])
+    os.makedirs(target_dir, exist_ok=True)
+
+    filename = _unique_filename(target_dir, filename)
+    upload.save(os.path.join(target_dir, filename))
+
+    if field_config["store"] == "static_url":
+        return f"/static/{field_config['subdir']}/{filename}"
+    return filename
+
+
+def _static_upload_root():
+    configured = os.environ.get("STATIC_UPLOAD_ROOT")
+    if configured:
+        return configured
+
+    pythonanywhere_static = "/home/ciaranc88/mysite/static"
+    if os.path.isdir(pythonanywhere_static):
+        return pythonanywhere_static
+
+    return current_app.static_folder
+
+
+def _unique_filename(directory, filename):
+    stem, extension = os.path.splitext(filename)
+    candidate = filename
+    counter = 2
+    while os.path.exists(os.path.join(directory, candidate)):
+        candidate = f"{stem}-{counter}{extension}"
+        counter += 1
+    return candidate
 
 
 def _commit_or_flash():

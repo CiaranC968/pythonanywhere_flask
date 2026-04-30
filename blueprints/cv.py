@@ -1,5 +1,6 @@
 from io import BytesIO
 import re
+import unicodedata
 
 from flask import Blueprint, abort, make_response
 
@@ -43,7 +44,7 @@ def build_cv_pdf():
         "accent": colors.HexColor("#7a1f3d"),
         "heading": colors.HexColor("#6b2418"),
         "soft": colors.HexColor("#eee8d8"),
-        "pill": colors.HexColor("#f9f9f8"),
+        "pill": colors.HexColor("#f4f1ec"),
         "white": colors.white,
         "globe_blue": colors.HexColor("#2ba4d6"),
         "globe_green": colors.HexColor("#5aa36a"),
@@ -62,7 +63,7 @@ def build_cv_pdf():
     }
 
     _draw_header(ctx, profile, width, height)
-    section_top = height - 146
+    section_top = height - 136
     left_y = _draw_experience(ctx, portfolio["experience"], section_top)
     _draw_certificates(ctx, portfolio["certificates"], left_y - 8)
     right_y = _draw_skills(ctx, portfolio["skills"], section_top)
@@ -99,7 +100,7 @@ def _draw_header(ctx, profile, width, height):
         ("git", _short_url(profile.github_url)),
         ("web", profile.website_url),
     ]
-    col_x = [x, x + 115, x + 238]
+    col_x = [x, x + 117, x + 240]
     for index, (label, value) in enumerate((item for item in contact_items if item[1])):
         row = index // 3
         col = index % 3
@@ -112,11 +113,13 @@ def _draw_contact(ctx, x, y, label, value):
     pdf = ctx["pdf"]
     theme = ctx["theme"]
     labels = {
+        "@": "@",
         "tel": "☎",
         "mail": "✉",
         "pin": "●",
         "web": "◉",
-        "git": "◖",
+        "git": "⌘",
+        "in": "in",
     }
     icon = labels.get(label, label)
     pdf.setFont("Helvetica-Bold", 7)
@@ -124,7 +127,7 @@ def _draw_contact(ctx, x, y, label, value):
     pdf.drawString(x, y, icon)
     pdf.setFont("Helvetica-Bold", 7.3)
     pdf.setFillColor(theme["ink"])
-    pdf.drawString(x + 10, y, _truncate(_text(value), 35))
+    pdf.drawString(x + 10, y, _truncate(_text(value), 33))
 
 
 def _draw_globe_badge(ctx, x, y):
@@ -174,32 +177,32 @@ def _job_block(ctx, job, x, y, width):
     theme = ctx["theme"]
 
     pdf.setFillColor(theme["ink"])
-    pdf.setFont("Helvetica", 11.2)
+    pdf.setFont("Helvetica", 10.6)
     pdf.drawString(x, y, _truncate(job["role"], 43))
     y -= 11
 
     pdf.setFillColor(theme["accent"])
-    pdf.setFont("Helvetica-Bold", 9)
+    pdf.setFont("Helvetica-Bold", 8.5)
     pdf.drawString(x, y, _truncate(job["company"], 36))
     y -= 11
 
     pdf.setFillColor(theme["muted"])
-    pdf.setFont("Helvetica", 8)
+    pdf.setFont("Helvetica", 7.4)
     meta = "   ".join(item for item in [job["period"], job["location"]] if item)
     pdf.drawString(x, y, _truncate(meta, 70))
-    y -= 10
+    y -= 9
 
-    for bullet in job["bullets"][:5]:
-        lines = _wrap(_text(bullet), width - 12, "Helvetica", 8.3, ctx["string_width"], max_lines=2)
+    for bullet in job["bullets"][:4]:
+        lines = _wrap(_text(bullet), width - 13, "Helvetica", 8.0, ctx["string_width"], max_lines=2)
         for line_index, line in enumerate(lines):
             if y < ctx["bottom"] + 42:
                 return y
             pdf.setFillColor(theme["muted"])
-            pdf.setFont("Helvetica", 8.3)
+            pdf.setFont("Helvetica", 8.0)
             if line_index == 0:
-                pdf.drawString(x, y, "-")
-            pdf.drawString(x + 10, y, line)
-            y -= 9
+                pdf.circle(x + 2, y + 2.2, 1.25, fill=1, stroke=0)
+            pdf.drawString(x + 9, y, line)
+            y -= 8.8
     return y - 2
 
 
@@ -219,7 +222,7 @@ def _draw_skills(ctx, skills, y):
             seen.add(key)
             unique_tags.append(tag)
 
-    return _draw_pills(ctx, unique_tags[:18], ctx["right_x"], y, ctx["right_w"], max_y=55)
+    return _draw_pills(ctx, unique_tags[:14], ctx["right_x"], y, ctx["right_w"], font_size=8, max_y=62)
 
 
 def _draw_education(ctx, education, y):
@@ -231,40 +234,47 @@ def _draw_education(ctx, education, y):
         if y < ctx["bottom"] + 55:
             break
         pdf.setFillColor(theme["ink"])
-        pdf.setFont("Helvetica", 11)
-        for line in _wrap(_text(edu.degree), ctx["right_w"], "Helvetica", 11, ctx["string_width"], max_lines=2):
+        pdf.setFont("Helvetica", 10.5)
+        for line in _wrap(_text(edu.degree), ctx["right_w"], "Helvetica", 10.5, ctx["string_width"], max_lines=2):
             pdf.drawString(ctx["right_x"], y, line)
-            y -= 11
+            y -= 10.5
 
         pdf.setFillColor(theme["accent"])
-        pdf.setFont("Helvetica-Bold", 8.5)
+        pdf.setFont("Helvetica-Bold", 8.1)
         pdf.drawString(ctx["right_x"], y, _truncate(edu.university, 34))
-        y -= 10
+        y -= 9.5
 
         pdf.setFillColor(theme["muted"])
-        pdf.setFont("Helvetica", 8)
+        pdf.setFont("Helvetica", 7.6)
         if edu.year:
             pdf.drawString(ctx["right_x"], y, _text(edu.year))
-            y -= 11
+            y -= 9.5
+
+        for extra in _education_extras(edu):
+            pdf.setFillColor(theme["muted"])
+            pdf.setFont("Helvetica-Bold", 7.2)
+            for line in _wrap(extra, ctx["right_w"], "Helvetica-Bold", 7.2, ctx["string_width"], max_lines=2):
+                pdf.drawString(ctx["right_x"], y, line)
+                y -= 8.2
 
         if edu.description:
-            for line in _wrap(_text(edu.description), ctx["right_w"], "Helvetica", 8, ctx["string_width"], max_lines=2):
+            for line in _wrap(_text(edu.description), ctx["right_w"], "Helvetica", 7.4, ctx["string_width"], max_lines=2):
                 pdf.drawString(ctx["right_x"], y, line)
-                y -= 9
+                y -= 8.5
 
         stages = edu.stages or {}
         for stage_name, modules in stages.items():
             if y < ctx["bottom"] + 35:
                 break
             pdf.setFillColor(theme["ink"])
-            pdf.setFont("Helvetica-Bold", 9)
+            pdf.setFont("Helvetica-Bold", 8.2)
             pdf.drawString(ctx["right_x"], y, _text(stage_name))
-            y -= 10
+            y -= 9
             labels = [
                 f"{module.get('code', '').strip()}: {module.get('title', '').strip()}".strip(": ")
                 for module in modules
             ]
-            y = _draw_pills(ctx, labels[:4], ctx["right_x"], y, ctx["right_w"], font_size=7.2, max_y=30)
+            y = _draw_pills(ctx, labels[:4], ctx["right_x"], y, ctx["right_w"], font_size=7, max_y=35)
             y -= 1
 
         _dotted_rule(ctx, ctx["right_x"], y + 3, ctx["right_w"])
@@ -281,18 +291,15 @@ def _draw_certificates(ctx, certificates, y):
     pdf = ctx["pdf"]
     theme = ctx["theme"]
     pdf.setFillColor(theme["muted"])
-    pdf.setFont("Helvetica-Bold", 8.4)
+    pdf.setFont("Helvetica-Bold", 7.8)
 
-    for cert in certificates[:5]:
-        text = cert.title
-        if cert.issuer:
-            text = f"{text} ({cert.issuer})"
-        for line in _wrap(_text(text), ctx["left_w"] - 8, "Helvetica-Bold", 8.4, ctx["string_width"], max_lines=2):
+    for text in _certificate_lines(certificates)[:5]:
+        for line in _wrap(_text(text), ctx["left_w"] - 9, "Helvetica-Bold", 7.8, ctx["string_width"], max_lines=2):
             if y < ctx["bottom"] + 10:
                 return y
-            pdf.drawString(ctx["left_x"], y, "-")
-            pdf.drawString(ctx["left_x"] + 10, y, line)
-            y -= 9
+            pdf.circle(ctx["left_x"] + 2, y + 2.2, 1.25, fill=1, stroke=0)
+            pdf.drawString(ctx["left_x"] + 9, y, line)
+            y -= 8.4
     return y
 
 
@@ -300,7 +307,7 @@ def _section_title(ctx, title, x, y, width):
     pdf = ctx["pdf"]
     theme = ctx["theme"]
     pdf.setFillColor(theme["heading"])
-    pdf.setFont("Helvetica-Bold", 15.5)
+    pdf.setFont("Helvetica-Bold", 15)
     pdf.drawString(x, y, title)
     y -= 5
     pdf.setStrokeColor(theme["heading"])
@@ -314,26 +321,25 @@ def _draw_pills(ctx, labels, x, y, width, font_size=8, max_y=45):
     theme = ctx["theme"]
     cursor_x = x
     start_y = y
-    row_h = font_size + 7
+    row_h = font_size + 6.5
 
     for label in labels:
         if start_y - y > max_y:
             break
-        label = _truncate(_text(label), 38)
-        pill_w = min(ctx["string_width"](label, "Helvetica", font_size) + 10, width)
+        label = _truncate(_text(label), 46)
+        pill_w = min(ctx["string_width"](label, "Helvetica-Bold", font_size) + 9, width)
         if cursor_x + pill_w > x + width:
             cursor_x = x
             y -= row_h
             if start_y - y > max_y:
                 break
 
-        pdf.setFillColor(theme["pill"])
         pdf.setStrokeColor(theme["line"])
-        pdf.roundRect(cursor_x, y - 3, pill_w, font_size + 5, 3, fill=1, stroke=1)
+        pdf.roundRect(cursor_x, y - 3, pill_w, font_size + 5.5, 3, fill=0, stroke=1)
         pdf.setFillColor(theme["muted"])
-        pdf.setFont("Helvetica", font_size)
+        pdf.setFont("Helvetica-Bold", font_size)
         pdf.drawString(cursor_x + 5, y, label)
-        cursor_x += pill_w + 4
+        cursor_x += pill_w + 3
 
     return y - row_h
 
@@ -417,6 +423,36 @@ def _split_bullets(value):
     return parts or [_text(value)]
 
 
+def _education_extras(edu):
+    extras = []
+    for attr in ("status", "gpa"):
+        value = _text(getattr(edu, attr, ""))
+        if value:
+            extras.append(value)
+
+    total_credits = getattr(edu, "total_credits", None)
+    if total_credits:
+        extras.append(f"{total_credits} credits")
+
+    modules_completed = getattr(edu, "modules_completed", None)
+    if modules_completed:
+        extras.append(f"{modules_completed} modules completed")
+
+    return extras
+
+
+def _certificate_lines(certificates):
+    lines = []
+    for cert in certificates:
+        text = _text(cert.title)
+        details = [value for value in [_text(getattr(cert, "issuer", "")), _text(getattr(cert, "date", ""))] if value]
+        if details:
+            text = f"{text} ({', '.join(details)})"
+        if text:
+            lines.append(text)
+    return lines
+
+
 def _wrap(text, width, font_name, font_size, string_width, max_lines=4):
     words = _text(text).split()
     if not words:
@@ -462,4 +498,5 @@ def _caps(value):
 
 
 def _safe_filename(value):
-    return re.sub(r"[^A-Za-z0-9_-]+", "_", value or "portfolio").strip("_")
+    value = unicodedata.normalize("NFKD", value or "portfolio").encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^A-Za-z0-9_-]+", "_", value).strip("_")

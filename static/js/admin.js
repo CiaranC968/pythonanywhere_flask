@@ -50,7 +50,24 @@
         if (field.type !== 'textarea') input.type = field.type;
         if (field.placeholder) input.placeholder = field.placeholder;
         if (field.type === 'textarea') input.rows = 3;
-        wrapper.appendChild(input);
+
+        if (field.key === 'icon') {
+            const inputRow = document.createElement('span');
+            inputRow.className = 'flex gap-2';
+            input.dataset.iconInput = '';
+            inputRow.appendChild(input);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'rounded-xl bg-warm-900 px-3 py-2 text-xs font-black text-white hover:bg-warm-700';
+            button.textContent = 'Pick';
+            button.dataset.openIconPicker = '';
+            button.addEventListener('click', () => setIconPickerTarget(input));
+            inputRow.appendChild(button);
+            wrapper.appendChild(inputRow);
+        } else {
+            wrapper.appendChild(input);
+        }
 
         return wrapper;
     }
@@ -181,8 +198,66 @@
         output.value = JSON.stringify(data);
     }
 
+    let iconPickerTarget = null;
+
+    function iconChoices() {
+        const form = document.querySelector('[data-admin-form]');
+        if (!form) return [];
+        return parseJson(form.dataset.iconChoices, []);
+    }
+
+    function setIconPickerTarget(target) {
+        iconPickerTarget = typeof target === 'string' ? document.getElementById(target) : target;
+        renderIconPicker();
+        const dialog = document.getElementById('iconPicker');
+        if (!dialog) return;
+        if (typeof dialog.showModal === 'function') dialog.showModal();
+        else dialog.setAttribute('open', 'open');
+    }
+
+    function closeIconPicker() {
+        const dialog = document.getElementById('iconPicker');
+        if (!dialog) return;
+        if (typeof dialog.close === 'function') dialog.close();
+        else dialog.removeAttribute('open');
+    }
+
+    function renderIconPicker() {
+        const list = document.querySelector('[data-icon-list]');
+        if (!list) return;
+
+        const search = (document.querySelector('[data-icon-search]')?.value || '').trim().toLowerCase();
+        const choices = iconChoices().filter(([className, label]) => {
+            return !search || className.toLowerCase().includes(search) || label.toLowerCase().includes(search);
+        });
+        list.innerHTML = '';
+
+        choices.forEach(([className, label]) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'flex items-center gap-3 rounded-xl border border-warm-200 bg-warm-50 p-3 text-left hover:border-brand-accent hover:bg-white';
+            button.innerHTML = `<span class="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-lg text-warm-900"><i class="${className}" aria-hidden="true"></i></span><span><span class="block text-sm font-black text-warm-900">${label}</span><span class="block text-xs font-semibold text-warm-500">${className}</span></span>`;
+            button.addEventListener('click', () => {
+                if (iconPickerTarget) {
+                    iconPickerTarget.value = className;
+                    iconPickerTarget.dispatchEvent(new Event('input', { bubbles: true }));
+                    updateIconPreview(iconPickerTarget);
+                }
+                closeIconPicker();
+            });
+            list.appendChild(button);
+        });
+    }
+
+    function updateIconPreview(input) {
+        if (!input.id) return;
+        const preview = document.querySelector(`[data-icon-preview="${input.id}"]`);
+        if (preview) preview.className = input.value || 'fas fa-code';
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.structured-editor').forEach(initEditor);
+        renderIconPicker();
 
         document.addEventListener('click', (event) => {
             const button = event.target.closest('[data-action="add-row"]');
@@ -190,6 +265,20 @@
             const editor = button.closest('.structured-editor');
             createRow(editor, {});
             syncEditor(editor);
+        });
+
+        document.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-open-icon-picker]');
+            if (!button) return;
+            const target = button.dataset.target ? document.getElementById(button.dataset.target) : button.previousElementSibling;
+            setIconPickerTarget(target);
+        });
+
+        document.querySelector('[data-close-icon-picker]')?.addEventListener('click', closeIconPicker);
+        document.querySelector('[data-icon-search]')?.addEventListener('input', renderIconPicker);
+        document.querySelectorAll('[data-icon-input]').forEach((input) => {
+            input.addEventListener('input', () => updateIconPreview(input));
+            updateIconPreview(input);
         });
 
         document.querySelectorAll('[data-admin-form]').forEach((form) => {
