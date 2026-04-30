@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent">Back to dashboard</a>
+        <h1 class="mt-3 text-4xl font-black text-warm-900">Custom CV & Resume</h1>
+        <p class="mt-2 max-w-2xl text-warm-500">Choose the portfolio content to include, then download a custom CV or a company-targeted resume.</p>
+    </div>
+</div>
+
+<form method="post" action="{{ url_for('admin.cv_builder_pdf') }}" class="space-y-6" data-document-builder>
+    <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+        <div class="grid gap-4 lg:grid-cols-3">
+            <label class="block lg:col-span-1">
+                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Document subtitle</span>
+                <input name="header_subtitle" value="{{ profile.cv_subtitle or profile.title }}" class="admin-input">
+            </label>
+            <label class="block">
+                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Company name</span>
+                <input name="company_name" class="admin-input" placeholder="Example Ltd">
+            </label>
+            <label class="block">
+                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Target role</span>
+                <input name="target_role" class="admin-input" placeholder="Software Developer">
+            </label>
+        </div>
+        <div class="mt-4 grid gap-4 lg:grid-cols-2">
+            <label class="block">
+                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Resume summary</span>
+                <textarea name="resume_summary" rows="4" class="admin-input" placeholder="Short tailored opening for the company or role."></textarea>
+            </label>
+            <label class="block">
+                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Company-specific details</span>
+                <textarea name="company_details" rows="4" class="admin-input" placeholder="One tailored detail or bullet per line."></textarea>
+            </label>
+        </div>
+        <label class="mt-4 block">
+            <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Keywords / focus skills</span>
+            <input name="resume_keywords" class="admin-input" placeholder="Python, Flask, SQL, React">
+        </label>
+    </section>
+
+    <div class="grid gap-5 lg:grid-cols-2">
+        {% for section in document_sections %}
+        <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+            <div class="flex items-start gap-3">
+                <input id="section-{{ section.key }}" name="sections" value="{{ section.key }}" type="checkbox" checked class="mt-1 h-5 w-5 rounded border-warm-300 text-brand-accent" data-document-section-master="{{ section.key }}">
+                <label for="section-{{ section.key }}" class="grow">
+                    <span class="block text-xl font-black text-warm-900">{{ section.label }}</span>
+                    <span class="mt-1 block text-sm text-warm-500">{{ section.description }}</span>
+                </label>
+                <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ section.item_list|length }}</span>
+            </div>
+
+            <div class="mt-5 space-y-3" data-document-section-items="{{ section.key }}">
+                {% if section.item_list %}
+                    {% for item in section.item_list %}
+                    <label class="flex gap-3 rounded-xl border border-warm-200 bg-warm-50 p-3 transition hover:border-brand-accent">
+                        <input name="{{ section.key }}_ids" value="{{ item.id }}" type="checkbox" checked class="mt-1 h-4 w-4 rounded border-warm-300 text-brand-accent" data-document-item="{{ section.key }}">
+                        <span>
+                            <span class="block text-sm font-black text-warm-900">{{ item.label }}</span>
+                            {% if item.meta %}
+                            <span class="mt-1 block text-xs font-bold text-warm-500">{{ item.meta }}</span>
+                            {% endif %}
+                        </span>
+                    </label>
+                    {% endfor %}
+                {% else %}
+                    <p class="rounded-xl border border-warm-200 bg-warm-50 p-4 text-sm font-bold text-warm-500">No visible items in this section.</p>
+                {% endif %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+
+    <div class="sticky bottom-4 flex flex-col gap-3 rounded-2xl border border-warm-200 bg-white/95 p-4 shadow-xl backdrop-blur sm:flex-row sm:justify-end">
+        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 px-6 py-3 font-black text-warm-700 hover:border-brand-accent">Cancel</a>
+        <button type="submit" name="document_type" value="cv" class="inline-flex items-center justify-center rounded-xl border border-warm-900 bg-white px-6 py-3 font-black text-warm-900 hover:bg-warm-100">
+            Download Custom CV
+        </button>
+        <button type="submit" name="document_type" value="resume" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">
+            Download Targeted Resume
+        </button>
+    </div>
+</form>
+{% endblock %}

@@ -9,6 +9,7 @@ from flask import Blueprint, abort, make_response
 from portfolio_data import get_portfolio, get_profile
 
 cv_bp = Blueprint("cv", __name__)
+DEFAULT_PDF_SECTIONS = ("experience", "skills", "education", "certificates")
 
 
 @cv_bp.route("/get-cv")
@@ -27,15 +28,17 @@ def get_cv():
     return response
 
 
-def build_cv_pdf():
+def build_cv_pdf(profile=None, portfolio=None, include_sections=None, resume_options=None):
     from reportlab.lib import colors
     from reportlab.lib.utils import ImageReader
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfbase.pdfmetrics import stringWidth
     from reportlab.pdfgen import canvas
 
-    profile = get_profile()
-    portfolio = get_portfolio()
+    profile = profile or get_profile()
+    portfolio = portfolio or get_portfolio()
+    include_sections = set(DEFAULT_PDF_SECTIONS if include_sections is None else include_sections)
+    resume_options = resume_options or {}
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
@@ -64,6 +67,7 @@ def build_cv_pdf():
         "right_x": 378,
         "right_w": 195,
         "bottom": 32,
+        "header_subtitle": _text(resume_options.get("header_subtitle", "")),
     }
 
     pdf.setFillColor(theme["white"])
@@ -71,12 +75,24 @@ def build_cv_pdf():
 
     _draw_header(ctx, profile, width, height)
     section_top = height - 136
-    left_y = _draw_experience(ctx, portfolio["experience"], section_top)
-    _draw_certificates(ctx, portfolio["certificates"], left_y - 8)
-    right_y = _draw_skills(ctx, portfolio["skills"], section_top)
-    _draw_education(ctx, portfolio["education"], right_y - 12)
+    if _has_resume_target(resume_options):
+        section_top = _draw_resume_target(ctx, resume_options, section_top, width)
 
-    pdf.setTitle(f"{profile.full_name} CV")
+    left_y = section_top
+    if "experience" in include_sections and portfolio.get("experience"):
+        left_y = _draw_experience(ctx, portfolio.get("experience", []), left_y)
+    if "projects" in include_sections and portfolio.get("projects"):
+        left_y = _draw_projects(ctx, portfolio.get("projects", []), left_y - 8)
+    if "certificates" in include_sections and portfolio.get("certificates"):
+        _draw_certificates(ctx, portfolio.get("certificates", []), left_y - 8)
+
+    right_y = section_top
+    if "skills" in include_sections and portfolio.get("skills"):
+        right_y = _draw_skills(ctx, portfolio.get("skills", []), right_y)
+    if "education" in include_sections and portfolio.get("education"):
+        _draw_education(ctx, portfolio.get("education", []), right_y - 12)
+
+    pdf.setTitle(resume_options.get("document_title") or f"{profile.full_name} CV")
     pdf.showPage()
     pdf.save()
     return buffer.getvalue()
@@ -95,7 +111,7 @@ def _draw_header(ctx, profile, width, height):
     y -= 18
     pdf.setFillColor(theme["accent"])
     pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(x, y, _text(profile.cv_subtitle or profile.title))
+    pdf.drawString(x, y, _text(ctx.get("header_subtitle") or profile.cv_subtitle or profile.title))
 
     y -= 14
     contact_items = [
@@ -114,6 +130,51 @@ def _draw_header(ctx, profile, width, height):
         _draw_contact(ctx, col_x[col], y - row * 9, label, value)
 
     _draw_globe_badge(ctx, width - 74, height - 78)
+
+
+def _has_resume_target(options):
+    fields = ("company_name", "target_role", "summary", "details", "keywords")
+    return any(_text(options.get(field, "")) for field in fields)
+
+
+def _draw_resume_target(ctx, options, y, page_width):
+    full_width = page_width - (ctx["left_x"] * 2)
+    y = _section_title(ctx, "TARGETED RESUME", ctx["left_x"], y, full_width)
+    pdf = ctx["pdf"]
+    theme = ctx["theme"]
+
+    company = _text(options.get("company_name", ""))
+    role = _text(options.get("target_role", ""))
+    headline = " | ".join(part for part in [role, company] if part)
+    if headline:
+        pdf.setFillColor(theme["ink"])
+        pdf.setFont("Helvetica-Bold", 10.2)
+        pdf.drawString(ctx["left_x"], y, _truncate(headline, 86))
+        y -= 10.5
+
+    summary = _text(options.get("summary", ""))
+    if summary:
+        pdf.setFillColor(theme["muted"])
+        pdf.setFont("Helvetica", 7.8)
+        for line in _wrap(summary, full_width, "Helvetica", 7.8, ctx["string_width"], max_lines=3):
+            pdf.drawString(ctx["left_x"], y, line)
+            y -= 8.7
+
+    details = _custom_lines(options.get("details", ""))[:4]
+    for detail in details:
+        for line_index, line in enumerate(_wrap(detail, full_width - 12, "Helvetica", 7.6, ctx["string_width"], max_lines=2)):
+            pdf.setFillColor(theme["muted"])
+            pdf.setFont("Helvetica", 7.6)
+            if line_index == 0:
+                pdf.circle(ctx["left_x"] + 2, y + 2.1, 1.15, fill=1, stroke=0)
+            pdf.drawString(ctx["left_x"] + 9, y, line)
+            y -= 8.3
+
+    keywords = _custom_keywords(options.get("keywords", ""))[:12]
+    if keywords:
+        y = _draw_pills(ctx, keywords, ctx["left_x"], y - 1, full_width, font_size=7.2, max_y=22)
+
+    return y - 8
 
 
 def _draw_contact(ctx, x, y, label, value):
@@ -319,6 +380,40 @@ def _draw_skills(ctx, skills, y):
     return _draw_pills(ctx, unique_tags[:14], ctx["right_x"], y, ctx["right_w"], font_size=8, max_y=62)
 
 
+def _draw_projects(ctx, projects, y):
+    if y < ctx["bottom"] + 55:
+        return y
+
+    y = _section_title(ctx, "PROJECTS", ctx["left_x"], y, ctx["left_w"])
+    pdf = ctx["pdf"]
+    theme = ctx["theme"]
+
+    for project in projects[:3]:
+        if y < ctx["bottom"] + 40:
+            break
+
+        pdf.setFillColor(theme["ink"])
+        pdf.setFont("Helvetica", 10.1)
+        pdf.drawString(ctx["left_x"], y, _truncate(project.title, 46))
+        y -= 10
+
+        if project.desc:
+            pdf.setFillColor(theme["muted"])
+            pdf.setFont("Helvetica", 7.7)
+            for line in _wrap(_text(project.desc), ctx["left_w"], "Helvetica", 7.7, ctx["string_width"], max_lines=2):
+                pdf.drawString(ctx["left_x"], y, line)
+                y -= 8.4
+
+        tags = (project.tags or [])[:5]
+        if tags:
+            y = _draw_pills(ctx, tags, ctx["left_x"], y - 1, ctx["left_w"], font_size=6.8, max_y=15)
+
+        _dotted_rule(ctx, ctx["left_x"], y + 3, ctx["left_w"])
+        y -= 8
+
+    return y
+
+
 def _draw_education(ctx, education, y):
     y = _section_title(ctx, "EDUCATION", ctx["right_x"], y, ctx["right_w"])
     pdf = ctx["pdf"]
@@ -515,6 +610,22 @@ def _period_sort_key(period):
 def _split_bullets(value):
     parts = [part.strip() for part in re.split(r"(?<=[.!?])\s+", _text(value)) if part.strip()]
     return parts or [_text(value)]
+
+
+def _custom_lines(value):
+    return [
+        re.sub(r"^[-*\u2022]\s*", "", line.strip())
+        for line in str(value or "").splitlines()
+        if line.strip()
+    ]
+
+
+def _custom_keywords(value):
+    return [
+        item.strip()
+        for item in re.split(r"[\n,]+", str(value or ""))
+        if item.strip()
+    ]
 
 
 def _education_extras(edu):

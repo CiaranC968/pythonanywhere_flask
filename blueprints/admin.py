@@ -8,6 +8,7 @@ from flask import (
     abort,
     current_app,
     flash,
+    make_response,
     redirect,
     render_template,
     request,
@@ -23,6 +24,7 @@ from werkzeug.security import check_password_hash
 
 from extensions import db
 from models import Certificate, Education, Experience, Profile, Project, Skill
+from portfolio_data import get_portfolio, get_profile
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -289,6 +291,34 @@ SECTIONS = {
     },
 }
 
+DOCUMENT_SECTION_CONFIG = [
+    {
+        "key": "experience",
+        "label": "Experience",
+        "description": "Roles, promotions, bullet points, and work history.",
+    },
+    {
+        "key": "projects",
+        "label": "Projects",
+        "description": "Selected portfolio projects and their tags.",
+    },
+    {
+        "key": "skills",
+        "label": "Skills",
+        "description": "Skill groups used to build the CV skill tags.",
+    },
+    {
+        "key": "education",
+        "label": "Education",
+        "description": "Degrees, modules, stages, and results.",
+    },
+    {
+        "key": "certificates",
+        "label": "Certificates",
+        "description": "Certificates, issuers, dates, and credentials.",
+    },
+]
+
 FIELD_HELP = {
     "id": "Leave blank when creating a new item and a slug will be generated automatically.",
     "sort_order": "Lower numbers appear first. Leave blank to place new items at the end.",
@@ -439,6 +469,53 @@ def diagnostics():
     )
 
 
+@admin_bp.route("/cv-builder")
+@admin_required
+def cv_builder():
+    portfolio = get_portfolio()
+    return render_template(
+        "admin/cv_builder.html",
+        profile=get_profile(),
+        document_sections=_document_sections(portfolio),
+    )
+
+
+@admin_bp.route("/cv-builder/pdf", methods=["POST"])
+@admin_required
+def cv_builder_pdf():
+    from blueprints.cv import build_cv_pdf, _safe_filename
+
+    portfolio = get_portfolio()
+    include_sections = request.form.getlist("sections")
+    selected_portfolio = _selected_document_portfolio(portfolio, include_sections)
+    document_type = request.form.get("document_type", "cv")
+    resume_options = _resume_options(document_type)
+
+    has_selected_content = any(selected_portfolio.get(section) for section in include_sections)
+    if not include_sections or not has_selected_content:
+        flash("Choose at least one section and one item before generating the PDF.", "error")
+        return redirect(url_for("admin.cv_builder"))
+
+    try:
+        pdf_bytes = build_cv_pdf(
+            profile=get_profile(),
+            portfolio=selected_portfolio,
+            include_sections=include_sections,
+            resume_options=resume_options,
+        )
+    except ImportError:
+        flash("Install reportlab and Pillow from requirements.txt before generating PDFs.", "error")
+        return redirect(url_for("admin.cv_builder"))
+
+    profile = get_profile()
+    filename = _document_filename(profile.full_name, document_type, resume_options, _safe_filename)
+    response = make_response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @admin_bp.route("/<section>")
 @admin_required
 def list_items(section):
@@ -521,6 +598,98 @@ def delete_item(section, item_id):
         return redirect(url_for("admin.list_items", section=section))
     flash(f"{config['label']} item deleted.", "success")
     return redirect(url_for("admin.list_items", section=section))
+
+
+def _document_sections(portfolio):
+    sections = []
+    for config in DOCUMENT_SECTION_CONFIG:
+        key = config["key"]
+        item_list = [
+            {
+                "id": str(getattr(item, "id", "")),
+                "label": _document_item_label(key, item),
+                "meta": _document_item_meta(key, item),
+            }
+            for item in portfolio.get(key, [])
+        ]
+        sections.append({**config, "item_list": item_list})
+    return sections
+
+
+def _document_item_label(section, item):
+    if section == "experience":
+        role = getattr(item, "role", "")
+        company = getattr(item, "company", "")
+        return " - ".join(part for part in [role, company] if part) or getattr(item, "id", "Experience")
+    if section == "education":
+        return getattr(item, "degree", "") or getattr(item, "university", "") or getattr(item, "id", "Education")
+    if section == "certificates":
+        return getattr(item, "title", "") or getattr(item, "issuer", "") or getattr(item, "id", "Certificate")
+    return getattr(item, "title", "") or getattr(item, "id", section.title())
+
+
+def _document_item_meta(section, item):
+    if section == "experience":
+        return " | ".join(part for part in [getattr(item, "period", ""), getattr(item, "location", "")] if part)
+    if section == "projects":
+        return getattr(item, "status", "")
+    if section == "skills":
+        return ", ".join((getattr(item, "tags", None) or [])[:6])
+    if section == "education":
+        return " | ".join(part for part in [getattr(item, "university", ""), getattr(item, "year", "")] if part)
+    if section == "certificates":
+        return " | ".join(part for part in [getattr(item, "issuer", ""), getattr(item, "date", "")] if part)
+    return ""
+
+
+def _selected_document_portfolio(portfolio, include_sections):
+    selected = {}
+    include_sections = set(include_sections)
+    for config in DOCUMENT_SECTION_CONFIG:
+        key = config["key"]
+        if key not in include_sections:
+            selected[key] = []
+            continue
+
+        selected_ids = set(request.form.getlist(f"{key}_ids"))
+        selected[key] = [
+            item
+            for item in portfolio.get(key, [])
+            if str(getattr(item, "id", "")) in selected_ids
+        ]
+    return selected
+
+
+def _resume_options(document_type):
+    header_subtitle = request.form.get("header_subtitle", "").strip()
+    if document_type != "resume":
+        return {
+            "header_subtitle": header_subtitle,
+            "document_title": "Custom CV",
+        }
+
+    company_name = request.form.get("company_name", "").strip()
+    target_role = request.form.get("target_role", "").strip()
+    if not header_subtitle:
+        header_subtitle = target_role or "Targeted Resume"
+
+    return {
+        "header_subtitle": header_subtitle,
+        "company_name": company_name,
+        "target_role": target_role,
+        "summary": request.form.get("resume_summary", "").strip(),
+        "details": request.form.get("company_details", "").strip(),
+        "keywords": request.form.get("resume_keywords", "").strip(),
+        "document_title": " | ".join(part for part in ["Targeted Resume", company_name] if part),
+    }
+
+
+def _document_filename(full_name, document_type, options, safe_filename):
+    base = safe_filename(full_name)
+    if document_type == "resume":
+        target = options.get("company_name") or options.get("target_role") or "Targeted_Resume"
+        return f"{base}_{safe_filename(target)}_Resume.pdf"
+    return f"{base}_Custom_CV.pdf"
 
 
 def _section_config(section):

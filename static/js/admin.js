@@ -303,6 +303,16 @@
         });
     }
 
+    function syncDocumentSection(master) {
+        const key = master.dataset.documentSectionMaster;
+        const container = document.querySelector(`[data-document-section-items="${key}"]`);
+        if (!container) return;
+        container.classList.toggle('opacity-50', !master.checked);
+        container.querySelectorAll('[data-document-item]').forEach((input) => {
+            input.disabled = !master.checked;
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.structured-editor').forEach(initEditor);
         renderIconPicker();
@@ -336,6 +346,11 @@
             }
         });
 
+        document.addEventListener('change', (event) => {
+            const master = event.target.closest('[data-document-section-master]');
+            if (master) syncDocumentSection(master);
+        });
+
         document.querySelector('[data-close-icon-picker]')?.addEventListener('click', closeIconPicker);
         document.querySelector('[data-icon-search]')?.addEventListener('input', renderIconPicker);
         document.querySelectorAll('[data-icon-input]').forEach((input) => {
@@ -351,5 +366,6 @@
                 form.querySelectorAll('.structured-editor').forEach(syncEditor);
             });
         });
+        document.querySelectorAll('[data-document-section-master]').forEach(syncDocumentSection);
     });
 })();
