@@ -26,6 +26,26 @@
             background: #fafaf8;
             padding: 1rem;
         }
+        .admin-tab[aria-selected="true"] {
+            border-color: #facc15;
+            background: #facc15;
+            color: #111827;
+        }
+        .icon-square-button {
+            aspect-ratio: 1 / 1;
+        }
+        .icon-picker-option {
+            aspect-ratio: 1 / 1;
+            min-height: 5.75rem;
+        }
+        [data-icon-list] {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+        }
+        .style-choice[aria-pressed="true"] {
+            border-color: #facc15;
+            box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.55);
+        }
     </style>
 </head>
 <body class="min-h-dvh bg-warm-100 text-warm-800">

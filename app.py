@@ -6,7 +6,6 @@ from urllib.parse import quote_plus
 
 from flask import Flask, render_template, request
 from sqlalchemy import inspect, text
-from sqlalchemy.exc import SQLAlchemyError
 
 # Import Blueprints
 from blueprints.admin import admin_bp

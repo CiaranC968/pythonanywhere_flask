@@ -39,13 +39,15 @@ FIELD_GROUPS = {
     "profile": [
         ("Profile", ["full_name", "title", "tagline", "cv_subtitle", "about"]),
         ("Contact", ["email", "phone", "address", "linkedin_url", "github_url", "website_url", "location", "availability_text", "contact_intro"]),
-        ("Media & style", ["profile_image", "hero_icon"]),
+        ("Media", ["profile_image"]),
+        ("Icon", ["hero_icon"]),
     ],
     "experience": [
         ("Core", ["id", "company", "role", "period", "brief", "location", "type", "current", "sort_order", "is_visible"]),
         ("Details", ["details", "tech_stack", "timeline", "skills"]),
         ("Media", ["logo"]),
-        ("Style settings", ["icon", "bgIcon", "iconColor", "bgColor", "hoverColor"]),
+        ("Icon", ["icon", "bgIcon"]),
+        ("Colour customisation", ["iconColor", "bgColor", "hoverColor"]),
     ],
     "education": [
         ("Core", ["id", "degree", "university", "year", "description", "current", "status", "progress", "sort_order", "is_visible"]),
@@ -54,12 +56,14 @@ FIELD_GROUPS = {
     ],
     "skills": [
         ("Core", ["id", "title", "desc", "tags", "progress", "stats", "sort_order", "is_visible"]),
-        ("Style settings", ["icon", "iconColor", "bgColor"]),
+        ("Icon", ["icon"]),
+        ("Colour customisation", ["iconColor", "bgColor"]),
     ],
     "projects": [
         ("Core", ["id", "title", "desc", "status", "tags", "links", "stats", "features", "challenges", "sort_order", "is_visible"]),
         ("Media", ["image"]),
-        ("Style settings", ["icon", "iconColor", "bgColor"]),
+        ("Icon", ["icon"]),
+        ("Colour customisation", ["iconColor", "bgColor"]),
     ],
     "certificates": [
         ("Core", ["id", "title", "issuer", "date", "desc", "link", "credential_id", "skills", "verified", "sort_order", "is_visible"]),
@@ -165,7 +169,7 @@ SECTIONS = {
             ("availability_text", "Contact badge", "text"),
             ("contact_intro", "Contact intro", "textarea"),
             ("profile_image", "Profile image filename", "text"),
-            ("hero_icon", "Hero icon CSS class", "text"),
+            ("hero_icon", "Hero icon", "text"),
         ],
         "title_field": "full_name",
     },
@@ -186,11 +190,11 @@ SECTIONS = {
             ("logo", "Logo filename", "text"),
             ("location", "Location", "text"),
             ("type", "Work type", "text"),
-            ("icon", "Icon CSS class", "text"),
-            ("bgIcon", "Background icon CSS class", "text"),
-            ("iconColor", "Icon colour class", "text"),
-            ("bgColor", "Background colour class", "text"),
-            ("hoverColor", "Hover colour class", "text"),
+            ("icon", "Icon", "text"),
+            ("bgIcon", "Background icon", "text"),
+            ("iconColor", "Icon colour", "text"),
+            ("bgColor", "Background colour", "text"),
+            ("hoverColor", "Hover colour", "text"),
             ("current", "Current role", "checkbox"),
             ("sort_order", "Sort order", "integer"),
             ("is_visible", "Visible", "checkbox"),
@@ -228,9 +232,9 @@ SECTIONS = {
             ("id", "Slug ID", "text"),
             ("title", "Title", "text"),
             ("desc", "Description", "textarea"),
-            ("icon", "Icon CSS class", "text"),
-            ("iconColor", "Icon colour class", "text"),
-            ("bgColor", "Background colour class", "text"),
+            ("icon", "Icon", "text"),
+            ("iconColor", "Icon colour", "text"),
+            ("bgColor", "Background colour", "text"),
             ("tags", "Tags", "json"),
             ("progress", "Progress", "json"),
             ("stats", "Stats", "json"),
@@ -248,9 +252,9 @@ SECTIONS = {
             ("title", "Title", "text"),
             ("desc", "Description", "textarea"),
             ("status", "Status", "text"),
-            ("icon", "Icon CSS class", "text"),
-            ("iconColor", "Icon colour class", "text"),
-            ("bgColor", "Background colour class", "text"),
+            ("icon", "Icon", "text"),
+            ("iconColor", "Icon colour", "text"),
+            ("bgColor", "Background colour", "text"),
             ("tags", "Tags", "json"),
             ("links", "Links", "json"),
             ("stats", "Stats", "json"),
@@ -455,7 +459,7 @@ def new_item(section):
         abort(404)
 
     item = config["model"]()
-    _apply_new_defaults(item, section, config)
+    _apply_new_defaults(item, config)
     if request.method == "POST":
         if _populate_item(item, config, is_new=True):
             db.session.add(item)
@@ -588,7 +592,7 @@ def _integer_default(field_name):
     return 0 if field_name == "sort_order" else None
 
 
-def _apply_new_defaults(item, section, config):
+def _apply_new_defaults(item, config):
     if hasattr(item, "is_visible"):
         item.is_visible = True
     if hasattr(item, "sort_order"):

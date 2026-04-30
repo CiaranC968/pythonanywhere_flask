@@ -53,17 +53,28 @@
 
         if (field.key === 'icon') {
             const inputRow = document.createElement('span');
-            inputRow.className = 'flex gap-2';
+            inputRow.className = 'flex items-center gap-3';
             input.dataset.iconInput = '';
+            input.type = 'hidden';
             inputRow.appendChild(input);
 
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'rounded-xl bg-warm-900 px-3 py-2 text-xs font-black text-white hover:bg-warm-700';
-            button.textContent = 'Pick';
+            button.className = 'icon-square-button flex h-12 w-12 items-center justify-center rounded-xl border border-warm-200 bg-white text-xl text-warm-900 hover:border-brand-accent';
             button.dataset.openIconPicker = '';
-            button.addEventListener('click', () => setIconPickerTarget(input));
+            button.setAttribute('aria-label', `Choose ${field.label}`);
+            const preview = document.createElement('i');
+            preview.className = value || field.placeholder || 'fas fa-code';
+            preview.dataset.iconPreviewFor = '';
+            preview.setAttribute('aria-hidden', 'true');
+            button.appendChild(preview);
             inputRow.appendChild(button);
+
+            const helper = document.createElement('span');
+            helper.className = 'text-xs font-bold text-warm-500';
+            helper.dataset.iconText = '';
+            helper.textContent = iconLabel(value || field.placeholder) || 'Choose icon';
+            inputRow.appendChild(helper);
             wrapper.appendChild(inputRow);
         } else {
             wrapper.appendChild(input);
@@ -206,6 +217,11 @@
         return parseJson(form.dataset.iconChoices, []);
     }
 
+    function iconLabel(className) {
+        const match = iconChoices().find(([value]) => value === className);
+        return match ? match[1] : '';
+    }
+
     function setIconPickerTarget(target) {
         iconPickerTarget = typeof target === 'string' ? document.getElementById(target) : target;
         renderIconPicker();
@@ -235,8 +251,8 @@
         choices.forEach(([className, label]) => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'flex items-center gap-3 rounded-xl border border-warm-200 bg-warm-50 p-3 text-left hover:border-brand-accent hover:bg-white';
-            button.innerHTML = `<span class="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-lg text-warm-900"><i class="${className}" aria-hidden="true"></i></span><span><span class="block text-sm font-black text-warm-900">${label}</span><span class="block text-xs font-semibold text-warm-500">${className}</span></span>`;
+            button.className = 'icon-picker-option flex flex-col items-center justify-center gap-2 rounded-2xl border border-warm-200 bg-warm-50 p-3 text-center hover:border-brand-accent hover:bg-white';
+            button.innerHTML = `<i class="${className} text-2xl text-warm-900" aria-hidden="true"></i><span class="text-xs font-black text-warm-700">${label}</span>`;
             button.addEventListener('click', () => {
                 if (iconPickerTarget) {
                     iconPickerTarget.value = className;
@@ -250,14 +266,47 @@
     }
 
     function updateIconPreview(input) {
-        if (!input.id) return;
-        const preview = document.querySelector(`[data-icon-preview="${input.id}"]`);
+        const preview = input.id ? document.querySelector(`[data-icon-preview="${input.id}"]`) : input.closest('span')?.querySelector('[data-icon-preview-for]');
         if (preview) preview.className = input.value || 'fas fa-code';
+        if (input.id) {
+            const label = document.querySelector(`[data-icon-label="${input.id}"]`);
+            if (label) label.textContent = iconLabel(input.value) || 'Custom icon selected';
+            return;
+        }
+        const text = input.closest('span')?.querySelector('[data-icon-text]');
+        if (text) text.textContent = iconLabel(input.value) || 'Custom icon';
+    }
+
+    function activateFormTab(index) {
+        document.querySelectorAll('[data-form-tab]').forEach((tab) => {
+            const active = tab.dataset.formTab === String(index);
+            tab.setAttribute('aria-selected', active ? 'true' : 'false');
+            tab.classList.toggle('border-brand-accent', active);
+            tab.classList.toggle('text-warm-900', active);
+            tab.classList.toggle('bg-brand-accent', active);
+            tab.classList.toggle('text-brand-dark', active);
+        });
+        document.querySelectorAll('[data-form-panel]').forEach((panel) => {
+            panel.classList.toggle('hidden', panel.dataset.formPanel !== String(index));
+        });
+    }
+
+    function updateStyleChoice(targetName, value) {
+        const input = document.getElementById(targetName);
+        if (input) input.value = value;
+        document.querySelectorAll(`[data-style-choice][data-target="${targetName}"]`).forEach((button) => {
+            const active = button.dataset.value === value;
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            button.classList.toggle('border-brand-accent', active);
+            button.classList.toggle('ring-2', active);
+            button.classList.toggle('ring-brand-accent', active);
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.structured-editor').forEach(initEditor);
         renderIconPicker();
+        activateFormTab(0);
 
         document.addEventListener('click', (event) => {
             const button = event.target.closest('[data-action="add-row"]');
@@ -274,11 +323,27 @@
             setIconPickerTarget(target);
         });
 
+        document.addEventListener('click', (event) => {
+            const tab = event.target.closest('[data-form-tab]');
+            if (tab) {
+                activateFormTab(tab.dataset.formTab);
+                return;
+            }
+
+            const styleChoice = event.target.closest('[data-style-choice]');
+            if (styleChoice) {
+                updateStyleChoice(styleChoice.dataset.target, styleChoice.dataset.value);
+            }
+        });
+
         document.querySelector('[data-close-icon-picker]')?.addEventListener('click', closeIconPicker);
         document.querySelector('[data-icon-search]')?.addEventListener('input', renderIconPicker);
         document.querySelectorAll('[data-icon-input]').forEach((input) => {
             input.addEventListener('input', () => updateIconPreview(input));
             updateIconPreview(input);
+        });
+        document.querySelectorAll('[data-style-input]').forEach((input) => {
+            updateStyleChoice(input.id, input.value);
         });
 
         document.querySelectorAll('[data-admin-form]').forEach((form) => {

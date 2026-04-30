@@ -61,12 +61,15 @@
 {% macro icon_editor(name, label, value) -%}
     <div class="rounded-2xl border border-warm-200 bg-warm-50 p-4">
         <label for="{{ name }}" class="mb-2 block text-sm font-black text-warm-700">{{ label }}</label>
-        <div class="flex gap-3">
-            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-warm-200 bg-white text-xl text-warm-800">
+        <div class="flex items-center gap-3">
+            <input id="{{ name }}" name="{{ name }}" type="hidden" value="{{ value or '' }}" data-icon-input>
+            <button type="button" class="icon-square-button flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-warm-200 bg-white text-2xl text-warm-900 shadow-sm hover:border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-accent" data-open-icon-picker data-target="{{ name }}" aria-label="Choose {{ label }}">
                 <i class="{{ value or 'fas fa-code' }}" data-icon-preview="{{ name }}" aria-hidden="true"></i>
+            </button>
+            <div>
+                <p class="text-sm font-black text-warm-900" data-icon-label="{{ name }}">Choose icon</p>
+                <p class="text-xs font-medium text-warm-500">Click the square to open the icon picker.</p>
             </div>
-            <input id="{{ name }}" name="{{ name }}" type="text" value="{{ value or '' }}" class="admin-input" data-icon-input>
-            <button type="button" class="rounded-xl bg-warm-900 px-4 py-2 text-sm font-black text-white hover:bg-warm-700" data-open-icon-picker data-target="{{ name }}">Choose</button>
         </div>
     </div>
 {%- endmacro %}
@@ -75,14 +78,32 @@
     {% set choices = style_choices.get(name, []) %}
     <div class="rounded-2xl border border-warm-200 bg-warm-50 p-4">
         <label for="{{ name }}" class="mb-2 block text-sm font-black text-warm-700">{{ label }}</label>
-        <select id="{{ name }}" name="{{ name }}" class="admin-input" data-style-select>
+        <input id="{{ name }}" name="{{ name }}" type="hidden" value="{{ value or '' }}" data-style-input>
+        <div class="grid gap-2 sm:grid-cols-2">
             {% if value and value not in choices | map(attribute=0) | list %}
-            <option value="{{ value }}" selected>{{ value }}</option>
+            <button type="button" class="style-choice rounded-xl border border-brand-accent bg-white px-3 py-2 text-left text-sm font-bold text-warm-800" data-style-choice data-target="{{ name }}" data-value="{{ value }}" aria-pressed="true">
+                Custom - {{ value }}
+            </button>
             {% endif %}
             {% for class_name, display in choices %}
-            <option value="{{ class_name }}" {% if value == class_name %}selected{% endif %}>{{ display }} - {{ class_name }}</option>
+            <button type="button"
+                    class="style-choice flex items-center gap-3 rounded-xl border border-warm-200 bg-white px-3 py-2 text-left text-sm font-bold text-warm-800 hover:border-brand-accent"
+                    data-style-choice
+                    data-target="{{ name }}"
+                    data-value="{{ class_name }}"
+                    aria-pressed="{{ 'true' if value == class_name else 'false' }}">
+                {% if name == 'bgColor' %}
+                <span class="h-7 w-7 rounded-lg border border-warm-200 {{ class_name }}" aria-hidden="true"></span>
+                {% else %}
+                <span class="{{ class_name }} text-xl leading-none" aria-hidden="true">●</span>
+                {% endif %}
+                <span>
+                    <span class="block">{{ display }}</span>
+                    <span class="block text-xs font-medium text-warm-500">{{ class_name }}</span>
+                </span>
+            </button>
             {% endfor %}
-        </select>
+        </div>
     </div>
 {%- endmacro %}
 
@@ -124,13 +145,31 @@
 </div>
 
 <form method="post" enctype="multipart/form-data" class="space-y-6" data-admin-form data-icon-choices='{{ icon_choices | tojson }}'>
+    <div class="sticky top-0 z-20 -mx-1 overflow-x-auto border-b border-warm-200 bg-warm-100/95 px-1 py-3 backdrop-blur" role="tablist" aria-label="{{ config.label }} editor sections">
+        <div class="flex gap-2">
+            {% for group_label, names in field_groups %}
+            <button type="button"
+                    class="admin-tab rounded-xl border border-warm-200 bg-white px-4 py-2 text-sm font-black text-warm-600 shadow-sm hover:border-brand-accent"
+                    data-form-tab="{{ loop.index0 }}"
+                    role="tab"
+                    aria-selected="{{ 'true' if loop.first else 'false' }}">
+                {{ group_label }}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
     {% for group_label, names in field_groups %}
-    <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+    <section class="admin-tab-panel rounded-2xl border border-warm-200 bg-white p-6 shadow-sm {% if not loop.first %}hidden{% endif %}"
+             data-form-panel="{{ loop.index0 }}"
+             role="tabpanel">
         <div class="mb-5 flex items-center justify-between gap-4 border-b border-warm-100 pb-4">
             <div>
                 <h2 class="text-xl font-black text-warm-900">{{ group_label }}</h2>
-                {% if group_label == 'Style settings' %}
-                <p class="mt-1 text-sm font-medium text-warm-500">Visual classes for icons and card accents live here.</p>
+                {% if group_label == 'Icon' %}
+                <p class="mt-1 text-sm font-medium text-warm-500">Pick icons visually instead of typing Font Awesome classes.</p>
+                {% elif group_label == 'Colour customisation' %}
+                <p class="mt-1 text-sm font-medium text-warm-500">Choose the card icon, background, and hover colour classes here.</p>
                 {% elif group_label == 'Details' %}
                 <p class="mt-1 text-sm font-medium text-warm-500">Repeatable rows replace raw JSON for bullets, tech stack, and timelines.</p>
                 {% endif %}
@@ -160,7 +199,7 @@
     </div>
 </form>
 
-<dialog id="iconPicker" class="w-[min(44rem,calc(100vw-2rem))] rounded-2xl border border-warm-200 bg-white p-0 shadow-2xl">
+<dialog id="iconPicker" class="w-[min(42rem,calc(100vw-2rem))] rounded-2xl border border-warm-200 bg-white p-0 shadow-2xl">
     <div class="border-b border-warm-100 p-4">
         <div class="flex items-center justify-between gap-4">
             <h2 class="text-lg font-black text-warm-900">Choose Icon</h2>
@@ -168,6 +207,6 @@
         </div>
         <input type="search" class="admin-input mt-4" placeholder="Search icons..." data-icon-search>
     </div>
-    <div class="grid max-h-[60vh] grid-cols-2 gap-3 overflow-y-auto p-4 md:grid-cols-3" data-icon-list></div>
+    <div class="grid max-h-[60vh] grid-cols-4 gap-3 overflow-y-auto p-4 sm:grid-cols-5 md:grid-cols-6" data-icon-list></div>
 </dialog>
 {% endblock %}

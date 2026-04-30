@@ -112,22 +112,54 @@ def _draw_header(ctx, profile, width, height):
 def _draw_contact(ctx, x, y, label, value):
     pdf = ctx["pdf"]
     theme = ctx["theme"]
-    labels = {
-        "@": "@",
-        "tel": "☎",
-        "mail": "✉",
-        "pin": "●",
-        "web": "◉",
-        "git": "⌘",
-        "in": "in",
-    }
-    icon = labels.get(label, label)
-    pdf.setFont("Helvetica-Bold", 7)
-    pdf.setFillColor(theme["accent"])
-    pdf.drawString(x, y, icon)
+    _draw_contact_icon(ctx, label, x + 3, y + 2.6)
     pdf.setFont("Helvetica-Bold", 7.3)
     pdf.setFillColor(theme["ink"])
-    pdf.drawString(x + 10, y, _truncate(_text(value), 33))
+    pdf.drawString(x + 12, y, _truncate(_text(value), 31))
+
+
+def _draw_contact_icon(ctx, label, x, y):
+    pdf = ctx["pdf"]
+    theme = ctx["theme"]
+    pdf.saveState()
+    pdf.setStrokeColor(theme["accent"])
+    pdf.setFillColor(theme["accent"])
+    pdf.setLineWidth(0.7)
+
+    if label == "@":
+        pdf.circle(x, y, 3.0, fill=0, stroke=1)
+        pdf.circle(x + 0.7, y, 1.1, fill=0, stroke=1)
+        pdf.line(x + 2.0, y - 0.6, x + 4.2, y + 0.8)
+    elif label == "tel":
+        pdf.roundRect(x - 2.3, y - 3.0, 4.8, 6.0, 1.2, fill=0, stroke=1)
+        pdf.circle(x, y - 2.0, 0.45, fill=1, stroke=0)
+    elif label == "mail":
+        pdf.rect(x - 3.4, y - 2.4, 6.8, 4.8, fill=0, stroke=1)
+        pdf.line(x - 3.4, y + 2.4, x, y - 0.4)
+        pdf.line(x + 3.4, y + 2.4, x, y - 0.4)
+    elif label == "pin":
+        pdf.circle(x, y + 0.8, 2.3, fill=0, stroke=1)
+        pdf.line(x - 1.6, y - 0.8, x, y - 3.7)
+        pdf.line(x + 1.6, y - 0.8, x, y - 3.7)
+    elif label == "web":
+        pdf.circle(x, y, 3.1, fill=0, stroke=1)
+        pdf.ellipse(x - 1.5, y - 3.1, x + 1.5, y + 3.1, fill=0, stroke=1)
+        pdf.line(x - 3.1, y, x + 3.1, y)
+    elif label == "git":
+        pdf.circle(x, y, 2.9, fill=0, stroke=1)
+        pdf.circle(x - 1.1, y + 0.6, 0.35, fill=1, stroke=0)
+        pdf.circle(x + 1.1, y + 0.6, 0.35, fill=1, stroke=0)
+        pdf.line(x - 1.4, y - 1.2, x + 1.4, y - 1.2)
+    elif label == "in":
+        pdf.rect(x - 3.0, y - 3.0, 6.0, 6.0, fill=0, stroke=1)
+        pdf.line(x - 1.4, y - 1.8, x - 1.4, y + 0.8)
+        pdf.circle(x - 1.4, y + 1.8, 0.35, fill=1, stroke=0)
+        pdf.line(x + 0.2, y - 1.8, x + 0.2, y + 0.9)
+        pdf.line(x + 0.2, y + 0.9, x + 1.6, y - 1.8)
+    else:
+        pdf.circle(x, y, 2.2, fill=1, stroke=0)
+
+    pdf.restoreState()
 
 
 def _draw_globe_badge(ctx, x, y):
