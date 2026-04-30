@@ -300,7 +300,8 @@ DOCUMENT_SECTION_CONFIG = [
     {
         "key": "projects",
         "label": "Projects",
-        "description": "Selected portfolio projects and their tags.",
+        "description": "Selected portfolio projects and their tags. The PDF prints up to 3.",
+        "max_items": 3,
     },
     {
         "key": "skills",
@@ -714,13 +715,15 @@ def _document_sections(portfolio):
     sections = []
     for config in DOCUMENT_SECTION_CONFIG:
         key = config["key"]
+        max_items = config.get("max_items")
         item_list = [
             {
                 "id": str(getattr(item, "id", "")),
                 "label": _document_item_label(key, item),
                 "meta": _document_item_meta(key, item),
+                "checked": not max_items or index < max_items,
             }
-            for item in portfolio.get(key, [])
+            for index, item in enumerate(portfolio.get(key, []))
         ]
         sections.append({**config, "item_list": item_list})
     return sections
@@ -789,6 +792,9 @@ def _selected_document_portfolio(portfolio, include_sections):
             for item in portfolio.get(key, [])
             if str(getattr(item, "id", "")) in selected_ids
         ]
+        max_items = config.get("max_items")
+        if max_items:
+            selected[key] = selected[key][:max_items]
     return selected
 
 

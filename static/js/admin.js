@@ -311,6 +311,27 @@
         container.querySelectorAll('[data-document-item]').forEach((input) => {
             input.disabled = !master.checked;
         });
+        if (master.checked) syncDocumentLimit(key);
+    }
+
+    function syncDocumentLimit(key) {
+        const container = document.querySelector(`[data-document-section-items="${key}"]`);
+        if (!container) return;
+
+        const max = Number(container.dataset.documentMax || 0);
+        if (!max) return;
+
+        const inputs = [...container.querySelectorAll(`[data-document-item="${key}"]`)];
+        const checkedCount = inputs.filter((input) => input.checked).length;
+        const limitReached = checkedCount >= max;
+        inputs.forEach((input) => {
+            if (!input.checked) input.disabled = limitReached;
+        });
+
+        const message = document.querySelector(`[data-document-limit-message="${key}"]`);
+        if (message) {
+            message.textContent = `${checkedCount}/${max} selected`;
+        }
     }
 
     function insertTemplateSentence(button) {
@@ -369,7 +390,13 @@
 
         document.addEventListener('change', (event) => {
             const master = event.target.closest('[data-document-section-master]');
-            if (master) syncDocumentSection(master);
+            if (master) {
+                syncDocumentSection(master);
+                return;
+            }
+
+            const item = event.target.closest('[data-document-item]');
+            if (item) syncDocumentLimit(item.dataset.documentItem);
         });
 
         document.querySelector('[data-close-icon-picker]')?.addEventListener('click', closeIconPicker);

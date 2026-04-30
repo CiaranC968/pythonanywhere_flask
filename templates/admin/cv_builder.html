@@ -29,14 +29,16 @@
                     <span class="block text-xl font-black text-warm-900">{{ section.label }}</span>
                     <span class="mt-1 block text-sm text-warm-500">{{ section.description }}</span>
                 </label>
-                <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ section.item_list|length }}</span>
+                <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">
+                    {% if section.max_items %}Max {{ section.max_items }}{% else %}{{ section.item_list|length }}{% endif %}
+                </span>
             </div>
 
-            <div class="mt-5 space-y-3" data-document-section-items="{{ section.key }}">
+            <div class="mt-5 space-y-3" data-document-section-items="{{ section.key }}" data-document-max="{{ section.max_items or '' }}">
                 {% if section.item_list %}
                     {% for item in section.item_list %}
                     <label class="flex gap-3 rounded-xl border border-warm-200 bg-warm-50 p-3 transition hover:border-brand-accent">
-                        <input name="{{ section.key }}_ids" value="{{ item.id }}" type="checkbox" checked class="mt-1 h-4 w-4 rounded border-warm-300 text-brand-accent" data-document-item="{{ section.key }}">
+                        <input name="{{ section.key }}_ids" value="{{ item.id }}" type="checkbox" {% if item.checked %}checked{% endif %} class="mt-1 h-4 w-4 rounded border-warm-300 text-brand-accent" data-document-item="{{ section.key }}">
                         <span>
                             <span class="block text-sm font-black text-warm-900">{{ item.label }}</span>
                             {% if item.meta %}
@@ -45,6 +47,9 @@
                         </span>
                     </label>
                     {% endfor %}
+                    {% if section.max_items %}
+                    <p class="text-xs font-bold text-warm-500" data-document-limit-message="{{ section.key }}">Choose up to {{ section.max_items }}.</p>
+                    {% endif %}
                 {% else %}
                     <p class="rounded-xl border border-warm-200 bg-warm-50 p-4 text-sm font-bold text-warm-500">No visible items in this section.</p>
                 {% endif %}
