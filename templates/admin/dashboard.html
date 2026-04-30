@@ -7,7 +7,8 @@
         <p class="mt-2 text-warm-500">Manage the content that powers the site and generated PDF.</p>
     </div>
     <div class="flex flex-wrap gap-3">
-        <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">Custom CV / Resume Letter</a>
+        <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">CV Builder</a>
+        <a href="{{ url_for('admin.resume_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Resume Builder</a>
         <a href="{{ url_for('admin.diagnostics') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Diagnostics</a>
         <a href="{{ url_for('cv.get_cv') }}" target="_blank" class="inline-flex items-center justify-center rounded-xl bg-warm-900 px-5 py-3 text-sm font-black text-white hover:bg-warm-700">Preview PDF</a>
     </div>
@@ -37,14 +38,23 @@
     {% endfor %}
 </div>
 
-<div class="mt-4">
+<div class="mt-4 grid gap-4 md:grid-cols-2">
     <a href="{{ url_for('admin.cv_builder') }}" class="block rounded-2xl border border-brand-accent bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
         <div class="flex items-center justify-between gap-4">
             <div>
-                <h2 class="text-xl font-black text-warm-900">Custom CV & Resume Letter</h2>
-                <p class="mt-2 text-sm text-warm-500">Tick exactly what to include for a CV, or write a company-specific letter like your sample PDF.</p>
+                <h2 class="text-xl font-black text-warm-900">Custom CV Builder</h2>
+                <p class="mt-2 text-sm text-warm-500">Tick exactly which portfolio sections and items should appear in a CV PDF.</p>
             </div>
-            <span class="rounded-xl bg-brand-accent px-4 py-2 text-sm font-black text-brand-dark">Build PDF</span>
+            <span class="rounded-xl bg-brand-accent px-4 py-2 text-sm font-black text-brand-dark">Build CV</span>
+        </div>
+    </a>
+    <a href="{{ url_for('admin.resume_builder') }}" class="block rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-black text-warm-900">Resume Letter Builder</h2>
+                <p class="mt-2 text-sm text-warm-500">Create a company-specific resume letter using reusable sentence templates.</p>
+            </div>
+            <span class="rounded-xl border border-warm-200 px-4 py-2 text-sm font-black text-warm-700">Build Resume</span>
         </div>
     </a>
 </div>

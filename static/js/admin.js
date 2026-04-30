@@ -313,6 +313,22 @@
         });
     }
 
+    function insertTemplateSentence(button) {
+        const target = document.getElementById(button.dataset.templateTarget);
+        if (!target) return;
+
+        const company = document.querySelector('[data-template-company]')?.value.trim() || 'the company';
+        const role = document.querySelector('[data-template-role]')?.value.trim() || 'the role';
+        const templateText = parseJson(button.dataset.templateText, button.dataset.templateText || '');
+        const sentence = templateText
+            .replaceAll('{company}', company)
+            .replaceAll('{role}', role);
+        const separator = target.value.trim() ? (target.id === 'company_details' ? '\n' : '\n\n') : '';
+        target.value = `${target.value.trim()}${separator}${sentence}`;
+        target.focus();
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.structured-editor').forEach(initEditor);
         renderIconPicker();
@@ -343,6 +359,11 @@
             const styleChoice = event.target.closest('[data-style-choice]');
             if (styleChoice) {
                 updateStyleChoice(styleChoice.dataset.target, styleChoice.dataset.value);
+            }
+
+            const templateButton = event.target.closest('[data-template-target]');
+            if (templateButton) {
+                insertTemplateSentence(templateButton);
             }
         });
 

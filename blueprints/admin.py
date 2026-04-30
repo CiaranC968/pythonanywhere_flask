@@ -319,6 +319,59 @@ DOCUMENT_SECTION_CONFIG = [
     },
 ]
 
+RESUME_SENTENCE_TEMPLATES = [
+    {
+        "target": "resume_summary",
+        "label": "Software role intro",
+        "text": "I am writing to apply for the {role} position at {company}. As a Computing and IT student with hands-on software development experience, I am eager to contribute to your team while continuing to grow as a developer.",
+    },
+    {
+        "target": "resume_summary",
+        "label": "Testing focus",
+        "text": "I am particularly interested in {company} because the role aligns with my experience in backend development, testing, documentation, and building reliable software with a practical user focus.",
+    },
+    {
+        "target": "resume_summary",
+        "label": "Graduate tone",
+        "text": "As an Open University Computing and IT student, I bring a mix of academic learning, self-directed project work, and real workplace experience that would let me contribute quickly to {company}.",
+    },
+    {
+        "target": "company_details",
+        "label": "Python strength",
+        "text": "Proficient in Python, with practical experience using Flask, SQL, APIs, and automation to build maintainable software.",
+    },
+    {
+        "target": "company_details",
+        "label": "Frontend/backend",
+        "text": "Comfortable working across backend and frontend code, including Flask, FastAPI, React, TypeScript, HTML, CSS, and database-backed applications.",
+    },
+    {
+        "target": "company_details",
+        "label": "Agile/testing",
+        "text": "Practical understanding of Agile workflows, sprint planning, documentation, integration testing, and collaborating in technical teams.",
+    },
+    {
+        "target": "company_details",
+        "label": "Communication",
+        "text": "Strong communication and teamwork skills developed through academic group projects, internships, and customer-facing work experience.",
+    },
+    {
+        "target": "company_details",
+        "label": "Learning mindset",
+        "text": "Quick to learn new tools and frameworks, with a steady approach to debugging, documentation, and improving existing systems.",
+    },
+    {
+        "target": "resume_conclusion",
+        "label": "Standard close",
+        "text": "Thank you for considering my application. I would welcome the opportunity to discuss how my skills, motivation, and experience could support {company}.\n\nYours sincerely,\n\nCiaran Cairns",
+    },
+    {
+        "target": "resume_conclusion",
+        "label": "Engineering close",
+        "text": "I would be excited to support your engineering team, learn from experienced developers, and contribute to high-quality, reliable software at {company}.\n\nYours sincerely,\n\nCiaran Cairns",
+    },
+]
+
 FIELD_HELP = {
     "id": "Leave blank when creating a new item and a slug will be generated automatically.",
     "sort_order": "Lower numbers appear first. Leave blank to place new items at the end.",
@@ -483,35 +536,62 @@ def cv_builder():
 @admin_bp.route("/cv-builder/pdf", methods=["POST"])
 @admin_required
 def cv_builder_pdf():
-    from blueprints.cv import build_cv_pdf, build_resume_letter_pdf, _safe_filename
+    from blueprints.cv import build_cv_pdf, _safe_filename
 
     portfolio = get_portfolio()
     include_sections = request.form.getlist("sections")
     selected_portfolio = _selected_document_portfolio(portfolio, include_sections)
-    document_type = request.form.get("document_type", "cv")
-    resume_options = _resume_options(document_type)
+    resume_options = _cv_options()
 
     has_selected_content = any(selected_portfolio.get(section) for section in include_sections)
-    if document_type == "cv" and (not include_sections or not has_selected_content):
+    if not include_sections or not has_selected_content:
         flash("Choose at least one section and one item before generating the PDF.", "error")
         return redirect(url_for("admin.cv_builder"))
 
     try:
-        if document_type == "resume":
-            pdf_bytes = build_resume_letter_pdf(profile=get_profile(), resume_options=resume_options)
-        else:
-            pdf_bytes = build_cv_pdf(
-                profile=get_profile(),
-                portfolio=selected_portfolio,
-                include_sections=include_sections,
-                resume_options=resume_options,
-            )
+        pdf_bytes = build_cv_pdf(
+            profile=get_profile(),
+            portfolio=selected_portfolio,
+            include_sections=include_sections,
+            resume_options=resume_options,
+        )
     except ImportError:
         flash("Install reportlab and Pillow from requirements.txt before generating PDFs.", "error")
         return redirect(url_for("admin.cv_builder"))
 
     profile = get_profile()
-    filename = _document_filename(profile.full_name, document_type, resume_options, _safe_filename)
+    filename = _document_filename(profile.full_name, "cv", resume_options, _safe_filename)
+    response = make_response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@admin_bp.route("/resume-builder")
+@admin_required
+def resume_builder():
+    return render_template(
+        "admin/resume_builder.html",
+        profile=get_profile(),
+        sentence_templates=RESUME_SENTENCE_TEMPLATES,
+    )
+
+
+@admin_bp.route("/resume-builder/pdf", methods=["POST"])
+@admin_required
+def resume_builder_pdf():
+    from blueprints.cv import build_resume_letter_pdf, _safe_filename
+
+    resume_options = _resume_options()
+    try:
+        pdf_bytes = build_resume_letter_pdf(profile=get_profile(), resume_options=resume_options)
+    except ImportError:
+        flash("Install reportlab and Pillow from requirements.txt before generating PDFs.", "error")
+        return redirect(url_for("admin.resume_builder"))
+
+    profile = get_profile()
+    filename = _document_filename(profile.full_name, "resume", resume_options, _safe_filename)
     response = make_response(pdf_bytes)
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
@@ -663,18 +743,19 @@ def _selected_document_portfolio(portfolio, include_sections):
     return selected
 
 
-def _resume_options(document_type):
-    header_subtitle = request.form.get("header_subtitle", "").strip()
-    if document_type != "resume":
-        return {
-            "header_subtitle": header_subtitle,
-            "document_title": "Custom CV",
-        }
+def _cv_options():
+    return {
+        "header_subtitle": request.form.get("header_subtitle", "").strip(),
+        "document_title": "Custom CV",
+    }
 
+
+def _resume_options():
+    header_subtitle = request.form.get("header_subtitle", "").strip()
     company_name = request.form.get("company_name", "").strip()
     target_role = request.form.get("target_role", "").strip()
     if not header_subtitle:
-        header_subtitle = target_role or "Targeted Resume"
+        header_subtitle = target_role or "Resume Letter"
 
     return {
         "header_subtitle": header_subtitle,
