@@ -148,31 +148,14 @@ def build_resume_letter_pdf(profile=None, resume_options=None):
 def _draw_letter_header(ctx, profile, width, height):
     pdf = ctx["pdf"]
     theme = ctx["theme"]
-    image = _profile_image(profile)
-    image_size = 86
-    image_x = ctx["left_x"]
-    image_y = height - 118
-    if image:
-        pdf.drawImage(
-            ctx["image_reader"](BytesIO(image)),
-            image_x,
-            image_y,
-            width=image_size,
-            height=image_size,
-            mask="auto",
-        )
-    else:
-        pdf.setFillColor(theme["accent"])
-        pdf.circle(image_x + image_size / 2, image_y + image_size / 2, image_size / 2, fill=1, stroke=0)
-
     name_parts = _text(profile.full_name).split()
     first_name = " ".join(name_parts[:-1]) if len(name_parts) > 1 else _text(profile.full_name)
     last_name = name_parts[-1] if len(name_parts) > 1 else ""
-    name_y = height - 64
+    name_y = height - 70
     pdf.setFillColor(theme["muted"])
     pdf.setFont("Helvetica", 25)
     first_width = ctx["string_width"](first_name + " ", "Helvetica", 25)
-    name_x = width - 228
+    name_x = ctx["left_x"]
     pdf.drawString(name_x, name_y, first_name)
     pdf.setFillColor(theme["ink"])
     pdf.setFont("Helvetica-Bold", 25)
@@ -182,7 +165,7 @@ def _draw_letter_header(ctx, profile, width, height):
     if contact:
         pdf.setFillColor(theme["quiet"])
         pdf.setFont("Helvetica-Bold", 5.7)
-        pdf.drawRightString(width - 39, name_y - 12, contact)
+        pdf.drawString(name_x, name_y - 12, contact)
 
 
 def _draw_letter_section(ctx, title, y, content, bullets=False):
