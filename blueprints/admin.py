@@ -483,7 +483,7 @@ def cv_builder():
 @admin_bp.route("/cv-builder/pdf", methods=["POST"])
 @admin_required
 def cv_builder_pdf():
-    from blueprints.cv import build_cv_pdf, _safe_filename
+    from blueprints.cv import build_cv_pdf, build_resume_letter_pdf, _safe_filename
 
     portfolio = get_portfolio()
     include_sections = request.form.getlist("sections")
@@ -492,17 +492,20 @@ def cv_builder_pdf():
     resume_options = _resume_options(document_type)
 
     has_selected_content = any(selected_portfolio.get(section) for section in include_sections)
-    if not include_sections or not has_selected_content:
+    if document_type == "cv" and (not include_sections or not has_selected_content):
         flash("Choose at least one section and one item before generating the PDF.", "error")
         return redirect(url_for("admin.cv_builder"))
 
     try:
-        pdf_bytes = build_cv_pdf(
-            profile=get_profile(),
-            portfolio=selected_portfolio,
-            include_sections=include_sections,
-            resume_options=resume_options,
-        )
+        if document_type == "resume":
+            pdf_bytes = build_resume_letter_pdf(profile=get_profile(), resume_options=resume_options)
+        else:
+            pdf_bytes = build_cv_pdf(
+                profile=get_profile(),
+                portfolio=selected_portfolio,
+                include_sections=include_sections,
+                resume_options=resume_options,
+            )
     except ImportError:
         flash("Install reportlab and Pillow from requirements.txt before generating PDFs.", "error")
         return redirect(url_for("admin.cv_builder"))
@@ -680,15 +683,16 @@ def _resume_options(document_type):
         "summary": request.form.get("resume_summary", "").strip(),
         "details": request.form.get("company_details", "").strip(),
         "keywords": request.form.get("resume_keywords", "").strip(),
-        "document_title": " | ".join(part for part in ["Targeted Resume", company_name] if part),
+        "conclusion": request.form.get("resume_conclusion", "").strip(),
+        "document_title": " | ".join(part for part in ["Resume Letter", company_name] if part),
     }
 
 
 def _document_filename(full_name, document_type, options, safe_filename):
     base = safe_filename(full_name)
     if document_type == "resume":
-        target = options.get("company_name") or options.get("target_role") or "Targeted_Resume"
-        return f"{base}_{safe_filename(target)}_Resume.pdf"
+        target = options.get("company_name") or options.get("target_role") or "Resume_Letter"
+        return f"{base}_{safe_filename(target)}_Resume_Letter.pdf"
     return f"{base}_Custom_CV.pdf"
 
 

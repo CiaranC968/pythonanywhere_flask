@@ -1,5 +1,6 @@
 from io import BytesIO
 from functools import lru_cache
+from datetime import datetime
 import os
 import re
 import unicodedata
@@ -96,6 +97,240 @@ def build_cv_pdf(profile=None, portfolio=None, include_sections=None, resume_opt
     pdf.showPage()
     pdf.save()
     return buffer.getvalue()
+
+
+def build_resume_letter_pdf(profile=None, resume_options=None):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    from reportlab.pdfgen import canvas
+
+    profile = profile or get_profile()
+    resume_options = resume_options or {}
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    theme = {
+        "background": colors.white,
+        "ink": colors.HexColor("#242424"),
+        "muted": colors.HexColor("#424242"),
+        "quiet": colors.HexColor("#6f6f6f"),
+        "line": colors.HexColor("#d6d0c8"),
+        "accent": colors.HexColor("#8a233c"),
+    }
+    ctx = {
+        "pdf": pdf,
+        "image_reader": ImageReader,
+        "string_width": stringWidth,
+        "theme": theme,
+        "left_x": 38,
+        "right_x": width - 38,
+        "bottom": 38,
+    }
+
+    pdf.setFillColor(theme["background"])
+    pdf.rect(0, 0, width, height, fill=1, stroke=0)
+    _draw_letter_header(ctx, profile, width, height)
+    y = height - 166
+    y = _draw_letter_section(ctx, "Introduction", y, _letter_intro(resume_options))
+    y = _draw_letter_section(ctx, "What I Bring to the Team", y - 12, _letter_bullets(resume_options), bullets=True)
+    _draw_letter_section(ctx, "Conclusion", y - 12, _letter_conclusion(resume_options, profile))
+    _draw_letter_footer(ctx, profile, width)
+
+    company = _text(resume_options.get("company_name", ""))
+    pdf.setTitle(" - ".join(part for part in [profile.full_name, company, "Cover Letter"] if part))
+    pdf.showPage()
+    pdf.save()
+    return buffer.getvalue()
+
+
+def _draw_letter_header(ctx, profile, width, height):
+    pdf = ctx["pdf"]
+    theme = ctx["theme"]
+    image = _profile_image(profile)
+    image_size = 86
+    image_x = ctx["left_x"]
+    image_y = height - 118
+    if image:
+        pdf.drawImage(
+            ctx["image_reader"](BytesIO(image)),
+            image_x,
+            image_y,
+            width=image_size,
+            height=image_size,
+            mask="auto",
+        )
+    else:
+        pdf.setFillColor(theme["accent"])
+        pdf.circle(image_x + image_size / 2, image_y + image_size / 2, image_size / 2, fill=1, stroke=0)
+
+    name_parts = _text(profile.full_name).split()
+    first_name = " ".join(name_parts[:-1]) if len(name_parts) > 1 else _text(profile.full_name)
+    last_name = name_parts[-1] if len(name_parts) > 1 else ""
+    name_y = height - 64
+    pdf.setFillColor(theme["muted"])
+    pdf.setFont("Helvetica", 25)
+    first_width = ctx["string_width"](first_name + " ", "Helvetica", 25)
+    name_x = width - 228
+    pdf.drawString(name_x, name_y, first_name)
+    pdf.setFillColor(theme["ink"])
+    pdf.setFont("Helvetica-Bold", 25)
+    pdf.drawString(name_x + first_width, name_y, last_name)
+
+    contact = " | ".join(part for part in [_text(profile.phone), _text(profile.email)] if part)
+    if contact:
+        pdf.setFillColor(theme["quiet"])
+        pdf.setFont("Helvetica-Bold", 5.7)
+        pdf.drawRightString(width - 39, name_y - 12, contact)
+
+
+def _draw_letter_section(ctx, title, y, content, bullets=False):
+    pdf = ctx["pdf"]
+    theme = ctx["theme"]
+    x = ctx["left_x"]
+    width = ctx["right_x"] - ctx["left_x"]
+
+    pdf.setFillColor(theme["accent"])
+    pdf.setFont("Helvetica-Bold", 13)
+    title_width = ctx["string_width"](title, "Helvetica-Bold", 13)
+    pdf.drawString(x, y, title)
+    pdf.setStrokeColor(theme["line"])
+    pdf.setLineWidth(0.7)
+    pdf.line(x + title_width + 4, y + 4, ctx["right_x"], y + 4)
+    y -= 23
+
+    if bullets:
+        pdf.setFillColor(theme["muted"])
+        pdf.setFont("Helvetica", 7.6)
+        for bullet in content:
+            lines = _wrap(_text(bullet), width - 30, "Helvetica", 7.6, ctx["string_width"], max_lines=3)
+            for line_index, line in enumerate(lines):
+                if line_index == 0:
+                    pdf.circle(x + 22, y + 2.2, 1.0, fill=1, stroke=0)
+                pdf.drawString(x + 30, y, line)
+                y -= 10.8
+            y -= 1.2
+        return y
+
+    pdf.setFillColor(theme["muted"])
+    pdf.setFont("Helvetica", 7.9)
+    for paragraph in _letter_paragraphs(content):
+        for line in _wrap(paragraph, width, "Helvetica", 7.9, ctx["string_width"], max_lines=8):
+            pdf.drawString(x, y, line)
+            y -= 10.2
+        y -= 6
+    return y
+
+
+def _draw_letter_footer(ctx, profile, width):
+    pdf = ctx["pdf"]
+    theme = ctx["theme"]
+    now = datetime.now()
+    date_text = f"{now.strftime('%B')} {now.day}, {now.year}"
+    pdf.setFillColor(theme["muted"])
+    pdf.setFont("Helvetica-Bold", 6)
+    pdf.drawString(ctx["left_x"], 38, date_text)
+    pdf.drawCentredString(width / 2, 38, f"{_caps(profile.full_name)} - COVER LETTER")
+
+
+def _letter_intro(options):
+    summary = _text(options.get("summary", ""))
+    if summary:
+        if summary.lower().startswith("dear "):
+            return summary
+        return f"Dear Hiring Manager,\n\n{summary}"
+
+    role = _text(options.get("target_role", "")) or "the advertised role"
+    company = _text(options.get("company_name", "")) or "your team"
+    return (
+        "Dear Hiring Manager,\n\n"
+        f"I am writing to apply for {role} at {company}. "
+        "I am keen to bring my software development experience, academic grounding, "
+        "and practical problem-solving approach to a team building reliable digital products."
+    )
+
+
+def _letter_bullets(options):
+    details = _custom_lines(options.get("details", ""))
+    if details:
+        return details[:6]
+
+    keywords = _custom_keywords(options.get("keywords", ""))
+    if keywords:
+        return [f"Focused experience across {', '.join(keywords[:6])}."]
+
+    return [
+        "Currently studying BSc (Hons) Computing and IT with the Open University.",
+        "Practical experience building Python, Flask, SQL, and React-based software.",
+        "Comfortable working with Agile workflows, documentation, testing, and team communication.",
+        "Strong customer-facing background with a calm, reliable approach to problem solving.",
+    ]
+
+
+def _letter_conclusion(options, profile):
+    conclusion = _text(options.get("conclusion", ""))
+    if conclusion:
+        return conclusion
+
+    company = _text(options.get("company_name", "")) or "your organisation"
+    return (
+        "I am enthusiastic about the opportunity to support your engineering teams, "
+        "learn from experienced developers, and contribute to high-quality software. "
+        f"Thank you for considering my application - I would welcome the chance to discuss how I can support {company}.\n\n"
+        "Yours sincerely,\n\n"
+        f"{_text(profile.full_name)}"
+    )
+
+
+def _letter_paragraphs(value):
+    return [paragraph.strip() for paragraph in str(value or "").splitlines() if paragraph.strip()]
+
+
+def _profile_image(profile):
+    image_path = _profile_image_path(profile)
+    if not image_path:
+        return None
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        return None
+
+    size = 256
+    try:
+        with Image.open(image_path).convert("RGBA") as image:
+            side = min(image.size)
+            left = (image.width - side) // 2
+            top = (image.height - side) // 2
+            image = image.crop((left, top, left + side, top + side)).resize((size, size))
+            mask = Image.new("L", (size, size), 0)
+            ImageDraw.Draw(mask).ellipse((0, 0, size - 1, size - 1), fill=255)
+            image.putalpha(mask)
+            output = BytesIO()
+            image.save(output, format="PNG")
+            return output.getvalue()
+    except OSError:
+        return None
+
+
+def _profile_image_path(profile):
+    value = _text(getattr(profile, "profile_image", ""))
+    root = os.path.dirname(os.path.dirname(__file__))
+    candidates = []
+    if value:
+        if value.startswith("/static/"):
+            candidates.append(os.path.join(root, value.lstrip("/")))
+        elif os.path.isabs(value):
+            candidates.append(value)
+        else:
+            candidates.extend(
+                [
+                    os.path.join(root, "static", "images", value),
+                    os.path.join(root, "static", value),
+                ]
+            )
+    candidates.append(os.path.join(root, "static", "images", "about.png"))
+    return next((path for path in candidates if os.path.exists(path)), "")
 
 
 def _draw_header(ctx, profile, width, height):
