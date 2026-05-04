@@ -12,7 +12,7 @@
     <div class="mt-3 flex flex-wrap gap-2">
         {% for sentence in sentence_templates if sentence.target == target %}
         <button type="button"
-                class="rounded-lg border border-warm-200 bg-white px-3 py-2 text-left text-xs font-black text-warm-700 hover:border-brand-accent hover:bg-brand-accent/10"
+                class="rounded-lg border border-warm-200 bg-white px-3 py-2 text-left text-xs font-black text-warm-700 hover:border-brand-accent hover:bg-brand-accent/10 transition-colors"
                 data-template-target="{{ target }}"
                 data-template-text="{{ sentence.text|tojson|forceescape }}">
             {{ sentence.label }}
@@ -28,11 +28,11 @@
 {% block content %}
 <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     <div>
-        <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent">Back to dashboard</a>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent hover:underline">Back to dashboard</a>
         <h1 class="mt-3 text-4xl font-black text-warm-900">Resume Letter Builder</h1>
-        <p class="mt-2 max-w-2xl text-warm-500">Write a company-specific resume letter PDF with reusable sentence templates.</p>
+        <p class="mt-2 max-w-2xl text-warm-500">Write a highly-tailored resume letter PDF with dynamic, reusable template variables.</p>
     </div>
-    <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Custom CV Builder</a>
+    <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Custom CV Builder</a>
 </div>
 
 <section class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
@@ -43,7 +43,7 @@
     <div class="flex flex-wrap gap-2">
         {% for preset in role_presets %}
         <button type="button"
-                class="rounded-xl border border-warm-200 bg-warm-50 px-4 py-2 text-sm font-black text-warm-700 hover:border-brand-accent hover:bg-brand-accent/10"
+                class="rounded-xl border border-warm-200 bg-warm-50 px-4 py-2 text-sm font-black text-warm-700 hover:border-brand-accent hover:bg-brand-accent/10 transition-colors"
                 data-role-preset="{{ preset|tojson|forceescape }}">
             {{ preset.label }}
         </button>
@@ -54,26 +54,26 @@
 <form method="post" action="{{ url_for('admin.add_resume_template') }}" class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
     <div class="mb-4">
         <h2 class="text-xl font-black text-warm-900">Add Template Sentence</h2>
-        <p class="mt-1 text-sm text-warm-500">Saved sentences appear as buttons in the matching section below.</p>
+        <p class="mt-1 text-sm text-warm-500">Saved sentences appear as buttons below. Use <strong>{company}</strong>, <strong>{role}</strong>, <strong>{recipient}</strong>, and <strong>{phrases}</strong> to automatically inject your data.</p>
     </div>
     <div class="grid gap-4 lg:grid-cols-2">
         <label class="block">
             <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Section</span>
-            <select name="template_target" class="admin-input">
+            <select name="template_target" class="admin-input w-full rounded-lg border-warm-300">
                 {{ template_target_options("resume_summary") }}
             </select>
         </label>
         <label class="block">
             <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Button label</span>
-            <input name="template_label" class="admin-input" placeholder="Python strength">
+            <input name="template_label" class="admin-input w-full rounded-lg border-warm-300" placeholder="e.g., Python strength">
         </label>
         <label class="block lg:col-span-2">
             <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sentence</span>
-            <textarea name="template_text" rows="2" class="admin-input" placeholder="Use {company} and {role} as placeholders."></textarea>
+            <textarea name="template_text" rows="2" class="admin-input w-full rounded-lg border-warm-300" placeholder="I am excited to apply for the {role} role at {company}. I bring strong expertise in {phrases}."></textarea>
         </label>
     </div>
     <div class="mt-4 flex justify-end">
-        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">
+        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">
             Save Template Sentence
         </button>
     </div>
@@ -88,39 +88,39 @@
     </div>
     <div class="space-y-4">
         {% for template in custom_sentence_templates %}
-        <div class="rounded-2xl border border-warm-200 bg-warm-50 p-4 {% if not template.is_visible %}opacity-70{% endif %}">
+        <div class="rounded-2xl border border-warm-200 bg-warm-50 p-4 transition-opacity {% if not template.is_visible %}opacity-70{% endif %}">
             <div class="grid gap-3 lg:grid-cols-[0.8fr_1fr_1fr_auto]">
                 <form id="template-edit-{{ template.id }}" method="post" action="{{ url_for('admin.edit_resume_template', template_id=template.id) }}" class="contents">
                     <label class="block">
                         <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Section</span>
-                        <select name="template_target" class="admin-input">
+                        <select name="template_target" class="admin-input w-full rounded-lg border-warm-300">
                             {{ template_target_options(template.target) }}
                         </select>
                     </label>
                     <label class="block">
                         <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Button label</span>
-                        <input name="template_label" value="{{ template.label }}" class="admin-input">
+                        <input name="template_label" value="{{ template.label }}" class="admin-input w-full rounded-lg border-warm-300">
                     </label>
                     <label class="block">
                         <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sort order</span>
-                        <input name="sort_order" value="{{ template.sort_order }}" type="number" class="admin-input">
+                        <input name="sort_order" value="{{ template.sort_order }}" type="number" class="admin-input w-full rounded-lg border-warm-300">
                     </label>
                     <div class="flex items-end justify-end">
-                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-4 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">Save</button>
+                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-4 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">Save</button>
                     </div>
                     <label class="block lg:col-span-4">
                         <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sentence</span>
-                        <textarea name="template_text" rows="2" class="admin-input">{{ template.text }}</textarea>
+                        <textarea name="template_text" rows="2" class="admin-input w-full rounded-lg border-warm-300">{{ template.text }}</textarea>
                     </label>
                 </form>
                 <div class="lg:col-span-4 flex justify-end">
                     {% if template.is_visible %}
                     <form method="post" action="{{ url_for('admin.delete_resume_template', template_id=template.id) }}" onsubmit="return confirm('Archive this template sentence?');">
-                        <button class="rounded-xl border border-warm-200 bg-white px-4 py-2 text-sm font-black text-warm-700 hover:border-brand-accent">Archive</button>
+                        <button class="rounded-xl border border-warm-200 bg-white px-4 py-2 text-sm font-black text-warm-700 hover:border-brand-accent transition-colors">Archive</button>
                     </form>
                     {% else %}
                     <form method="post" action="{{ url_for('admin.restore_resume_template', template_id=template.id) }}">
-                        <button class="rounded-xl border border-green-200 bg-green-50 px-4 py-2 text-sm font-black text-green-700 hover:border-green-300">Restore</button>
+                        <button class="rounded-xl border border-green-200 bg-green-50 px-4 py-2 text-sm font-black text-green-700 hover:border-green-300 transition-colors">Restore</button>
                     </form>
                     {% endif %}
                 </div>
@@ -134,18 +134,26 @@
 
 <form method="post" action="{{ url_for('admin.resume_builder_pdf') }}" class="space-y-6" data-resume-builder>
     <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-        <div class="grid gap-4 lg:grid-cols-3">
-            <label class="block">
+        <div class="grid gap-4 lg:grid-cols-4">
+            <label class="block lg:col-span-1">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Resume subtitle</span>
-                <input id="header_subtitle" name="header_subtitle" value="{{ profile.title }}" class="admin-input">
+                <input id="header_subtitle" name="header_subtitle" value="{{ profile.title }}" class="admin-input w-full rounded-lg border-warm-300">
             </label>
-            <label class="block">
+            <label class="block lg:col-span-1">
+                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Recipient Name</span>
+                <input id="recipient_name" name="recipient_name" class="admin-input w-full rounded-lg border-warm-300" placeholder="Hiring Manager">
+            </label>
+            <label class="block lg:col-span-1">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Company name</span>
-                <input id="company_name" name="company_name" class="admin-input" data-template-company placeholder="Black Duck">
+                <input id="company_name" name="company_name" class="admin-input w-full rounded-lg border-warm-300" data-template-company placeholder="e.g., Black Duck">
             </label>
-            <label class="block">
+            <label class="block lg:col-span-1">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Target role</span>
-                <input id="target_role" name="target_role" class="admin-input" data-template-role placeholder="Software Intern">
+                <input id="target_role" name="target_role" class="admin-input w-full rounded-lg border-warm-300" data-template-role placeholder="e.g., Software Intern">
+            </label>
+            <label class="block lg:col-span-4">
+                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Custom Phrases / Keywords <span class="text-[10px] normal-case text-warm-400">(Replaces {phrases})</span></span>
+                <input id="resume_keywords" name="resume_keywords" class="admin-input w-full rounded-lg border-warm-300" placeholder="e.g., robust backend development, scalable APIs, and Python">
             </label>
         </div>
     </section>
@@ -154,22 +162,17 @@
         <section class="space-y-4 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
             <label class="block">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Introduction</span>
-                <textarea id="resume_summary" name="resume_summary" rows="5" class="admin-input" placeholder="Dear Hiring Manager opening text for the company or role."></textarea>
+                <textarea id="resume_summary" name="resume_summary" rows="5" class="admin-input w-full rounded-lg border-warm-300" placeholder="Dear Hiring Manager opening text for the company or role."></textarea>
             </label>
 
             <label class="block">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">What I bring</span>
-                <textarea id="company_details" name="company_details" rows="7" class="admin-input" placeholder="One tailored bullet per line."></textarea>
+                <textarea id="company_details" name="company_details" rows="7" class="admin-input w-full rounded-lg border-warm-300" placeholder="One tailored bullet per line."></textarea>
             </label>
 
             <label class="block">
                 <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Conclusion</span>
-                <textarea id="resume_conclusion" name="resume_conclusion" rows="5" class="admin-input" placeholder="Closing paragraph and sign-off. Leave blank for a sensible default."></textarea>
-            </label>
-
-            <label class="block">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Keywords / focus skills</span>
-                <input id="resume_keywords" name="resume_keywords" class="admin-input" placeholder="Python, Flask, SQL, React">
+                <textarea id="resume_conclusion" name="resume_conclusion" rows="5" class="admin-input w-full rounded-lg border-warm-300" placeholder="Closing paragraph and sign-off. Leave blank for a sensible default."></textarea>
             </label>
         </section>
 
@@ -181,11 +184,11 @@
     </div>
 
     <div class="sticky bottom-4 flex flex-col gap-3 rounded-2xl border border-warm-200 bg-white/95 p-4 shadow-xl backdrop-blur sm:flex-row sm:justify-end">
-        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 px-6 py-3 font-black text-warm-700 hover:border-brand-accent">Cancel</a>
-        <button type="submit" name="disposition" value="inline" formtarget="_blank" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-6 py-3 font-black text-warm-800 hover:border-brand-accent">
+        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 px-6 py-3 font-black text-warm-700 hover:border-brand-accent transition-colors">Cancel</a>
+        <button type="submit" name="disposition" value="inline" formtarget="_blank" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-6 py-3 font-black text-warm-800 hover:border-brand-accent transition-colors">
             Preview Resume Letter
         </button>
-        <button type="submit" name="disposition" value="attachment" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">
+        <button type="submit" name="disposition" value="attachment" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">
             Download Resume Letter
         </button>
     </div>
@@ -195,17 +198,25 @@
 document.addEventListener('DOMContentLoaded', () => {
     const companyInput = document.getElementById('company_name');
     const roleInput = document.getElementById('target_role');
+    const recipientInput = document.getElementById('recipient_name');
+    const keywordsInput = document.getElementById('resume_keywords');
 
-    // Helper function to replace placeholders with current input values
+    // Helper function to dynamically replace placeholders with current inputs
     function processPlaceholders(rawText, presetRole = null) {
         if (!rawText) return '';
 
-        // Use current input values, or fallback to a visible placeholder if left blank
         const companyValue = companyInput.value.trim() || '[Company]';
         const roleValue = presetRole || roleInput.value.trim() || '[Role]';
+        const recipientValue = recipientInput?.value.trim() || 'Hiring Manager';
+        const phrasesValue = keywordsInput?.value.trim() || '[Phrases]';
+
+        // Fix applied here: Make sure regex strictly looks for {word} and is case-insensitive
         return rawText
-            .replace(/\{company/gi, companyValue)
-            .replace(/\{role/gi, roleValue);
+            .replace(/\{company\}/gi, companyValue)
+            .replace(/\{role\}/gi, roleValue)
+            .replace(/\{recipient\}/gi, recipientValue)
+            .replace(/\{phrases\}/gi, phrasesValue)
+            .replace(/\{keywords\}/gi, phrasesValue);
     }
 
     // Handle individual template sentence buttons
@@ -237,7 +248,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('header_subtitle').value = preset.header_subtitle || '';
             document.getElementById('target_role').value = preset.target_role || '';
-            document.getElementById('resume_keywords').value = preset.resume_keywords || '';
+
+            if (document.getElementById('resume_keywords')) {
+                document.getElementById('resume_keywords').value = preset.resume_keywords || '';
+            }
 
             const presetRole = preset.target_role;
 
