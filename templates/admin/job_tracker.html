@@ -585,11 +585,22 @@ function formatToUK(val) {
     return val;
 }
 
-// Convert all dates in DOM on DOMContentLoaded
+// Function to convert plain text URLs into clickable links
+function linkify(text) {
+    const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return text.replace(urlPattern, '<a href="$1" target="_blank" class="text-brand-hover underline hover:text-brand-accent break-all">$1</a>');
+}
+
+// Convert all dates and links in DOM on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     // default states for add modal select element
     const addSelect = document.querySelector('#add-modal select[name="stage"]');
     if (addSelect) handleStageChange(addSelect, 'add');
+
+    // Run Linkify on notes
+    document.querySelectorAll('.app-card-notes').forEach(el => {
+        el.innerHTML = linkify(el.innerHTML);
+    });
 
     // Run UK formatting
     document.querySelectorAll('.date-uk').forEach(el => {
@@ -776,6 +787,10 @@ function updateJobStageContext(stage) {
         dateVal = dt.trim();
     } else if (stage === 'Assessment') {
         const dt = prompt("When is the assessment deadline/scheduled date?\n(e.g., 07/06/2026 18:00 or 07/06/2026)");
+        if (dt === null) return;
+        dateVal = dt.trim();
+    } else if (stage === 'Not Applied Yet' || stage === 'Missed Deadline') {
+        const dt = prompt("When is the application deadline?\n(e.g., 07/06/2026 18:00 or 07/06/2026)");
         if (dt === null) return;
         dateVal = dt.trim();
     } else if (stage === 'Rejected') {
