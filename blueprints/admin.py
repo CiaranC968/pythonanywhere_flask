@@ -1368,6 +1368,12 @@ def add_job_application():
     interview_date = request.form.get("interview_date", "").strip()
     application_deadline = request.form.get("application_deadline", "").strip()
     notes = request.form.get("notes", "").strip()
+    job_url = request.form.get("job_url", "").strip()
+    company_url = request.form.get("company_url", "").strip()
+    company_address = request.form.get("company_address", "").strip()
+    linkedin_url = request.form.get("linkedin_url", "").strip()
+    salary = request.form.get("salary", "").strip()
+    location = request.form.get("location", "").strip()
 
     if not company or not role:
         flash("Company and Role are required.", "error")
@@ -1384,6 +1390,12 @@ def add_job_application():
         interview_date=interview_date if interview_date else None,
         application_deadline=application_deadline if application_deadline else None,
         notes=notes,
+        job_url=job_url if job_url else None,
+        company_url=company_url if company_url else None,
+        company_address=company_address if company_address else None,
+        linkedin_url=linkedin_url if linkedin_url else None,
+        salary=salary if salary else None,
+        location=location if location else None,
     )
     db.session.add(app)
     if _commit_or_flash():
@@ -1405,6 +1417,12 @@ def edit_job_application(app_id: int):
     interview_date = request.form.get("interview_date", "").strip()
     application_deadline = request.form.get("application_deadline", "").strip()
     notes = request.form.get("notes", "").strip()
+    job_url = request.form.get("job_url", "").strip()
+    company_url = request.form.get("company_url", "").strip()
+    company_address = request.form.get("company_address", "").strip()
+    linkedin_url = request.form.get("linkedin_url", "").strip()
+    salary = request.form.get("salary", "").strip()
+    location = request.form.get("location", "").strip()
 
     if not company or not role:
         flash("Company and Role are required.", "error")
@@ -1417,6 +1435,12 @@ def edit_job_application(app_id: int):
     app.interview_date = interview_date if interview_date else None
     app.application_deadline = application_deadline if application_deadline else None
     app.notes = notes
+    app.job_url = job_url if job_url else None
+    app.company_url = company_url if company_url else None
+    app.company_address = company_address if company_address else None
+    app.linkedin_url = linkedin_url if linkedin_url else None
+    app.salary = salary if salary else None
+    app.location = location if location else None
 
     if _commit_or_flash():
         flash("Job application updated successfully.", "success")

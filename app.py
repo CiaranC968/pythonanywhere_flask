@@ -150,6 +150,12 @@ def ensure_schema():
             "interview_date": "VARCHAR(80) NULL",
             "application_deadline": "VARCHAR(80) NULL",
             "notes": "TEXT NULL",
+            "job_url": "VARCHAR(500) NULL",
+            "company_url": "VARCHAR(500) NULL",
+            "company_address": "VARCHAR(500) NULL",
+            "linkedin_url": "VARCHAR(500) NULL",
+            "salary": "VARCHAR(120) NULL",
+            "location": "VARCHAR(180) NULL",
         },
     }
 

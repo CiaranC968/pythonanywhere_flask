@@ -125,5 +125,11 @@ class JobApplication(db.Model):
     interview_date = db.Column(db.String(80), nullable=True)  # Format: YYYY-MM-DD or datetime
     application_deadline = db.Column(db.String(80), nullable=True)  # Format: YYYY-MM-DD or datetime
     notes = db.Column(db.Text, nullable=False, default="")
+    job_url = db.Column(db.String(500), nullable=True)
+    company_url = db.Column(db.String(500), nullable=True)
+    company_address = db.Column(db.String(500), nullable=True)
+    linkedin_url = db.Column(db.String(500), nullable=True)
+    salary = db.Column(db.String(120), nullable=True)
+    location = db.Column(db.String(180), nullable=True)
 
 
