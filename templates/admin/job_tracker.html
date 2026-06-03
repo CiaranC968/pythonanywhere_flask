@@ -1,0 +1,318 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent hover:underline">Back to dashboard</a>
+        <h1 class="mt-3 text-4xl font-black text-warm-900">Job Application Tracker</h1>
+        <p class="mt-2 max-w-2xl text-warm-500">Manage and track your active job hunt. Update stages, track upcoming interview dates, and keep notes.</p>
+    </div>
+    <button onclick="openModal('add-modal')" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">
+        <i class="fas fa-plus mr-2"></i> Add Application
+    </button>
+</div>
+
+<!-- Statistics Cards -->
+<div class="mb-8 grid gap-4 grid-cols-2 md:grid-cols-5">
+    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
+        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Total Applications</h3>
+        <p class="mt-2 text-3xl font-black text-warm-900">{{ applications|length }}</p>
+    </div>
+    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
+        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Applied</h3>
+        <p class="mt-2 text-3xl font-black text-blue-600">
+            {{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }}
+        </p>
+    </div>
+    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
+        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Interviews</h3>
+        <p class="mt-2 text-3xl font-black text-amber-500">
+            {{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }}
+        </p>
+    </div>
+    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
+        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Got Job</h3>
+        <p class="mt-2 text-3xl font-black text-green-600">
+            {{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }}
+        </p>
+    </div>
+    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
+        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Rejected</h3>
+        <p class="mt-2 text-3xl font-black text-red-500">
+            {{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }}
+        </p>
+    </div>
+</div>
+
+<!-- Tabs selector -->
+<div class="mb-6 border-b border-warm-200">
+    <nav class="flex flex-wrap gap-2 -mb-px" aria-label="Tabs">
+        <button onclick="switchTab('all')" data-tab="all" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-black text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all border-brand-accent text-warm-900 font-black">
+            All Applications ({{ applications|length }})
+        </button>
+        <button onclick="switchTab('Applied')" data-tab="Applied" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
+            Applied ({{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }})
+        </button>
+        <button onclick="switchTab('Interview')" data-tab="Interview" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
+            Interviews ({{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }})
+        </button>
+        <button onclick="switchTab('Got Job')" data-tab="Got Job" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
+            Got Job / Offers ({{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }})
+        </button>
+        <button onclick="switchTab('Rejected')" data-tab="Rejected" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
+            Rejected ({{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }})
+        </button>
+    </nav>
+</div>
+
+<!-- Job Cards Grid -->
+<div id="applications-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    {% for app in applications %}
+    <div class="app-card rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:border-brand-accent hover:shadow-md" data-stage="{{ app.stage }}">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="text-lg font-black text-warm-900">{{ app.role }}</h3>
+                <p class="text-sm font-bold text-warm-600">{{ app.company }}</p>
+            </div>
+            <span>
+                {% if app.stage == 'Applied' %}
+                <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-700">Applied</span>
+                {% elif app.stage == 'Interview' %}
+                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-700">Interview</span>
+                {% elif app.stage == 'Got Job' %}
+                <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-black text-green-700">Got Job</span>
+                {% else %}
+                <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-700">Rejected</span>
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="mt-4 space-y-2 text-xs text-warm-500 border-t border-warm-100 pt-3">
+            <div class="flex justify-between">
+                <span>Applied On:</span>
+                <span class="font-bold text-warm-700">{{ app.applied_date }}</span>
+            </div>
+            {% if app.stage == 'Interview' %}
+            <div class="flex justify-between rounded-lg bg-amber-50 p-2 border border-amber-200">
+                <span class="text-amber-700 font-bold">Interview Scheduled:</span>
+                <span class="font-black text-amber-900">{{ app.interview_date or 'TBD' }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if app.notes %}
+        <div class="mt-3 text-xs bg-warm-50 p-3 rounded-lg border border-warm-100 text-warm-700 max-h-24 overflow-y-auto whitespace-pre-line">
+            {{ app.notes }}
+        </div>
+        {% endif %}
+
+        <div class="mt-5 flex gap-2 justify-end border-t border-warm-100 pt-3">
+            <button onclick='openEditModal({{ app|tojson }})' class="rounded-xl border border-warm-200 bg-white px-3 py-2 text-xs font-black text-warm-700 hover:border-brand-accent transition-colors">
+                <i class="fas fa-edit mr-1"></i> Edit
+            </button>
+            <form method="post" action="{{ url_for('admin.delete_job_application', app_id=app.id) }}" onsubmit="return confirm('Are you sure you want to delete this job application?');" class="inline">
+                <button type="submit" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:border-red-300 transition-colors">
+                    <i class="fas fa-trash-alt mr-1"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-span-full rounded-2xl border border-dashed border-warm-300 bg-warm-50 py-12 text-center">
+        <i class="fas fa-briefcase text-4xl text-warm-300 mb-3"></i>
+        <h3 class="text-lg font-black text-warm-800">No applications tracked yet</h3>
+        <p class="text-sm text-warm-500 mt-1">Get started by clicking the "Add Application" button above.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modals -->
+<!-- Add Modal -->
+<div id="add-modal" class="fixed inset-0 z-50 hidden bg-warm-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-lg rounded-2xl border border-warm-200 bg-white p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-150">
+        <button onclick="closeModal('add-modal')" class="absolute top-4 right-4 text-warm-400 hover:text-warm-600 transition-colors text-lg">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-black text-warm-900 mb-4">Add Job Application</h2>
+        <form method="post" action="{{ url_for('admin.add_job_application') }}" class="space-y-4">
+            <div>
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Company Name</label>
+                <input required name="company" placeholder="e.g., Google" class="admin-input w-full rounded-lg">
+            </div>
+            <div>
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Job Role</label>
+                <input required name="role" placeholder="e.g., Backend Developer" class="admin-input w-full rounded-lg">
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Stage</label>
+                    <select name="stage" onchange="toggleInterviewField(this, 'add-interview-group')" class="admin-input w-full rounded-lg">
+                        <option value="Applied">Applied</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Got Job">Got Job</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Applied Date</label>
+                    <input type="date" name="applied_date" value="{{ today }}" class="admin-input w-full rounded-lg">
+                </div>
+            </div>
+            <div id="add-interview-group" class="hidden">
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Interview Date & Time</label>
+                <input type="datetime-local" name="interview_date" class="admin-input w-full rounded-lg">
+            </div>
+            <div>
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Notes / Feedback / Link</label>
+                <textarea name="notes" rows="4" placeholder="Contact person, feedback received, job description bullet points..." class="admin-input w-full rounded-lg"></textarea>
+            </div>
+            <div class="mt-6 flex justify-end gap-3 pt-3 border-t border-warm-100">
+                <button type="button" onclick="closeModal('add-modal')" class="rounded-xl border border-warm-200 bg-white px-5 py-3 font-black text-warm-700 hover:border-brand-accent transition-colors">Cancel</button>
+                <button type="submit" class="rounded-xl bg-brand-accent px-5 py-3 font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">Add Application</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="edit-modal" class="fixed inset-0 z-50 hidden bg-warm-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-lg rounded-2xl border border-warm-200 bg-white p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-150">
+        <button onclick="closeModal('edit-modal')" class="absolute top-4 right-4 text-warm-400 hover:text-warm-600 transition-colors text-lg">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-black text-warm-900 mb-4">Edit Job Application</h2>
+        <form id="edit-form" method="post" action="" class="space-y-4">
+            <div>
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Company Name</label>
+                <input required id="edit-company" name="company" class="admin-input w-full rounded-lg">
+            </div>
+            <div>
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Job Role</label>
+                <input required id="edit-role" name="role" class="admin-input w-full rounded-lg">
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Stage</label>
+                    <select id="edit-stage" name="stage" onchange="toggleInterviewField(this, 'edit-interview-group')" class="admin-input w-full rounded-lg">
+                        <option value="Applied">Applied</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Got Job">Got Job</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Applied Date</label>
+                    <input type="date" id="edit-applied-date" name="applied_date" class="admin-input w-full rounded-lg">
+                </div>
+            </div>
+            <div id="edit-interview-group" class="hidden">
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Interview Date & Time</label>
+                <input type="datetime-local" id="edit-interview-date" name="interview_date" class="admin-input w-full rounded-lg">
+            </div>
+            <div>
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Notes / Feedback / Link</label>
+                <textarea id="edit-notes" name="notes" rows="4" class="admin-input w-full rounded-lg"></textarea>
+            </div>
+            <div class="mt-6 flex justify-end gap-3 pt-3 border-t border-warm-100">
+                <button type="button" onclick="closeModal('edit-modal')" class="rounded-xl border border-warm-200 bg-white px-5 py-3 font-black text-warm-700 hover:border-brand-accent transition-colors">Cancel</button>
+                <button type="submit" class="rounded-xl bg-brand-accent px-5 py-3 font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+    document.getElementById(id).classList.add('flex');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    document.getElementById(id).classList.remove('flex');
+}
+
+function toggleInterviewField(selectElem, fieldId) {
+    const field = document.getElementById(fieldId);
+    if (selectElem.value === 'Interview') {
+        field.classList.remove('hidden');
+    } else {
+        field.classList.add('hidden');
+    }
+}
+
+function openEditModal(app) {
+    // Set form action url dynamically
+    const form = document.getElementById('edit-form');
+    form.action = `/admin/job-tracker/${app.id}/edit`;
+
+    // Pre-fill inputs
+    document.getElementById('edit-company').value = app.company || '';
+    document.getElementById('edit-role').value = app.role || '';
+    document.getElementById('edit-stage').value = app.stage || 'Applied';
+    document.getElementById('edit-applied-date').value = app.applied_date || '';
+    document.getElementById('edit-notes').value = app.notes || '';
+
+    // Handle conditional interview date field
+    const selectElem = document.getElementById('edit-stage');
+    toggleInterviewField(selectElem, 'edit-interview-group');
+
+    // Fill interview date (formatting input type=datetime-local requires YYYY-MM-DDTHH:MM)
+    let interviewDate = app.interview_date || '';
+    if (interviewDate.includes(' ')) {
+        interviewDate = interviewDate.replace(' ', 'T');
+    }
+    document.getElementById('edit-interview-date').value = interviewDate;
+
+    openModal('edit-modal');
+}
+
+function switchTab(stage) {
+    // 1. Update tab navigation styling
+    const tabs = document.querySelectorAll('.tab-button');
+    tabs.forEach(tab => {
+        const matches = tab.getAttribute('data-tab') === stage;
+        if (matches) {
+            tab.classList.add('border-brand-accent', 'text-warm-900', 'font-black');
+            tab.classList.remove('border-transparent', 'text-warm-500', 'font-semibold');
+        } else {
+            tab.classList.remove('border-brand-accent', 'text-warm-900', 'font-black');
+            tab.classList.add('border-transparent', 'text-warm-500', 'font-semibold');
+        }
+    });
+
+    // 2. Filter application cards
+    const cards = document.querySelectorAll('.app-card');
+    let visibleCount = 0;
+    cards.forEach(card => {
+        const cardStage = card.getAttribute('data-stage');
+        if (stage === 'all' || cardStage === stage) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Handle empty state showing/hiding dynamically if no visible cards
+    let emptyState = document.getElementById('tab-empty-state');
+    if (!emptyState) {
+        emptyState = document.createElement('div');
+        emptyState.id = 'tab-empty-state';
+        emptyState.className = 'col-span-full rounded-2xl border border-dashed border-warm-300 bg-warm-50 py-12 text-center hidden';
+        emptyState.innerHTML = `
+            <i class="fas fa-folder-open text-4xl text-warm-300 mb-3"></i>
+            <h3 class="text-lg font-black text-warm-800">No applications in this category</h3>
+            <p class="text-sm text-warm-500 mt-1">Keep searching and apply to some roles!</p>
+        `;
+        document.getElementById('applications-grid').appendChild(emptyState);
+    }
+
+    if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+    } else {
+        emptyState.classList.add('hidden');
+    }
+}
+</script>
+{% endblock %}

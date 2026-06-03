@@ -114,3 +114,14 @@ class ResumeTemplate(db.Model, SortableMixin):
     target = db.Column(db.String(80), nullable=False, default="company_details")
     label = db.Column(db.String(120), nullable=False, default="")
     text = db.Column(db.Text, nullable=False, default="")
+
+
+class JobApplication(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    company = db.Column(db.String(180), nullable=False)
+    role = db.Column(db.String(180), nullable=False)
+    stage = db.Column(db.String(80), nullable=False, default="Applied")  # Applied, Interview, Rejected, Got Job
+    applied_date = db.Column(db.String(80), nullable=False, default="")
+    interview_date = db.Column(db.String(80), nullable=True)  # Format: YYYY-MM-DD or datetime
+    notes = db.Column(db.Text, nullable=False, default="")
+

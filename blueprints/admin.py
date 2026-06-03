@@ -25,7 +25,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import check_password_hash
 
 from extensions import db
-from models import Certificate, Education, Experience, Profile, Project, ResumeTemplate, Skill
+from models import Certificate, Education, Experience, Profile, Project, ResumeTemplate, Skill, JobApplication
 from portfolio_data import get_portfolio, get_profile
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -545,9 +545,11 @@ def dashboard():
                 if hasattr(model, "is_visible"):
                     query = query.filter_by(is_visible=True)
                 counts[section] = query.count()
+        counts["job_applications"] = JobApplication.query.count()
     except SQLAlchemyError as exc:
         database_error = str(exc)
         counts = {section: 0 for section in SECTIONS}
+        counts["job_applications"] = 0
 
     admin_password_missing = not current_app.config.get("ADMIN_PASSWORD_HASH") and not current_app.config.get(
         "ADMIN_PASSWORD")
@@ -1297,3 +1299,92 @@ def _mask_database_uri(uri):
         username, _password = credentials.split(":", 1)
         credentials = f"{username}:***"
     return f"{prefix}://{credentials}@{host_part}"
+
+
+@admin_bp.route("/job-tracker")
+@admin_required
+def job_tracker():
+    from datetime import datetime
+    today_str = datetime.today().strftime("%Y-%m-%d")
+    applications = JobApplication.query.order_by(JobApplication.id.desc()).all()
+    return render_template(
+        "admin/job_tracker.html",
+        applications=applications,
+        today=today_str,
+    )
+
+
+@admin_bp.route("/job-tracker/add", methods=["POST"])
+@admin_required
+def add_job_application():
+    from datetime import datetime
+    company = request.form.get("company", "").strip()
+    role = request.form.get("role", "").strip()
+    stage = request.form.get("stage", "Applied").strip()
+    applied_date = request.form.get("applied_date", "").strip()
+    interview_date = request.form.get("interview_date", "").strip()
+    notes = request.form.get("notes", "").strip()
+
+    if not company or not role:
+        flash("Company and Role are required.", "error")
+        return redirect(url_for("admin.job_tracker"))
+
+    if not applied_date:
+        applied_date = datetime.today().strftime("%Y-%m-%d")
+
+    app = JobApplication(
+        company=company,
+        role=role,
+        stage=stage,
+        applied_date=applied_date,
+        interview_date=interview_date if interview_date else None,
+        notes=notes,
+    )
+    db.session.add(app)
+    if _commit_or_flash():
+        flash("Job application added successfully.", "success")
+    return redirect(url_for("admin.job_tracker"))
+
+
+@admin_bp.route("/job-tracker/<int:app_id>/edit", methods=["POST"])
+@admin_required
+def edit_job_application(app_id: int):
+    app = db.session.get(JobApplication, app_id)
+    if not app:
+        abort(404)
+
+    company = request.form.get("company", "").strip()
+    role = request.form.get("role", "").strip()
+    stage = request.form.get("stage", "Applied").strip()
+    applied_date = request.form.get("applied_date", "").strip()
+    interview_date = request.form.get("interview_date", "").strip()
+    notes = request.form.get("notes", "").strip()
+
+    if not company or not role:
+        flash("Company and Role are required.", "error")
+        return redirect(url_for("admin.job_tracker"))
+
+    app.company = company
+    app.role = role
+    app.stage = stage
+    app.applied_date = applied_date
+    app.interview_date = interview_date if interview_date else None
+    app.notes = notes
+
+    if _commit_or_flash():
+        flash("Job application updated successfully.", "success")
+    return redirect(url_for("admin.job_tracker"))
+
+
+@admin_bp.route("/job-tracker/<int:app_id>/delete", methods=["POST"])
+@admin_required
+def delete_job_application(app_id: int):
+    app = db.session.get(JobApplication, app_id)
+    if not app:
+        abort(404)
+
+    db.session.delete(app)
+    if _commit_or_flash():
+        flash("Job application deleted.", "success")
+    return redirect(url_for("admin.job_tracker"))
+

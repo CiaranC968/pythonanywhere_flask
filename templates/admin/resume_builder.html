@@ -1,265 +1,403 @@
 {% extends "admin/base.html" %}
 
-{% macro template_target_options(selected_target) %}
-    {% for target_value, target_label in template_targets.items() %}
-    <option value="{{ target_value }}" {% if selected_target == target_value %}selected{% endif %}>{{ target_label }}</option>
-    {% endfor %}
-{% endmacro %}
-
-{% macro template_buttons(target, label) %}
-<div class="rounded-2xl border border-warm-200 bg-warm-50 p-4">
-    <h3 class="text-sm font-black uppercase tracking-wider text-warm-500">{{ label }}</h3>
-    <div class="mt-3 flex flex-wrap gap-2">
-        {% for sentence in sentence_templates if sentence.target == target %}
-        <button type="button"
-                class="rounded-lg border border-warm-200 bg-white px-3 py-2 text-left text-xs font-black text-warm-700 hover:border-brand-accent hover:bg-brand-accent/10 transition-colors"
-                data-template-target="{{ target }}"
-                data-template-text="{{ sentence.text|tojson|forceescape }}">
-            {{ sentence.label }}
-            {% if sentence.is_custom %}
-            <span class="ml-1 text-[10px] uppercase text-brand-accent">Saved</span>
-            {% endif %}
-        </button>
-        {% endfor %}
-    </div>
-</div>
-{% endmacro %}
-
 {% block content %}
 <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     <div>
         <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent hover:underline">Back to dashboard</a>
-        <h1 class="mt-3 text-4xl font-black text-warm-900">Resume Letter Builder</h1>
-        <p class="mt-2 max-w-2xl text-warm-500">Write a highly-tailored resume letter PDF with dynamic, reusable template variables.</p>
+        <h1 class="mt-3 text-4xl font-black text-warm-900">Custom Resume Builder</h1>
+        <p class="mt-2 max-w-2xl text-warm-500">Generate a highly-tailored resume letter in seconds. Choose a template, fill in company details, and add custom points.</p>
     </div>
     <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Custom CV Builder</a>
 </div>
 
-<section class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-    <div class="mb-4">
-        <h2 class="text-xl font-black text-warm-900">Role Presets</h2>
-        <p class="mt-1 text-sm text-warm-500">Start from a role type, then tailor the company and wording.</p>
-    </div>
-    <div class="flex flex-wrap gap-2">
-        {% for preset in role_presets %}
-        <button type="button"
-                class="rounded-xl border border-warm-200 bg-warm-50 px-4 py-2 text-sm font-black text-warm-700 hover:border-brand-accent hover:bg-brand-accent/10 transition-colors"
-                data-role-preset="{{ preset|tojson|forceescape }}">
-            {{ preset.label }}
-        </button>
-        {% endfor %}
-    </div>
-</section>
+<!-- Workflow Mode Switcher -->
+<div class="mb-6 flex rounded-xl bg-warm-200/50 p-1 max-w-md">
+    <button type="button" id="btn-mode-simple" onclick="setMode('simple')" class="w-1/2 rounded-lg py-2.5 text-center text-sm font-black transition-all bg-white text-warm-900 shadow-sm">
+        <i class="fas fa-magic mr-1.5 text-brand-accent"></i> Template Mode
+    </button>
+    <button type="button" id="btn-mode-raw" onclick="setMode('raw')" class="w-1/2 rounded-lg py-2.5 text-center text-sm font-semibold transition-all text-warm-600 hover:text-warm-900">
+        <i class="fas fa-code mr-1.5"></i> Raw Editor Mode
+    </button>
+</div>
 
-<form method="post" action="{{ url_for('admin.add_resume_template') }}" class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-    <div class="mb-4">
-        <h2 class="text-xl font-black text-warm-900">Add Template Sentence</h2>
-        <p class="mt-1 text-sm text-warm-500">Saved sentences appear as buttons below. Use <strong>{company}</strong>, <strong>{role}</strong>, <strong>{recipient}</strong>, and <strong>{phrases}</strong> to automatically inject your data.</p>
-    </div>
-    <div class="grid gap-4 lg:grid-cols-2">
-        <label class="block">
-            <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Section</span>
-            <select name="template_target" class="admin-input w-full rounded-lg border-warm-300">
-                {{ template_target_options("resume_summary") }}
-            </select>
-        </label>
-        <label class="block">
-            <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Button label</span>
-            <input name="template_label" class="admin-input w-full rounded-lg border-warm-300" placeholder="e.g., Python strength">
-        </label>
-        <label class="block lg:col-span-2">
-            <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sentence</span>
-            <textarea name="template_text" rows="2" class="admin-input w-full rounded-lg border-warm-300" placeholder="I am excited to apply for the {role} role at {company}. I bring strong expertise in {phrases}."></textarea>
-        </label>
-    </div>
-    <div class="mt-4 flex justify-end">
-        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">
-            Save Template Sentence
-        </button>
-    </div>
-</form>
+<form method="post" action="{{ url_for('admin.resume_builder_pdf') }}" id="resume-main-form" class="space-y-6" target="_blank">
+    <!-- These hidden inputs sync values to the PDF builder endpoint -->
+    <input type="hidden" id="header_subtitle" name="header_subtitle" value="{{ profile.title }}">
+    <input type="hidden" id="resume_keywords" name="resume_keywords" value="">
+    
+    <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <!-- Left Side: Controls -->
+        <div class="space-y-6">
+            
+            <!-- SECTION 1: Template Selection (Only shown in Simple mode) -->
+            <div id="simple-template-section" class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-black text-warm-900 mb-4"><span class="text-brand-accent font-black mr-2">1.</span>Select Template</h2>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <button type="button" id="template-btn-dev" onclick="selectTemplate('dev')" class="rounded-xl border-2 border-brand-accent bg-brand-accent/5 p-4 text-left transition-all">
+                        <span class="block text-sm font-black text-warm-900">Template 1</span>
+                        <span class="block text-xs font-bold text-brand-dark mt-1">Software Developer</span>
+                        <span class="block text-[11px] text-warm-500 mt-2">Focused on backend/fullstack, APIs, SQL, databases, and general engineering strengths.</span>
+                    </button>
+                    <button type="button" id="template-btn-placement" onclick="selectTemplate('placement')" class="rounded-xl border border-warm-200 bg-warm-50 p-4 text-left transition-all hover:border-brand-accent">
+                        <span class="block text-sm font-black text-warm-900">Template 2</span>
+                        <span class="block text-xs font-bold text-warm-700 mt-1">Placement / Intern / Graduate</span>
+                        <span class="block text-[11px] text-warm-500 mt-2">Focused on learning mindset, student academic highlights, core foundations, and collaboration.</span>
+                    </button>
+                </div>
+            </div>
 
-<section class="mb-6 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-    <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <h2 class="text-xl font-black text-warm-900">Saved Template Sentences</h2>
-            <p class="mt-1 text-sm text-warm-500">Edit, archive, or restore your reusable sentence buttons.</p>
-        </div>
-    </div>
-    <div class="space-y-4">
-        {% for template in custom_sentence_templates %}
-        <div class="rounded-2xl border border-warm-200 bg-warm-50 p-4 transition-opacity {% if not template.is_visible %}opacity-70{% endif %}">
-            <div class="grid gap-3 lg:grid-cols-[0.8fr_1fr_1fr_auto]">
-                <form id="template-edit-{{ template.id }}" method="post" action="{{ url_for('admin.edit_resume_template', template_id=template.id) }}" class="contents">
-                    <label class="block">
-                        <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Section</span>
-                        <select name="template_target" class="admin-input w-full rounded-lg border-warm-300">
-                            {{ template_target_options(template.target) }}
-                        </select>
-                    </label>
-                    <label class="block">
-                        <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Button label</span>
-                        <input name="template_label" value="{{ template.label }}" class="admin-input w-full rounded-lg border-warm-300">
-                    </label>
-                    <label class="block">
-                        <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sort order</span>
-                        <input name="sort_order" value="{{ template.sort_order }}" type="number" class="admin-input w-full rounded-lg border-warm-300">
-                    </label>
-                    <div class="flex items-end justify-end">
-                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-4 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">Save</button>
+            <!-- SECTION 2: Target Information -->
+            <div class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-black text-warm-900 mb-4">
+                    <span id="target-step-number" class="text-brand-accent font-black mr-2">2.</span>Job Details
+                </h2>
+                <div class="grid gap-4 sm:grid-cols-3">
+                    <div>
+                        <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Company Name</label>
+                        <input id="company_name" name="company_name" oninput="updateLetterPreview()" class="admin-input rounded-lg" placeholder="e.g., Stripe">
                     </div>
-                    <label class="block lg:col-span-4">
-                        <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Sentence</span>
-                        <textarea name="template_text" rows="2" class="admin-input w-full rounded-lg border-warm-300">{{ template.text }}</textarea>
-                    </label>
-                </form>
-                <div class="lg:col-span-4 flex justify-end">
-                    {% if template.is_visible %}
-                    <form method="post" action="{{ url_for('admin.delete_resume_template', template_id=template.id) }}" onsubmit="return confirm('Archive this template sentence?');">
-                        <button class="rounded-xl border border-warm-200 bg-white px-4 py-2 text-sm font-black text-warm-700 hover:border-brand-accent transition-colors">Archive</button>
-                    </form>
-                    {% else %}
-                    <form method="post" action="{{ url_for('admin.restore_resume_template', template_id=template.id) }}">
-                        <button class="rounded-xl border border-green-200 bg-green-50 px-4 py-2 text-sm font-black text-green-700 hover:border-green-300 transition-colors">Restore</button>
-                    </form>
-                    {% endif %}
+                    <div>
+                        <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Target Job Role</label>
+                        <input id="target_role" name="target_role" oninput="updateLetterPreview()" class="admin-input rounded-lg" placeholder="e.g., Python Developer">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Recipient Name</label>
+                        <input id="recipient_name" name="recipient_name" oninput="updateLetterPreview()" class="admin-input rounded-lg" placeholder="Hiring Manager">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: What I Bring / Custom Bullets (Simple Mode) -->
+            <div id="simple-bullets-section" class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-black text-warm-900"><span class="text-brand-accent font-black mr-2">3.</span>Bullets & Custom Points</h2>
+                    <button type="button" onclick="addCustomBullet()" class="inline-flex items-center justify-center rounded-lg bg-warm-100 hover:bg-brand-accent/25 hover:text-brand-dark px-3 py-1.5 text-xs font-black text-warm-700 transition-colors">
+                        <i class="fas fa-plus mr-1"></i> Custom Bullet
+                    </button>
+                </div>
+                <p class="text-xs text-warm-500 mb-4">Tick or untick points to include, double click to edit existing bullets, or add a brand new custom point.</p>
+                
+                <!-- Bullets list manager container -->
+                <div id="bullets-list" class="space-y-3">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- SECTION 4: Raw Textareas (Raw Mode) -->
+            <div id="raw-editor-section" class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm hidden">
+                <h2 class="text-lg font-black text-warm-900 mb-4">Direct Textarea Editors</h2>
+                <p class="text-xs text-warm-500 mb-4">Edit the letter fields directly. These bypass the template engine variables and allow raw text formatting.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Introduction Summary</label>
+                        <textarea id="resume_summary" name="resume_summary" rows="4" oninput="updateLetterPreview()" class="admin-input rounded-lg" placeholder="Dear Hiring Manager opening text..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">What I Bring (Newline-separated points)</label>
+                        <textarea id="company_details" name="company_details" rows="6" oninput="updateLetterPreview()" class="admin-input rounded-lg" placeholder="One bullet point per line..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Conclusion Paragraph</label>
+                        <textarea id="resume_conclusion" name="resume_conclusion" rows="4" oninput="updateLetterPreview()" class="admin-input rounded-lg" placeholder="Closing paragraph and sign-off..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Side: A4 visual preview -->
+        <div class="space-y-4">
+            <h2 class="text-sm font-black uppercase tracking-wider text-warm-500 flex items-center justify-between">
+                <span>Letter Live Preview</span>
+                <span class="text-[10px] lowercase text-warm-400 font-normal">Real-time compilation</span>
+            </h2>
+
+            <div class="rounded-2xl border border-warm-200 bg-white shadow-xl p-8 relative overflow-hidden flex flex-col font-sans select-none" style="aspect-ratio: 1/1.414; min-height: 520px;">
+                <!-- Header Name & Title -->
+                <div class="border-b border-warm-200 pb-4 mb-4">
+                    <h3 class="text-2xl font-black text-warm-900 tracking-tight">{{ profile.full_name }}</h3>
+                    <p class="text-xs font-bold text-brand-accent tracking-wide uppercase mt-1">{{ profile.title }}</p>
+                    <p class="text-[10px] text-warm-400 mt-1.5">{{ profile.phone }} &nbsp;|&nbsp; {{ profile.email }} &nbsp;|&nbsp; {{ profile.location }}</p>
+                </div>
+
+                <!-- Letter Content Details -->
+                <div class="flex-grow space-y-4 text-[11px] leading-relaxed text-warm-700">
+                    <p id="preview-date" class="text-warm-400 font-bold mb-3"></p>
+                    
+                    <p id="preview-salutation" class="font-bold text-warm-900">Dear Hiring Manager,</p>
+                    
+                    <p id="preview-intro" class="whitespace-pre-line"></p>
+                    
+                    <div>
+                        <p class="font-bold text-warm-900 mb-2">What I Bring to the Team:</p>
+                        <ul id="preview-bullets" class="space-y-2 list-none pl-1">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                    
+                    <p id="preview-conclusion" class="whitespace-pre-line"></p>
+                </div>
+
+                <!-- Footer Page -->
+                <div class="border-t border-warm-100 pt-3 mt-4 text-[9px] text-warm-400 flex justify-between">
+                    <span>{{ profile.full_name|upper }} &mdash; COVER LETTER</span>
+                    <span id="preview-footer-date"></span>
                 </div>
             </div>
         </div>
-        {% else %}
-        <p class="rounded-xl border border-warm-200 bg-warm-50 p-4 text-sm font-bold text-warm-500">No custom template sentences saved yet.</p>
-        {% endfor %}
-    </div>
-</section>
-
-<form method="post" action="{{ url_for('admin.resume_builder_pdf') }}" class="space-y-6" data-resume-builder>
-    <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-        <div class="grid gap-4 lg:grid-cols-4">
-            <label class="block lg:col-span-1">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Resume subtitle</span>
-                <input id="header_subtitle" name="header_subtitle" value="{{ profile.title }}" class="admin-input w-full rounded-lg border-warm-300">
-            </label>
-            <label class="block lg:col-span-1">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Recipient Name</span>
-                <input id="recipient_name" name="recipient_name" class="admin-input w-full rounded-lg border-warm-300" placeholder="Hiring Manager">
-            </label>
-            <label class="block lg:col-span-1">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Company name</span>
-                <input id="company_name" name="company_name" class="admin-input w-full rounded-lg border-warm-300" data-template-company placeholder="e.g., Black Duck">
-            </label>
-            <label class="block lg:col-span-1">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Target role</span>
-                <input id="target_role" name="target_role" class="admin-input w-full rounded-lg border-warm-300" data-template-role placeholder="e.g., Software Intern">
-            </label>
-            <label class="block lg:col-span-4">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Custom Phrases / Keywords <span class="text-[10px] normal-case text-warm-400">(Replaces {phrases})</span></span>
-                <input id="resume_keywords" name="resume_keywords" class="admin-input w-full rounded-lg border-warm-300" placeholder="e.g., robust backend development, scalable APIs, and Python">
-            </label>
-        </div>
-    </section>
-
-    <div class="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
-        <section class="space-y-4 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-            <label class="block">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Introduction</span>
-                <textarea id="resume_summary" name="resume_summary" rows="5" class="admin-input w-full rounded-lg border-warm-300" placeholder="Dear Hiring Manager opening text for the company or role."></textarea>
-            </label>
-
-            <label class="block">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">What I bring</span>
-                <textarea id="company_details" name="company_details" rows="7" class="admin-input w-full rounded-lg border-warm-300" placeholder="One tailored bullet per line."></textarea>
-            </label>
-
-            <label class="block">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">Conclusion</span>
-                <textarea id="resume_conclusion" name="resume_conclusion" rows="5" class="admin-input w-full rounded-lg border-warm-300" placeholder="Closing paragraph and sign-off. Leave blank for a sensible default."></textarea>
-            </label>
-        </section>
-
-        <aside class="space-y-4">
-            {{ template_buttons('resume_summary', 'Introduction sentences') }}
-            {{ template_buttons('company_details', 'What I bring sentences') }}
-            {{ template_buttons('resume_conclusion', 'Conclusion sentences') }}
-        </aside>
     </div>
 
+    <!-- Sticky action footer bar -->
     <div class="sticky bottom-4 flex flex-col gap-3 rounded-2xl border border-warm-200 bg-white/95 p-4 shadow-xl backdrop-blur sm:flex-row sm:justify-end">
         <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 px-6 py-3 font-black text-warm-700 hover:border-brand-accent transition-colors">Cancel</a>
-        <button type="submit" name="disposition" value="inline" formtarget="_blank" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-6 py-3 font-black text-warm-800 hover:border-brand-accent transition-colors">
-            Preview Resume Letter
+        <button type="submit" name="disposition" value="inline" onclick="compileAllInputsBeforeSubmit()" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-6 py-3 font-black text-warm-800 hover:border-brand-accent transition-colors">
+            <i class="fas fa-eye mr-2"></i> Preview Letter PDF
         </button>
-        <button type="submit" name="disposition" value="attachment" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">
-            Download Resume Letter
+        <button type="submit" name="disposition" value="attachment" onclick="compileAllInputsBeforeSubmit()" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">
+            <i class="fas fa-download mr-2"></i> Download Letter PDF
         </button>
     </div>
 </form>
 
 <script>
+// Templates dictionary
+const TEMPLATES = {
+    dev: {
+        summary: "I am writing to apply for the {role} position at {company}. I bring practical experience building database-backed web applications, APIs, and automation tools, alongside my BSc Computing and IT studies.",
+        bullets: [
+            "Experience building maintainable Flask and Python applications with SQL-backed data.",
+            "Comfortable working across frontend and backend code, including HTML, CSS, JavaScript, TypeScript, and REST APIs.",
+            "Used to debugging issues carefully, documenting decisions, and improving existing systems."
+        ],
+        conclusion: "I would welcome the opportunity to discuss how my software development experience, motivation, and practical project work could support {company}.\n\nYours sincerely,\n\nCiaran Cairns"
+    },
+    placement: {
+        summary: "I am writing to apply for the {role} opportunity at {company}. As a Stage 2 BSc Computing and IT student, I am keen to apply my software development skills in a professional team and learn from experienced engineers.",
+        bullets: [
+            "Strong foundation in programming, databases, web development, and software engineering principles.",
+            "Practical project experience using Python, Flask, Java, TypeScript, Git, and documentation-led development.",
+            "Motivated, reliable, and quick to learn new tools, with a collaborative approach to team work."
+        ],
+        conclusion: "Thank you for considering my application. I would be grateful for the chance to discuss how I could contribute to {company} during a placement or internship.\n\nYours sincerely,\n\nCiaran Cairns"
+    }
+};
+
+let currentMode = 'simple'; // 'simple' or 'raw'
+let activeTemplateKey = 'dev';
+let currentBullets = []; // Stores bullet objects: { text: string, enabled: boolean, custom: boolean }
+
 document.addEventListener('DOMContentLoaded', () => {
-    const companyInput = document.getElementById('company_name');
-    const roleInput = document.getElementById('target_role');
-    const recipientInput = document.getElementById('recipient_name');
-    const keywordsInput = document.getElementById('resume_keywords');
+    // Set date labels in preview
+    const now = new Date();
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const formattedDate = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+    document.getElementById('preview-date').innerText = formattedDate;
+    document.getElementById('preview-footer-date').innerText = formattedDate.toUpperCase();
 
-    // Helper function to dynamically replace placeholders with current inputs
-    function processPlaceholders(rawText, presetRole = null) {
-        if (!rawText) return '';
+    // Default seed
+    loadTemplate(activeTemplateKey);
+});
 
-        const companyValue = companyInput.value.trim() || '[Company]';
-        const roleValue = presetRole || roleInput.value.trim() || '[Role]';
-        const recipientValue = recipientInput?.value.trim() || 'Hiring Manager';
-        const phrasesValue = keywordsInput?.value.trim() || '[Phrases]';
+function setMode(mode) {
+    currentMode = mode;
+    const btnSimple = document.getElementById('btn-mode-simple');
+    const btnRaw = document.getElementById('btn-mode-raw');
+    const simpleTemplateSec = document.getElementById('simple-template-section');
+    const simpleBulletsSec = document.getElementById('simple-bullets-section');
+    const rawEditorSec = document.getElementById('raw-editor-section');
+    const stepNum = document.getElementById('target-step-number');
 
-        // Fix applied here: Make sure regex strictly looks for {word} and is case-insensitive
-        return rawText
-            .replace(/\{company\}/gi, companyValue)
-            .replace(/\{role\}/gi, roleValue)
-            .replace(/\{recipient\}/gi, recipientValue)
-            .replace(/\{phrases\}/gi, phrasesValue)
-            .replace(/\{keywords\}/gi, phrasesValue);
+    if (mode === 'simple') {
+        btnSimple.className = "w-1/2 rounded-lg py-2.5 text-center text-sm font-black transition-all bg-white text-warm-900 shadow-sm";
+        btnRaw.className = "w-1/2 rounded-lg py-2.5 text-center text-sm font-semibold transition-all text-warm-600 hover:text-warm-900";
+        simpleTemplateSec.classList.remove('hidden');
+        simpleBulletsSec.classList.remove('hidden');
+        rawEditorSec.classList.add('hidden');
+        stepNum.innerText = "2.";
+        // Refresh inputs based on simple template state
+        updateLetterPreview();
+    } else {
+        btnSimple.className = "w-1/2 rounded-lg py-2.5 text-center text-sm font-semibold transition-all text-warm-600 hover:text-warm-900";
+        btnRaw.className = "w-1/2 rounded-lg py-2.5 text-center text-sm font-black transition-all bg-white text-warm-900 shadow-sm";
+        simpleTemplateSec.classList.add('hidden');
+        simpleBulletsSec.classList.add('hidden');
+        rawEditorSec.classList.remove('hidden');
+        stepNum.innerText = "1.";
+        // Seed textareas with current preview compiles if they are empty
+        seedRawTextareas();
+        updateLetterPreview();
+    }
+}
+
+function selectTemplate(key) {
+    activeTemplateKey = key;
+    const btnDev = document.getElementById('template-btn-dev');
+    const btnPlacement = document.getElementById('template-btn-placement');
+
+    if (key === 'dev') {
+        btnDev.className = "rounded-xl border-2 border-brand-accent bg-brand-accent/5 p-4 text-left transition-all";
+        btnPlacement.className = "rounded-xl border border-warm-200 bg-warm-50 p-4 text-left transition-all hover:border-brand-accent";
+    } else {
+        btnPlacement.className = "rounded-xl border-2 border-brand-accent bg-brand-accent/5 p-4 text-left transition-all";
+        btnDev.className = "rounded-xl border border-warm-200 bg-warm-50 p-4 text-left transition-all hover:border-brand-accent";
     }
 
-    // Handle individual template sentence buttons
-    const templateButtons = document.querySelectorAll('button[data-template-target]');
-    templateButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const targetId = button.getAttribute('data-template-target');
-            const rawText = JSON.parse(button.getAttribute('data-template-text'));
-            const targetTextarea = document.getElementById(targetId);
+    loadTemplate(key);
+}
 
-            if (!targetTextarea) return;
+function loadTemplate(key) {
+    const tpl = TEMPLATES[key];
+    currentBullets = tpl.bullets.map(b => ({ text: b, enabled: true, custom: false }));
+    renderBullets();
+    updateLetterPreview();
+}
 
-            const processedText = processPlaceholders(rawText);
+function renderBullets() {
+    const container = document.getElementById('bullets-list');
+    container.innerHTML = '';
+    
+    currentBullets.forEach((bullet, index) => {
+        const item = document.createElement('div');
+        item.className = `flex items-center gap-3 p-3 rounded-xl border transition-all ${bullet.enabled ? 'bg-white border-warm-200' : 'bg-warm-100/50 border-warm-200 opacity-60'}`;
+        
+        item.innerHTML = `
+            <input type="checkbox" ${bullet.enabled ? 'checked' : ''} onchange="toggleBullet(${index})" class="rounded text-brand-accent focus:ring-brand-accent border-warm-300 w-4 h-4">
+            <div class="flex-grow">
+                <input type="text" value="${bullet.text.replace(/"/g, '&quot;')}" oninput="editBulletText(${index}, this.value)" class="bg-transparent border-0 outline-none w-full p-0 font-medium text-xs text-warm-800 focus:ring-0">
+            </div>
+            <button type="button" onclick="deleteBullet(${index})" class="text-warm-400 hover:text-red-500 transition-colors">
+                <i class="fas fa-trash-alt text-xs"></i>
+            </button>
+        `;
+        container.appendChild(item);
+    });
+}
 
-            // Append the text safely. Add a double newline if there's already text.
-            if (targetTextarea.value.trim() !== '') {
-                targetTextarea.value += '\n\n' + processedText;
-            } else {
-                targetTextarea.value = processedText;
+function toggleBullet(index) {
+    currentBullets[index].enabled = !currentBullets[index].enabled;
+    renderBullets();
+    updateLetterPreview();
+}
+
+function editBulletText(index, val) {
+    currentBullets[index].text = val;
+    updateLetterPreview();
+}
+
+function deleteBullet(index) {
+    currentBullets.splice(index, 1);
+    renderBullets();
+    updateLetterPreview();
+}
+
+function addCustomBullet() {
+    currentBullets.push({ text: "Custom experience point...", enabled: true, custom: true });
+    renderBullets();
+    updateLetterPreview();
+    
+    // Focus the newly added bullet text input
+    setTimeout(() => {
+        const inputs = document.querySelectorAll('#bullets-list input[type="text"]');
+        if (inputs.length > 0) {
+            const lastInput = inputs[inputs.length - 1];
+            lastInput.focus();
+            lastInput.select();
+        }
+    }, 50);
+}
+
+function getProcessedText(rawText) {
+    if (!rawText) return '';
+    const company = document.getElementById('company_name').value.trim() || '[Company Name]';
+    const role = document.getElementById('target_role').value.trim() || '[Job Role]';
+    
+    return rawText
+        .replace(/\{company\}/gi, company)
+        .replace(/\{role\}/gi, role);
+}
+
+function updateLetterPreview() {
+    const salutation = document.getElementById('recipient_name').value.trim() || 'Hiring Manager';
+    document.getElementById('preview-salutation').innerText = `Dear ${salutation},`;
+
+    if (currentMode === 'simple') {
+        const tpl = TEMPLATES[activeTemplateKey];
+        
+        // 1. Process intro paragraph
+        document.getElementById('preview-intro').innerText = getProcessedText(tpl.summary);
+        
+        // 2. Process bullets
+        const previewBulletsList = document.getElementById('preview-bullets');
+        previewBulletsList.innerHTML = '';
+        currentBullets.forEach(bullet => {
+            if (bullet.enabled && bullet.text.trim()) {
+                const li = document.createElement('li');
+                li.className = 'flex items-start gap-2.5';
+                li.innerHTML = `
+                    <span class="inline-block bg-brand-accent rounded-full mt-1.5 w-1.5 h-1.5 flex-shrink-0"></span>
+                    <span>${getProcessedText(bullet.text)}</span>
+                `;
+                previewBulletsList.appendChild(li);
             }
         });
-    });
+        
+        // 3. Process conclusion
+        document.getElementById('preview-conclusion').innerText = getProcessedText(tpl.conclusion);
+    } else {
+        // Raw Editor Mode
+        const introText = document.getElementById('resume_summary').value;
+        const detailsText = document.getElementById('company_details').value;
+        const conclusionText = document.getElementById('resume_conclusion').value;
 
-    // Handle the Role Preset buttons
-    const rolePresetButtons = document.querySelectorAll('button[data-role-preset]');
-    rolePresetButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const preset = JSON.parse(button.getAttribute('data-role-preset'));
-
-            document.getElementById('header_subtitle').value = preset.header_subtitle || '';
-            document.getElementById('target_role').value = preset.target_role || '';
-
-            if (document.getElementById('resume_keywords')) {
-                document.getElementById('resume_keywords').value = preset.resume_keywords || '';
+        document.getElementById('preview-intro').innerText = getProcessedText(introText);
+        
+        const previewBulletsList = document.getElementById('preview-bullets');
+        previewBulletsList.innerHTML = '';
+        detailsText.split('\n').forEach(line => {
+            if (line.trim()) {
+                const li = document.createElement('li');
+                li.className = 'flex items-start gap-2.5';
+                li.innerHTML = `
+                    <span class="inline-block bg-brand-accent rounded-full mt-1.5 w-1.5 h-1.5 flex-shrink-0"></span>
+                    <span>${getProcessedText(line)}</span>
+                `;
+                previewBulletsList.appendChild(li);
             }
-
-            const presetRole = preset.target_role;
-
-            document.getElementById('resume_summary').value = processPlaceholders(preset.resume_summary, presetRole);
-            document.getElementById('company_details').value = processPlaceholders(preset.company_details, presetRole);
-            document.getElementById('resume_conclusion').value = processPlaceholders(preset.resume_conclusion, presetRole);
         });
-    });
-});
+
+        document.getElementById('preview-conclusion').innerText = getProcessedText(conclusionText);
+    }
+}
+
+function seedRawTextareas() {
+    const tpl = TEMPLATES[activeTemplateKey];
+    document.getElementById('resume_summary').value = tpl.summary;
+    document.getElementById('resume_conclusion').value = tpl.conclusion;
+    
+    // Convert active bullets list into newline-separated details string
+    const bulletLines = currentBullets
+        .filter(b => b.enabled)
+        .map(b => b.text)
+        .join('\n');
+    document.getElementById('company_details').value = bulletLines;
+}
+
+function compileAllInputsBeforeSubmit() {
+    // If we're in simple mode, we need to populate the hidden fields before submitting
+    if (currentMode === 'simple') {
+        const tpl = TEMPLATES[activeTemplateKey];
+        
+        // Sync compiled data to raw textareas in the DOM so Flask POST reads them
+        document.getElementById('resume_summary').value = tpl.summary;
+        document.getElementById('resume_conclusion').value = tpl.conclusion;
+        
+        const bulletLines = currentBullets
+            .filter(b => b.enabled)
+            .map(b => b.text)
+            .join('\n');
+        document.getElementById('company_details').value = bulletLines;
+    }
+}
 </script>
 {% endblock %}
