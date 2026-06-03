@@ -335,7 +335,7 @@ function updateLetterPreview() {
                 const li = document.createElement('li');
                 li.className = 'flex items-start gap-2.5';
                 li.innerHTML = `
-                    <span class="inline-block bg-brand-accent rounded-full mt-1.5 w-1.5 h-1.5 flex-shrink-0"></span>
+                    <span class="inline-block bg-brand-accent rounded-full mt-1.5 w-1.5 h-1.5 shrink-0"></span>
                     <span>${getProcessedText(bullet.text)}</span>
                 `;
                 previewBulletsList.appendChild(li);
@@ -359,7 +359,7 @@ function updateLetterPreview() {
                 const li = document.createElement('li');
                 li.className = 'flex items-start gap-2.5';
                 li.innerHTML = `
-                    <span class="inline-block bg-brand-accent rounded-full mt-1.5 w-1.5 h-1.5 flex-shrink-0"></span>
+                    <span class="inline-block bg-brand-accent rounded-full mt-1.5 w-1.5 h-1.5 shrink-0"></span>
                     <span>${getProcessedText(line)}</span>
                 `;
                 previewBulletsList.appendChild(li);

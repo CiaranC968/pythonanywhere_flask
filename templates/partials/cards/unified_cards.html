@@ -110,7 +110,7 @@
                     hx-get="{{ modal_url }}"
                     hx-target="#modalContent"
                     hx-trigger="click"
-                    class="card-item group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-1 transition-all duration-500 no-underline w-full md:w-[calc(50%-16px)] lg:w-[calc(33.333%-22px)] flex-shrink-0"
+                    class="card-item group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-1 transition-all duration-500 no-underline w-full md:w-[calc(50%-16px)] lg:w-[calc(33.333%-22px)] shrink-0"
                     role="button"
                     aria-labelledby="{{ card_id }}-title">
                     {{ render_card_content(item, type, card_id) }}
@@ -120,7 +120,7 @@
     </div>
 
     <!-- Navigation Overlay / Centered Buttons -->
-    {% if items | length > 3 %}
+    {% if items | length > 1 %}
     <div class="flex justify-center items-center gap-6 mt-8">
         <button type="button" id="prev-btn" onclick="slideProjects(-1)" class="w-12 h-12 rounded-full border border-gray-200 bg-white hover:border-brand-accent hover:text-brand-accent flex items-center justify-center dark:border-gray-700 dark:bg-gray-800 transition-colors shadow-sm disabled:opacity-30 disabled:pointer-events-none" aria-label="Previous projects">
             <i class="fas fa-chevron-left"></i>
@@ -138,13 +138,20 @@
 <script>
 (function() {
     const track = document.getElementById('projects-track');
-    const cards = track.querySelectorAll('.card-item');
+    if (!track) return;
+    const cards = Array.from(track.querySelectorAll('.card-item'));
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const dotsContainer = document.getElementById('carousel-dots');
     
-    let currentIndex = 0;
-    const totalCards = cards.length;
+    if (cards.length === 0) return;
+
+    let isTransitioning = false;
+
+    // Attach original index for endless dot tracking
+    cards.forEach((card, index) => {
+        card.setAttribute('data-original-index', index);
+    });
 
     function getVisibleCards() {
         if (window.innerWidth >= 1024) return 3;
@@ -152,66 +159,150 @@
         return 1;
     }
 
-    function updateCarousel() {
-        const visible = getVisibleCards();
-        const maxIndex = Math.max(0, totalCards - visible);
+    function getCardWidthAndGap() {
+        const cardWidth = cards[0].offsetWidth;
+        const gap = 32; // gap-8 is 32px
+        return { cardWidth, gap };
+    }
+
+    function updateDots() {
+        if (!dotsContainer) return;
+        dotsContainer.innerHTML = '';
         
-        if (currentIndex > maxIndex) {
-            currentIndex = maxIndex;
-        }
-
-        if (totalCards > 0) {
-            const cardWidth = cards[0].offsetWidth;
-            const gap = 32; // gap-8 is 32px
-            const offset = currentIndex * (cardWidth + gap);
-            track.style.transform = `translateX(-${offset}px)`;
-        }
-
-        // Update nav buttons
-        if (prevBtn && nextBtn) {
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex >= maxIndex;
-            
-            // Toggle visibility of navigation container if not enough cards to slide
-            const showNav = totalCards > visible;
-            prevBtn.parentElement.style.display = showNav ? 'flex' : 'none';
-        }
-
-        // Render page dots
-        if (dotsContainer) {
-            dotsContainer.innerHTML = '';
-            const steps = maxIndex + 1;
-            if (steps > 1) {
-                for (let i = 0; i < steps; i++) {
-                    const dot = document.createElement('button');
-                    dot.type = 'button';
-                    dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-brand-accent w-6' : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'}`;
-                    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
-                    dot.addEventListener('click', () => {
-                        currentIndex = i;
-                        updateCarousel();
-                    });
-                    dotsContainer.appendChild(dot);
-                }
+        const currentFirstCard = track.querySelector('.card-item');
+        if (!currentFirstCard) return;
+        const originalIndex = parseInt(currentFirstCard.getAttribute('data-original-index'), 10);
+        
+        const total = cards.length;
+        if (total > getVisibleCards()) {
+            for (let i = 0; i < total; i++) {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === originalIndex ? 'bg-brand-accent w-6' : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'}`;
+                dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+                dot.addEventListener('click', () => {
+                    goToIndex(i);
+                });
+                dotsContainer.appendChild(dot);
             }
         }
     }
 
-    window.slideProjects = function(direction) {
+    function goToIndex(targetIndex) {
+        if (isTransitioning) return;
+        
+        const currentFirstCard = track.querySelector('.card-item');
+        if (!currentFirstCard) return;
+        const currentIndex = parseInt(currentFirstCard.getAttribute('data-original-index'), 10);
+        
+        if (currentIndex === targetIndex) return;
+        
+        const total = cards.length;
+        let diff = targetIndex - currentIndex;
+        
+        // Shortest path calculation on a circle
+        if (diff > total / 2) {
+            diff -= total;
+        } else if (diff < -total / 2) {
+            diff += total;
+        }
+        
+        if (diff > 0) {
+            slideNext(diff);
+        } else {
+            slidePrev(-diff);
+        }
+    }
+
+    function slideNext(steps = 1) {
+        if (isTransitioning) return;
+        
         const visible = getVisibleCards();
-        const maxIndex = Math.max(0, totalCards - visible);
-        currentIndex = Math.min(maxIndex, Math.max(0, currentIndex + direction));
-        updateCarousel();
+        if (cards.length <= visible) return;
+        
+        isTransitioning = true;
+        
+        const { cardWidth, gap } = getCardWidthAndGap();
+        const moveAmount = (cardWidth + gap) * steps;
+        
+        track.style.transition = 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)';
+        track.style.transform = `translateX(-${moveAmount}px)`;
+        
+        setTimeout(() => {
+            track.style.transition = 'none';
+            for (let i = 0; i < steps; i++) {
+                const firstCard = track.querySelector('.card-item');
+                track.appendChild(firstCard);
+            }
+            track.style.transform = 'translateX(0px)';
+            track.offsetHeight; // Force reflow
+            
+            isTransitioning = false;
+            updateDots();
+        }, 500);
+    }
+
+    function slidePrev(steps = 1) {
+        if (isTransitioning) return;
+        
+        const visible = getVisibleCards();
+        if (cards.length <= visible) return;
+        
+        isTransitioning = true;
+        
+        const { cardWidth, gap } = getCardWidthAndGap();
+        const moveAmount = (cardWidth + gap) * steps;
+        
+        track.style.transition = 'none';
+        for (let i = 0; i < steps; i++) {
+            const lastCard = track.lastElementChild;
+            track.insertBefore(lastCard, track.firstElementChild);
+        }
+        track.style.transform = `translateX(-${moveAmount}px)`;
+        track.offsetHeight; // Force reflow
+        
+        setTimeout(() => {
+            track.style.transition = 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)';
+            track.style.transform = 'translateX(0px)';
+            
+            setTimeout(() => {
+                isTransitioning = false;
+                updateDots();
+            }, 500);
+        }, 50);
+    }
+
+    window.slideProjects = function(direction) {
+        if (direction > 0) {
+            slideNext();
+        } else {
+            slidePrev();
+        }
     };
+
+    function initLayout() {
+        const visible = getVisibleCards();
+        const showNav = cards.length > visible;
+        
+        if (prevBtn && nextBtn) {
+            prevBtn.parentElement.style.display = showNav ? 'flex' : 'none';
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
+        }
+        
+        track.style.transition = 'none';
+        track.style.transform = 'translateX(0px)';
+        updateDots();
+    }
 
     let resizeTimer;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(updateCarousel, 100);
+        resizeTimer = setTimeout(initLayout, 100);
     });
 
     // Run layout render
-    setTimeout(updateCarousel, 200);
+    setTimeout(initLayout, 200);
 })();
 </script>
 
