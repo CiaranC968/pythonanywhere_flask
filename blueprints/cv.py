@@ -15,8 +15,29 @@ DEFAULT_PDF_SECTIONS = ("experience", "skills", "education", "certificates")
 
 @cv_bp.route("/get-cv")
 def get_cv():
+    from flask import request
+    
+    theme_color = request.args.get("theme", "burgundy").strip()
+    sections_param = request.args.get("sections")
+    header_subtitle = request.args.get("subtitle", "").strip()
+
+    if sections_param:
+        include_sections = [s.strip() for s in sections_param.split(",") if s.strip()]
+    else:
+        include_sections = list(DEFAULT_PDF_SECTIONS)
+
+    resume_options = {
+        "theme_color": theme_color,
+        "header_subtitle": header_subtitle,
+    }
+
     try:
-        pdf_bytes = build_cv_pdf()
+        pdf_bytes = build_cv_pdf(
+            profile=get_profile(),
+            portfolio=get_portfolio(),
+            include_sections=include_sections,
+            resume_options=resume_options,
+        )
     except ImportError:
         abort(500, description="Install reportlab from requirements.txt to generate PDFs.")
 
@@ -44,13 +65,45 @@ def build_cv_pdf(profile=None, portfolio=None, include_sections=None, resume_opt
     pdf = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
 
+    color_theme = resume_options.get("theme_color", "burgundy").strip().lower()
+    
+    palettes = {
+        "burgundy": {
+            "accent": "#7a1f3d",
+            "heading": "#6b2418",
+            "soft": "#eee8d8"
+        },
+        "yellow": {
+            "accent": "#b45309",
+            "heading": "#1a1815",
+            "soft": "#fef9c3"
+        },
+        "blue": {
+            "accent": "#1d4ed8",
+            "heading": "#0f172a",
+            "soft": "#dbeafe"
+        },
+        "green": {
+            "accent": "#047857",
+            "heading": "#111827",
+            "soft": "#d1fae5"
+        },
+        "slate": {
+            "accent": "#475569",
+            "heading": "#0f172a",
+            "soft": "#f1f5f9"
+        }
+    }
+    
+    selected_palette = palettes.get(color_theme, palettes["burgundy"])
+
     theme = {
         "ink": colors.HexColor("#28282b"),
         "muted": colors.HexColor("#646464"),
         "line": colors.HexColor("#d9d4cc"),
-        "accent": colors.HexColor("#7a1f3d"),
-        "heading": colors.HexColor("#6b2418"),
-        "soft": colors.HexColor("#eee8d8"),
+        "accent": colors.HexColor(selected_palette["accent"]),
+        "heading": colors.HexColor(selected_palette["heading"]),
+        "soft": colors.HexColor(selected_palette["soft"]),
         "pill": colors.HexColor("#f4f1ec"),
         "white": colors.white,
         "globe_blue": colors.HexColor("#2ba4d6"),

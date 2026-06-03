@@ -87,21 +87,71 @@
         const kind = editor.dataset.kind;
         const rows = editor.querySelector('[data-role="rows"]');
         const row = document.createElement('div');
-        row.className = 'structured-row';
+        
+        const kindNames = {
+            links: 'Link',
+            stats: 'Metric',
+            timeline: 'Timeline Item',
+            stages: 'Module'
+        };
+        const kindName = kindNames[kind] || 'Item';
+
+        function renumberRows() {
+            const allRows = rows.querySelectorAll('.structured-row');
+            allRows.forEach((r, idx) => {
+                const t = r.querySelector('.structured-row-title');
+                if (t) t.textContent = `${kindName} #${idx + 1}`;
+            });
+        }
+
+        if (kind === 'list') {
+            const field = fieldSets.list[0];
+            const value = data.value;
+            row.className = 'structured-row flex items-center gap-3 bg-white p-3 rounded-2xl border border-warm-200 shadow-sm';
+            
+            const input = document.createElement('input');
+            input.className = 'admin-input text-sm grow';
+            input.dataset.key = field.key;
+            input.value = value ?? '';
+            input.type = 'text';
+            input.placeholder = 'Enter bullet point...';
+            
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'rounded-xl border border-red-200 bg-red-50/20 hover:bg-red-50 p-2.5 text-red-600 flex items-center justify-center transition-colors cursor-pointer shrink-0';
+            remove.innerHTML = '<i class="fas fa-trash-alt text-sm"></i>';
+            remove.title = 'Remove item';
+            remove.addEventListener('click', () => {
+                row.remove();
+                syncEditor(editor);
+            });
+            
+            row.append(input, remove);
+            rows.appendChild(row);
+            row.addEventListener('input', () => syncEditor(editor));
+            return;
+        }
+
+        row.className = 'structured-row bg-white border border-warm-200 rounded-2xl p-5 shadow-sm';
 
         const header = document.createElement('div');
-        header.className = 'mb-3 flex items-center justify-between gap-3';
+        header.className = 'mb-4 pb-3 border-b border-warm-100 flex items-center justify-between gap-3';
+        
         const title = document.createElement('p');
-        title.className = 'text-sm font-black text-warm-800';
-        title.textContent = editor.dataset.label || 'Item';
+        title.className = 'structured-row-title text-sm font-black text-warm-900';
+        const index = rows.querySelectorAll('.structured-row').length + 1;
+        title.textContent = `${kindName} #${index}`;
+
         const remove = document.createElement('button');
         remove.type = 'button';
-        remove.className = 'rounded-lg border border-red-200 px-3 py-1.5 text-xs font-black text-red-600 hover:bg-red-50';
-        remove.textContent = 'Remove';
+        remove.className = 'rounded-xl border border-red-200 bg-red-50/20 hover:bg-red-50 px-3.5 py-1.5 text-xs font-black text-red-650 transition-colors flex items-center gap-1.5 cursor-pointer';
+        remove.innerHTML = '<i class="fas fa-trash-alt text-[10px]"></i> Remove';
         remove.addEventListener('click', () => {
             row.remove();
+            renumberRows();
             syncEditor(editor);
         });
+        
         header.append(title, remove);
         row.appendChild(header);
 
@@ -109,7 +159,7 @@
         grid.className = 'grid gap-3 md:grid-cols-2';
         const fields = fieldSets[kind] || fieldSets.list;
         fields.forEach((field) => {
-            const value = kind === 'list' ? data.value : data[field.key];
+            const value = data[field.key];
             grid.appendChild(createInput(field, value));
         });
         row.appendChild(grid);

@@ -843,9 +843,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const menu = document.getElementById('job-context-menu');
+            
+            // Momentarily display offscreen/invisible to read dimensions
+            menu.style.visibility = 'hidden';
             menu.classList.remove('hidden');
-            menu.style.left = `${e.pageX}px`;
-            menu.style.top = `${e.pageY}px`;
+            const menuWidth = menu.offsetWidth || 210;
+            const menuHeight = menu.offsetHeight || 330;
+            menu.classList.add('hidden');
+            menu.style.visibility = 'visible';
+
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let posX = e.clientX;
+            let posY = e.clientY;
+
+            // If extending past the right viewport boundary, shift left
+            if (posX + menuWidth > viewportWidth) {
+                posX = posX - menuWidth;
+                if (posX < 0) posX = 10;
+            }
+            
+            // If extending past the bottom viewport boundary, shift up
+            if (posY + menuHeight > viewportHeight) {
+                posY = posY - menuHeight;
+                if (posY < 0) posY = 10;
+            }
+
+            // Translate client (viewport) coordinates to absolute page coordinates
+            menu.style.left = `${posX + window.pageXOffset}px`;
+            menu.style.top = `${posY + window.pageYOffset}px`;
+            menu.classList.remove('hidden');
         });
     });
 

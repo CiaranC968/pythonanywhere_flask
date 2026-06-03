@@ -367,6 +367,19 @@ def create_app():
             "portfolio": portfolio,
         }
 
+    # --- Favicon Routes ---
+    @application.route('/favicon.ico')
+    def favicon():
+        from flask import send_from_directory
+        return send_from_directory(os.path.join(application.root_path, 'static'),
+                                   'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+    @application.route('/favicon/favicon.svg')
+    def favicon_svg():
+        from flask import send_from_directory
+        return send_from_directory(os.path.join(application.root_path, 'static', 'favicon'),
+                                   'favicon.svg', mimetype='image/svg+xml')
+
     return application
 
 
