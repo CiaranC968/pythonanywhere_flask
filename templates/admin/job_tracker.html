@@ -1,142 +1,344 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+<style>
+    /* Custom Scoped Styles for Job Tracker to bypass Tailwind compilation gaps */
+    
+    /* Stats Grid & Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+    @media (min-width: 640px) {
+        .stats-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+    @media (min-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+        }
+    }
+    
+    .stat-card {
+        border-radius: 0.75rem;
+        background-color: #ffffff;
+        border: 1px solid #e8e6e1;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    
+    /* Status-specific card borders & backgrounds */
+    .stat-card-total { border-left: 4px solid #7a756c; }
+    .stat-card-not-applied { border-left: 4px solid #6366f1; background-color: rgba(99, 102, 241, 0.03); }
+    .stat-card-applied { border-left: 4px solid #3b82f6; background-color: rgba(59, 130, 246, 0.03); }
+    .stat-card-interview { border-left: 4px solid #f59e0b; background-color: rgba(245, 158, 11, 0.03); }
+    .stat-card-got-job { border-left: 4px solid #10b981; background-color: rgba(16, 185, 129, 0.03); }
+    .stat-card-rejected { border-left: 4px solid #ef4444; background-color: rgba(239, 68, 68, 0.03); }
+    .stat-card-missed { border-left: 4px solid #f43f5e; background-color: rgba(244, 63, 94, 0.03); }
+
+    /* Custom Capsule Tabs */
+    .tabs-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+    }
+    .tab-button {
+        background-color: #ffffff;
+        border: 1px solid #e8e6e1;
+        color: #5c574f;
+        border-radius: 9999px;
+        padding: 0.5rem 1rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .tab-button:hover {
+        border-color: #a8a49c;
+        color: #1a1815;
+    }
+    .tab-button.active {
+        background-color: #facc15;
+        border-color: #facc15;
+        color: #111827;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    /* Badge styles inside cards */
+    .stage-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 9999px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .badge-not-applied { background-color: #e0e7ff; color: #3730a3; }
+    .badge-applied { background-color: #dbeafe; color: #1e40af; }
+    .badge-interview { background-color: #fef3c7; color: #92400e; }
+    .badge-got-job { background-color: #dcfce7; color: #166534; }
+    .badge-rejected { background-color: #fee2e2; color: #991b1b; }
+    .badge-missed { background-color: #ffe4e6; color: #9f1239; border: 1px solid #fda4af; }
+
+    /* Conditional info blocks inside cards */
+    .info-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 0.5rem;
+        padding: 0.625rem;
+        font-size: 0.75rem;
+        border: 1px solid transparent;
+    }
+    .info-box-not-applied { background-color: #f5f3ff; border-color: #e0e7ff; color: #4f46e5; }
+    .info-box-missed { background-color: #fff5f5; border-color: #ffe3e3; color: #e03131; }
+    .info-box-interview { background-color: #fffbeb; border-color: #fef3c7; color: #d97706; }
+    
+    .info-box-val {
+        font-weight: 800;
+    }
+    .info-box-not-applied .info-box-val { color: #312e81; }
+    .info-box-missed .info-box-val { color: #9f1239; }
+    .info-box-interview .info-box-val { color: #78350f; }
+
+    /* Action Buttons in card */
+    .btn-edit {
+        background-color: #ffffff;
+        border: 1px solid #e8e6e1;
+        color: #45413a;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .btn-edit:hover {
+        border-color: #facc15;
+        background-color: #fafaf8;
+        color: #1a1815;
+    }
+    .btn-delete {
+        background-color: #fef2f2;
+        border: 1px solid #fee2e2;
+        color: #b91c1c;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .btn-delete:hover {
+        border-color: #fca5a5;
+        background-color: #fee2e2;
+    }
+
+    /* Long Notes block */
+    .app-card-notes {
+        margin-top: 0.75rem;
+        font-size: 0.75rem;
+        background-color: #fafaf8;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e8e6e1;
+        color: #45413a;
+        max-height: 6rem;
+        overflow-y: auto;
+        word-break: break-all;
+        white-space: pre-line;
+    }
+    
+    /* Scrollbar for notes container */
+    .app-card-notes::-webkit-scrollbar {
+        width: 4px;
+    }
+    .app-card-notes::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .app-card-notes::-webkit-scrollbar-thumb {
+        background: #d5d2cc;
+        border-radius: 2px;
+    }
+    .app-card-notes::-webkit-scrollbar-thumb:hover {
+        background: #a8a49c;
+    }
+</style>
+
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
         <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent hover:underline">Back to dashboard</a>
-        <h1 class="mt-3 text-4xl font-black text-warm-900">Job Application Tracker</h1>
+        <h1 class="mt-3 text-4xl font-black text-warm-900 leading-tight">Job Application Tracker</h1>
         <p class="mt-2 max-w-2xl text-warm-500">Manage and track your active job hunt. Update stages, track upcoming interview dates, and keep notes.</p>
     </div>
-    <button onclick="openModal('add-modal')" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity">
-        <i class="fas fa-plus mr-2"></i> Add Application
-    </button>
+    <div class="shrink-0 mt-3 sm:mt-0">
+        <button onclick="openModal('add-modal')" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
+            <i class="fas fa-plus mr-2"></i> Add Application
+        </button>
+    </div>
 </div>
 
 <!-- Statistics Cards -->
-<div class="mb-8 flex flex-wrap gap-2.5">
-    <div class="rounded-xl border border-warm-200 bg-white px-3.5 py-2 shadow-sm flex items-center gap-2">
-        <span class="text-xs font-black uppercase tracking-wider text-warm-500">Total:</span>
-        <span class="text-base font-black text-warm-900">{{ applications|length }}</span>
+<div class="mb-8 stats-grid">
+    <div class="stat-card stat-card-total">
+        <span class="text-[10px] font-black uppercase tracking-wider text-warm-500">Total:</span>
+        <span class="text-2xl font-black text-warm-900 mt-1">{{ applications|length }}</span>
     </div>
-    <div class="rounded-xl border border-warm-200 bg-white px-3.5 py-2 shadow-sm flex items-center gap-2">
-        <span class="text-xs font-black uppercase tracking-wider text-indigo-600">Not Applied:</span>
-        <span class="text-base font-black text-indigo-650">
+    <div class="stat-card stat-card-not-applied">
+        <span class="text-[10px] font-black uppercase tracking-wider text-indigo-600">Not Applied:</span>
+        <span class="text-2xl font-black text-indigo-700 mt-1">
             {{ applications|selectattr('stage', 'equalto', 'Not Applied Yet')|list|length }}
         </span>
     </div>
-    <div class="rounded-xl border border-warm-200 bg-white px-3.5 py-2 shadow-sm flex items-center gap-2">
-        <span class="text-xs font-black uppercase tracking-wider text-blue-600">Applied:</span>
-        <span class="text-base font-black text-blue-600">
+    <div class="stat-card stat-card-applied">
+        <span class="text-[10px] font-black uppercase tracking-wider text-blue-600">Applied:</span>
+        <span class="text-2xl font-black text-blue-700 mt-1">
             {{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }}
         </span>
     </div>
-    <div class="rounded-xl border border-warm-200 bg-white px-3.5 py-2 shadow-sm flex items-center gap-2">
-        <span class="text-xs font-black uppercase tracking-wider text-amber-600">Interviews:</span>
-        <span class="text-base font-black text-amber-500">
+    <div class="stat-card stat-card-interview">
+        <span class="text-[10px] font-black uppercase tracking-wider text-amber-600">Interviews:</span>
+        <span class="text-2xl font-black text-amber-700 mt-1">
             {{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }}
         </span>
     </div>
-    <div class="rounded-xl border border-warm-200 bg-white px-3.5 py-2 shadow-sm flex items-center gap-2">
-        <span class="text-xs font-black uppercase tracking-wider text-green-600">Got Job:</span>
-        <span class="text-base font-black text-green-600">
+    <div class="stat-card stat-card-got-job">
+        <span class="text-[10px] font-black uppercase tracking-wider text-green-600">Got Job:</span>
+        <span class="text-2xl font-black text-green-700 mt-1">
             {{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }}
         </span>
     </div>
-    <div class="rounded-xl border border-warm-200 bg-white px-3.5 py-2 shadow-sm flex items-center gap-2">
-        <span class="text-xs font-black uppercase tracking-wider text-red-500">Rejected:</span>
-        <span class="text-base font-black text-red-500">
+    <div class="stat-card stat-card-rejected">
+        <span class="text-[10px] font-black uppercase tracking-wider text-red-500">Rejected:</span>
+        <span class="text-2xl font-black text-red-700 mt-1">
             {{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }}
         </span>
     </div>
-    <div class="rounded-xl border border-warm-200 bg-white px-3.5 py-2 shadow-sm flex items-center gap-2">
-        <span class="text-xs font-black uppercase tracking-wider text-rose-700">Missed DL:</span>
-        <span class="text-base font-black text-rose-700">
+    <div class="stat-card stat-card-missed">
+        <span class="text-[10px] font-black uppercase tracking-wider text-rose-500">Missed DL:</span>
+        <span class="text-2xl font-black text-rose-700 mt-1 flex items-center justify-between">
             {{ applications|selectattr('stage', 'equalto', 'Missed Deadline')|list|length }}
         </span>
     </div>
 </div>
 
 <!-- Tabs selector -->
-<div class="mb-6 border-b border-warm-200">
-    <nav class="flex flex-wrap gap-2 -mb-px" aria-label="Tabs">
-        <button onclick="switchTab('all')" data-tab="all" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-black text-warm-900 border-brand-accent transition-all">
-            All ({{ applications|length }})
-        </button>
-        <button onclick="switchTab('Not Applied Yet')" data-tab="Not Applied Yet" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
-            Not Applied ({{ applications|selectattr('stage', 'equalto', 'Not Applied Yet')|list|length }})
-        </button>
-        <button onclick="switchTab('Applied')" data-tab="Applied" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
-            Applied ({{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }})
-        </button>
-        <button onclick="switchTab('Interview')" data-tab="Interview" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
-            Interviews ({{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }})
-        </button>
-        <button onclick="switchTab('Got Job')" data-tab="Got Job" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
-            Got Job ({{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }})
-        </button>
-        <button onclick="switchTab('Rejected')" data-tab="Rejected" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
-            Rejected ({{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }})
-        </button>
-        <button onclick="switchTab('Missed Deadline')" data-tab="Missed Deadline" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
-            Missed DL ({{ applications|selectattr('stage', 'equalto', 'Missed Deadline')|list|length }})
-        </button>
-    </nav>
+<div class="tabs-container">
+    <button onclick="switchTab('all')" data-tab="all" class="tab-button active">
+        All ({{ applications|length }})
+    </button>
+    <button onclick="switchTab('Not Applied Yet')" data-tab="Not Applied Yet" class="tab-button">
+        Not Applied ({{ applications|selectattr('stage', 'equalto', 'Not Applied Yet')|list|length }})
+    </button>
+    <button onclick="switchTab('Applied')" data-tab="Applied" class="tab-button">
+        Applied ({{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }})
+    </button>
+    <button onclick="switchTab('Interview')" data-tab="Interview" class="tab-button">
+        Interviews ({{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }})
+    </button>
+    <button onclick="switchTab('Got Job')" data-tab="Got Job" class="tab-button">
+        Got Job ({{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }})
+    </button>
+    <button onclick="switchTab('Rejected')" data-tab="Rejected" class="tab-button">
+        Rejected ({{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }})
+    </button>
+    <button onclick="switchTab('Missed Deadline')" data-tab="Missed Deadline" class="tab-button">
+        Missed DL ({{ applications|selectattr('stage', 'equalto', 'Missed Deadline')|list|length }})
+    </button>
 </div>
 
 <!-- Job Cards Grid -->
 <div id="applications-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
     {% for app in applications %}
     <div class="app-card rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:border-brand-accent hover:shadow-md" data-stage="{{ app.stage }}">
-        <div class="flex items-start justify-between">
-            <div>
-                <h3 class="text-lg font-black text-warm-900">{{ app.role }}</h3>
-                <p class="text-sm font-bold text-warm-600">{{ app.company }}</p>
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-black text-warm-900 leading-snug break-words">{{ app.role }}</h3>
+                <p class="text-sm font-bold text-warm-600 mt-0.5 break-words">{{ app.company }}</p>
             </div>
-            <span>
+            <div class="shrink-0">
                 {% if app.stage == 'Not Applied Yet' %}
-                <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-black text-indigo-700">Not Applied</span>
+                <span class="stage-badge badge-not-applied">Not Applied</span>
                 {% elif app.stage == 'Applied' %}
-                <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-700">Applied</span>
+                <span class="stage-badge badge-applied">Applied</span>
                 {% elif app.stage == 'Interview' %}
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-700">Interview</span>
+                <span class="stage-badge badge-interview">Interview</span>
                 {% elif app.stage == 'Got Job' %}
-                <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-black text-green-700">Got Job</span>
+                <span class="stage-badge badge-got-job">Got Job</span>
                 {% elif app.stage == 'Rejected' %}
-                <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-700">Rejected</span>
+                <span class="stage-badge badge-rejected">Rejected</span>
                 {% else %}
-                <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-750 border border-rose-250">Missed DL</span>
+                <span class="stage-badge badge-missed">Missed DL</span>
                 {% endif %}
-            </span>
+            </div>
         </div>
 
         <div class="mt-4 space-y-2 text-xs text-warm-500 border-t border-warm-100 pt-3">
             {% if app.stage == 'Not Applied Yet' %}
-            <div class="flex justify-between rounded-lg bg-indigo-50 p-2 border border-indigo-200">
-                <span class="text-indigo-700 font-bold">Apply Deadline:</span>
-                <span class="font-black text-indigo-900">{{ app.application_deadline or 'None' }}</span>
+            <div class="info-box info-box-not-applied">
+                <span class="font-bold">Apply Deadline:</span>
+                <span class="info-box-val">
+                    {% if app.application_deadline %}
+                        {% if 'T' in app.application_deadline %}
+                            {% set parts = app.application_deadline.split('T') %}
+                            {{ parts[0] }} at {{ parts[1] }}
+                        {% else %}
+                            {{ app.application_deadline }}
+                        {% endif %}
+                    {% else %}
+                        None
+                    {% endif %}
+                </span>
             </div>
             {% elif app.stage == 'Missed Deadline' %}
-            <div class="flex justify-between rounded-lg bg-rose-50 p-2 border border-rose-200">
-                <span class="text-rose-700 font-bold">Missed Deadline:</span>
-                <span class="font-black text-rose-900 text-rose-800">{{ app.application_deadline or 'None' }}</span>
+            <div class="info-box info-box-missed">
+                <span class="font-bold">Missed Deadline:</span>
+                <span class="info-box-val">
+                    {% if app.application_deadline %}
+                        {% if 'T' in app.application_deadline %}
+                            {% set parts = app.application_deadline.split('T') %}
+                            {{ parts[0] }} at {{ parts[1] }}
+                        {% else %}
+                            {{ app.application_deadline }}
+                        {% endif %}
+                    {% else %}
+                        None
+                    {% endif %}
+                </span>
             </div>
             {% else %}
-            <div class="flex justify-between">
+            <div class="flex justify-between px-1">
                 <span>Applied On:</span>
                 <span class="font-bold text-warm-700">{{ app.applied_date }}</span>
             </div>
             {% endif %}
             
             {% if app.stage == 'Interview' %}
-            <div class="flex justify-between rounded-lg bg-amber-50 p-2 border border-amber-200">
-                <span class="text-amber-700 font-bold">Interview Scheduled:</span>
-                <span class="font-black text-amber-900">{{ app.interview_date or 'TBD' }}</span>
+            <div class="info-box info-box-interview">
+                <span class="font-bold">Interview Scheduled:</span>
+                <span class="info-box-val">
+                    {% if app.interview_date %}
+                        {% if 'T' in app.interview_date %}
+                            {% set parts = app.interview_date.split('T') %}
+                            {{ parts[0] }} at {{ parts[1] }}
+                        {% else %}
+                            {{ app.interview_date }}
+                        {% endif %}
+                    {% else %}
+                        TBD
+                    {% endif %}
+                </span>
             </div>
             {% endif %}
         </div>
 
         {% if app.notes %}
-        <div class="mt-3 text-xs bg-warm-50 p-3 rounded-lg border border-warm-100 text-warm-700 max-h-24 overflow-y-auto whitespace-pre-line">
+        <div class="app-card-notes">
             {{ app.notes }}
         </div>
         {% endif %}
@@ -152,11 +354,11 @@
                 data-interview-date="{{ app.interview_date or '' }}"
                 data-application-deadline="{{ app.application_deadline or '' }}"
                 data-notes="{{ app.notes | forceescape }}"
-                class="rounded-xl border border-warm-200 bg-white px-3 py-2 text-xs font-black text-warm-700 hover:border-brand-accent transition-colors">
+                class="btn-edit rounded-xl px-3 py-2 text-xs font-black">
                 <i class="fas fa-edit mr-1"></i> Edit
             </button>
             <form method="post" action="{{ url_for('admin.delete_job_application', app_id=app.id) }}" onsubmit="return confirm('Are you sure you want to delete this job application?');" class="inline">
-                <button type="submit" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:border-red-300 transition-colors">
+                <button type="submit" class="btn-delete rounded-xl px-3 py-2 text-xs font-black">
                     <i class="fas fa-trash-alt mr-1"></i> Delete
                 </button>
             </form>
@@ -373,11 +575,9 @@ function switchTab(stage) {
         const tabStage = tab.getAttribute('data-tab');
         const matches = tabStage === stage;
         if (matches) {
-            tab.classList.add('border-brand-accent', 'text-warm-900', 'font-black');
-            tab.classList.remove('border-transparent', 'text-warm-500', 'font-semibold');
+            tab.classList.add('active');
         } else {
-            tab.classList.remove('border-brand-accent', 'text-warm-900', 'font-black');
-            tab.classList.add('border-transparent', 'text-warm-500', 'font-semibold');
+            tab.classList.remove('active');
         }
     });
 

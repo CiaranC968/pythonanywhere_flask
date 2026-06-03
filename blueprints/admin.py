@@ -1420,3 +1420,121 @@ def delete_job_application(app_id: int):
         flash("Job application deleted.", "success")
     return redirect(url_for("admin.job_tracker"))
 
+
+@admin_bp.route("/quick-add", methods=["POST"])
+@admin_required
+def quick_add():
+    section = request.form.get("section")
+    if section == "experience":
+        company = request.form.get("company", "").strip()
+        role = request.form.get("role", "").strip()
+        period = request.form.get("period", "").strip()
+        brief = request.form.get("brief", "").strip()
+        details_raw = request.form.get("details", "").strip()
+        tech_stack_raw = request.form.get("tech_stack", "").strip()
+        location = request.form.get("location", "").strip()
+        work_type = request.form.get("type", "").strip()
+
+        if not company or not role:
+            flash("Company and Role are required.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        # Parse bullets
+        details = [line.strip() for line in details_raw.split("\n") if line.strip()]
+
+        # Parse tech stack
+        tech_stack = [tech.strip() for tech in tech_stack_raw.split(",") if tech.strip()]
+
+        # Apply defaults for layout/colors
+        exp = Experience(
+            company=company,
+            role=role,
+            period=period,
+            brief=brief,
+            details=details,
+            tech_stack=tech_stack,
+            location=location,
+            type=work_type,
+            icon="fas fa-briefcase",
+            bgIcon="fas fa-building",
+            iconColor="text-yellow-600",
+            bgColor="bg-yellow-50",
+            hoverColor="text-yellow-900",
+            current=False,
+            is_visible=True
+        )
+
+        # Sort order
+        max_order = db.session.query(func.max(Experience.sort_order)).scalar()
+        exp.sort_order = (max_order or 0) + 10
+
+        # Unique slug
+        exp.id = _unique_slug(Experience, company)
+
+        db.session.add(exp)
+        db.session.commit()
+        flash("Job Experience added successfully!", "success")
+
+    elif section == "skills":
+        title = request.form.get("title", "").strip()
+        desc = request.form.get("desc", "").strip()
+        tags_raw = request.form.get("tags", "").strip()
+        progress_val = request.form.get("progress_val", "85").strip()
+        theme = request.form.get("theme", "yellow").strip()
+
+        if not title:
+            flash("Skill Title is required.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        # Parse tags
+        tags = [tag.strip() for tag in tags_raw.split(",") if tag.strip()]
+
+        # Map theme colors
+        themes = {
+            "yellow": ("text-yellow-600", "bg-yellow-50", "fas fa-code"),
+            "blue": ("text-blue-600", "bg-blue-50", "fas fa-laptop-code"),
+            "indigo": ("text-indigo-600", "bg-indigo-50", "fas fa-terminal"),
+            "green": ("text-green-600", "bg-green-50", "fas fa-cogs"),
+            "red": ("text-red-600", "bg-red-50", "fas fa-bolt")
+        }
+        icon_color, bg_color, default_icon = themes.get(theme, themes["yellow"])
+
+        # Parse progress
+        try:
+            val = int(progress_val)
+        except ValueError:
+            val = 85
+
+        progress = {
+            "label": "Experience",
+            "value": val,
+            "unit": "%",
+            "max": 100
+        }
+
+        sk = Skill(
+            title=title,
+            desc=desc,
+            icon=default_icon,
+            iconColor=icon_color,
+            bgColor=bg_color,
+            tags=tags,
+            progress=progress,
+            stats=[],
+            is_visible=True
+        )
+
+        # Sort order
+        max_order = db.session.query(func.max(Skill.sort_order)).scalar()
+        sk.sort_order = (max_order or 0) + 10
+
+        # Unique slug
+        sk.id = _unique_slug(Skill, title)
+
+        db.session.add(sk)
+        db.session.commit()
+        flash("Skill added successfully!", "success")
+
+    return redirect(url_for("admin.dashboard"))
+
+

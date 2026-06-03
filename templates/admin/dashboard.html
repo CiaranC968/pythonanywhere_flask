@@ -28,61 +28,218 @@
 </div>
 {% endif %}
 
-<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-    {% for section, config in sections.items() %}
-    <a href="{{ url_for('admin.list_items', section=section) }}" class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
-        <div class="flex items-center justify-between">
-            <h2 class="text-xl font-black text-warm-900">{{ config.label }}</h2>
-            <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ counts[section] }}</span>
+<div class="grid gap-8 lg:grid-cols-[2fr_1fr]">
+    <!-- Left Column: Main Editor Cards & Utilities -->
+    <div class="space-y-6">
+        <div>
+            <h2 class="text-2xl font-black text-warm-900 mb-4">Edit Portfolio</h2>
+            <div class="grid gap-4 sm:grid-cols-2">
+                {% for section, config in sections.items() %}
+                <div class="relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
+                    <div>
+                        <div class="flex items-center justify-between gap-3">
+                            <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xl font-black text-warm-900 hover:underline leading-snug">{{ config.label }}</a>
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ counts[section] }}</span>
+                                {% if not config.singleton %}
+                                <a href="{{ url_for('admin.new_item', section=section) }}" class="rounded-lg bg-warm-50 border border-warm-200/50 hover:bg-brand-accent p-1.5 text-xs text-warm-700 hover:text-brand-dark transition-all" title="Add item">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="mt-2 text-sm text-warm-500">{{ config.description }}</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xs font-black text-brand-hover hover:underline">
+                            View All <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Job Tracker Card -->
+                <div class="relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
+                    <div>
+                        <div class="flex items-center justify-between gap-3">
+                            <a href="{{ url_for('admin.job_tracker') }}" class="text-xl font-black text-warm-900 hover:underline leading-snug">Job Tracker</a>
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ counts['job_applications'] }}</span>
+                            </div>
+                        </div>
+                        <p class="mt-2 text-sm text-warm-500">Track and manage job applications, interview dates, stages, and notes.</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ url_for('admin.job_tracker') }}" class="text-xs font-black text-brand-hover hover:underline">
+                            Open Tracker <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p class="mt-3 text-sm text-warm-500">{{ config.description }}</p>
-    </a>
-    {% endfor %}
-    <a href="{{ url_for('admin.job_tracker') }}" class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
-        <div class="flex items-center justify-between">
-            <h2 class="text-xl font-black text-warm-900">Job Tracker</h2>
-            <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ counts['job_applications'] }}</span>
+
+        <div>
+            <h2 class="text-2xl font-black text-warm-900 mb-4">Utilities & Builders</h2>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <a href="{{ url_for('admin.job_tracker') }}" class="block rounded-2xl border border-brand-accent bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-black text-warm-900">Job Application Tracker</h3>
+                            <p class="mt-1 text-xs text-warm-500 leading-normal">Keep track of job roles, companies, status stages (applied, interview, rejected, offer), and dates.</p>
+                        </div>
+                        <span class="rounded-xl bg-brand-accent px-3.5 py-2 text-xs font-black text-brand-dark shrink-0">Track Jobs</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('admin.cv_builder') }}" class="block rounded-2xl border border-warm-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-black text-warm-900">Custom CV Builder</h3>
+                            <p class="mt-1 text-xs text-warm-500 leading-normal">Tick exactly which portfolio sections and items should appear in a CV PDF.</p>
+                        </div>
+                        <span class="rounded-xl border border-warm-200 px-3.5 py-2 text-xs font-black text-warm-700 hover:border-brand-accent shrink-0">Build CV</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('admin.resume_builder') }}" class="block rounded-2xl border border-warm-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-black text-warm-900">Resume Letter Builder</h3>
+                            <p class="mt-1 text-xs text-warm-500 leading-normal">Create a company-specific resume letter using reusable sentence templates.</p>
+                        </div>
+                        <span class="rounded-xl border border-warm-200 px-3.5 py-2 text-xs font-black text-warm-700 hover:border-brand-accent shrink-0">Build Resume</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('admin.deployment_checklist') }}" class="block rounded-2xl border border-warm-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-black text-warm-900">Deployment Checklist</h3>
+                            <p class="mt-1 text-xs text-warm-500 leading-normal">Check database, tables, PDF libraries, environment, and upload path before publishing.</p>
+                        </div>
+                        <span class="rounded-xl border border-warm-200 px-3.5 py-2 text-xs font-black text-warm-700 hover:border-brand-accent shrink-0">Check</span>
+                    </div>
+                </a>
+            </div>
         </div>
-        <p class="mt-3 text-sm text-warm-500">Track and manage job applications, interview dates, stages, and notes.</p>
-    </a>
+    </div>
+
+    <!-- Right Column: Quick Creator Widget -->
+    <div class="space-y-6">
+        <div class="rounded-2xl border border-brand-accent bg-white p-6 shadow-sm relative">
+            <h2 class="text-xl font-black text-warm-900 flex items-center gap-2">
+                <i class="fas fa-magic text-brand-accent"></i> Quick Creator
+            </h2>
+            <p class="mt-1 text-xs text-warm-500">Quickly add new content to your site without leaving the dashboard.</p>
+            
+            <!-- Quick Creator Tabs -->
+            <div class="mt-4 flex border-b border-warm-200">
+                <button type="button" onclick="switchQuickTab('quick-exp')" id="tab-quick-exp" class="flex-1 pb-2 text-center text-xs font-black uppercase tracking-wider text-warm-900 border-b-2 border-brand-accent transition-all cursor-pointer">
+                    Experience
+                </button>
+                <button type="button" onclick="switchQuickTab('quick-skill')" id="tab-quick-skill" class="flex-1 pb-2 text-center text-xs font-bold uppercase tracking-wider text-warm-500 border-b-2 border-transparent hover:text-warm-800 transition-all cursor-pointer">
+                    Skill
+                </button>
+            </div>
+            
+            <!-- Experience Form -->
+            <form id="form-quick-exp" method="post" action="{{ url_for('admin.quick_add') }}" class="mt-4 space-y-3">
+                <input type="hidden" name="section" value="experience">
+                <div>
+                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Company</label>
+                    <input required name="company" placeholder="e.g. Google" class="admin-input py-2 px-3 text-sm rounded-lg">
+                </div>
+                <div>
+                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Role</label>
+                    <input required name="role" placeholder="e.g. Software Engineer" class="admin-input py-2 px-3 text-sm rounded-lg">
+                </div>
+                <div class="grid gap-3 grid-cols-2">
+                    <div>
+                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Period</label>
+                        <input name="period" placeholder="e.g. 2024 - Present" class="admin-input py-2 px-3 text-sm rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Location</label>
+                        <input name="location" placeholder="e.g. London, UK" class="admin-input py-2 px-3 text-sm rounded-lg">
+                    </div>
+                </div>
+                <div class="grid gap-3 grid-cols-2">
+                    <div>
+                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Work Type</label>
+                        <input name="type" placeholder="e.g. Hybrid / Remote" class="admin-input py-2 px-3 text-sm rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Tech Stack</label>
+                        <input name="tech_stack" placeholder="Flask, React, SQL" class="admin-input py-2 px-3 text-sm rounded-lg">
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Brief Summary</label>
+                    <textarea name="brief" rows="2" placeholder="Brief description of your role..." class="admin-input py-2 px-3 text-sm rounded-lg"></textarea>
+                </div>
+                <div>
+                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Bullet Points (one per line)</label>
+                    <textarea name="details" rows="3" placeholder="Bullet point 1&#10;Bullet point 2" class="admin-input py-2 px-3 text-sm rounded-lg"></textarea>
+                </div>
+                <button type="submit" class="w-full mt-2 rounded-xl bg-brand-accent py-2.5 text-xs font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
+                    Add Experience
+                </button>
+            </form>
+            
+            <!-- Skill Form -->
+            <form id="form-quick-skill" method="post" action="{{ url_for('admin.quick_add') }}" class="mt-4 space-y-3 hidden">
+                <input type="hidden" name="section" value="skills">
+                <div>
+                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Skill Title / Group</label>
+                    <input required name="title" placeholder="e.g. Web Development" class="admin-input py-2 px-3 text-sm rounded-lg">
+                </div>
+                <div>
+                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Tags (comma-separated)</label>
+                    <input name="tags" placeholder="Python, JavaScript, HTML" class="admin-input py-2 px-3 text-sm rounded-lg">
+                </div>
+                <div class="grid gap-3 grid-cols-2">
+                    <div>
+                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Progress (0-100)</label>
+                        <input type="number" name="progress_val" value="85" min="0" max="100" class="admin-input py-2 px-3 text-sm rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Color Theme</label>
+                        <select name="theme" class="admin-input py-2 px-3 text-sm rounded-lg">
+                            <option value="yellow" selected>Yellow / Orange</option>
+                            <option value="blue">Blue / Light Blue</option>
+                            <option value="indigo">Indigo / Violet</option>
+                            <option value="green">Green / Emerald</option>
+                            <option value="red">Red / Rose</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Description</label>
+                    <textarea name="desc" rows="3" placeholder="Brief details about these skills..." class="admin-input py-2 px-3 text-sm rounded-lg"></textarea>
+                </div>
+                <button type="submit" class="w-full mt-2 rounded-xl bg-brand-accent py-2.5 text-xs font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
+                    Add Skill
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
 
-<div class="mt-4 grid gap-4 md:grid-cols-2">
-    <a href="{{ url_for('admin.job_tracker') }}" class="block rounded-2xl border border-brand-accent bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <h2 class="text-xl font-black text-warm-900">Job Application Tracker</h2>
-                <p class="mt-2 text-sm text-warm-500">Keep track of job roles, companies, status stages (applied, interview, rejected, offer), and dates.</p>
-            </div>
-            <span class="rounded-xl bg-brand-accent px-4 py-2 text-sm font-black text-brand-dark">Track Jobs</span>
-        </div>
-    </a>
-    <a href="{{ url_for('admin.cv_builder') }}" class="block rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <h2 class="text-xl font-black text-warm-900">Custom CV Builder</h2>
-                <p class="mt-2 text-sm text-warm-500">Tick exactly which portfolio sections and items should appear in a CV PDF.</p>
-            </div>
-            <span class="rounded-xl border border-warm-200 px-4 py-2 text-sm font-black text-warm-700">Build CV</span>
-        </div>
-    </a>
-    <a href="{{ url_for('admin.resume_builder') }}" class="block rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <h2 class="text-xl font-black text-warm-900">Resume Letter Builder</h2>
-                <p class="mt-2 text-sm text-warm-500">Create a company-specific resume letter using reusable sentence templates.</p>
-            </div>
-            <span class="rounded-xl border border-warm-200 px-4 py-2 text-sm font-black text-warm-700">Build Resume</span>
-        </div>
-    </a>
-    <a href="{{ url_for('admin.deployment_checklist') }}" class="block rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <h2 class="text-xl font-black text-warm-900">Deployment Checklist</h2>
-                <p class="mt-2 text-sm text-warm-500">Check database, tables, PDF libraries, environment, and upload path before publishing.</p>
-            </div>
-            <span class="rounded-xl border border-warm-200 px-4 py-2 text-sm font-black text-warm-700">Check</span>
-        </div>
-    </a>
-</div>
+<script>
+function switchQuickTab(tab) {
+    const tabExp = document.getElementById('tab-quick-exp');
+    const tabSkill = document.getElementById('tab-quick-skill');
+    const formExp = document.getElementById('form-quick-exp');
+    const formSkill = document.getElementById('form-quick-skill');
+    
+    if (tab === 'quick-exp') {
+        tabExp.className = "flex-1 pb-2 text-center text-xs font-black uppercase tracking-wider text-warm-900 border-b-2 border-brand-accent transition-all cursor-pointer";
+        tabSkill.className = "flex-1 pb-2 text-center text-xs font-bold uppercase tracking-wider text-warm-500 border-b-2 border-transparent hover:text-warm-800 transition-all cursor-pointer";
+        formExp.classList.remove('hidden');
+        formSkill.classList.add('hidden');
+    } else {
+        tabSkill.className = "flex-1 pb-2 text-center text-xs font-black uppercase tracking-wider text-warm-900 border-b-2 border-brand-accent transition-all cursor-pointer";
+        tabExp.className = "flex-1 pb-2 text-center text-xs font-bold uppercase tracking-wider text-warm-500 border-b-2 border-transparent hover:text-warm-800 transition-all cursor-pointer";
+        formSkill.classList.remove('hidden');
+        formExp.classList.add('hidden');
+    }
+}
+</script>
 {% endblock %}
