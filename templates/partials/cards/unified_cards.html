@@ -217,23 +217,21 @@
 
 {% else %}
 <!-- Standard Grid View for Skills and other elements -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-    {% for item in items %}
-        {% set card_id = type ~ "-" ~ item.id %}
-        {% set is_hidden = loop.index > limit %}
-        {% set modal_url = url_for('fragments.' ~ type ~ '_modal', **{(type ~ '_id'): item.id}) %}
+{% for item in items %}
+    {% set card_id = type ~ "-" ~ item.id %}
+    {% set is_hidden = loop.index > limit %}
+    {% set modal_url = url_for('fragments.' ~ type ~ '_modal', **{(type ~ '_id'): item.id}) %}
 
-        <div
-            hx-get="{{ modal_url }}"
-            hx-target="#modalContent"
-            hx-trigger="click"
-            class="card-item {% if is_hidden %}card-overflow hidden{% endif %} group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-1 transition-all duration-500 no-underline"
-            role="button"
-            aria-labelledby="{{ card_id }}-title">
-            {{ render_card_content(item, type, card_id) }}
-        </div>
-    {% endfor %}
-</div>
+    <div
+        hx-get="{{ modal_url }}"
+        hx-target="#modalContent"
+        hx-trigger="click"
+        class="card-item {% if is_hidden %}card-overflow hidden{% endif %} group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-1 transition-all duration-500 no-underline"
+        role="button"
+        aria-labelledby="{{ card_id }}-title">
+        {{ render_card_content(item, type, card_id) }}
+    </div>
+{% endfor %}
 
 {% if items | length > limit %}
     {% set remaining = (items | length) - limit %}
