@@ -14,7 +14,7 @@
     <div class="relative z-10">
         <div class="flex justify-between items-start mb-8">
             <div class="flex gap-4 items-center">
-                <div class="w-18 h-18 md:w-20 md:h-20 rounded-2xl {{ item.bgColor | default('bg-gray-100 dark:bg-gray-800/50') }} flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:bg-brand-accent transition-all duration-300">
+                <div class="w-18 h-18 md:w-20 md:h-20 rounded-2xl {{ item.bgColor | default('bg-gray-100 dark:bg-gray-800/50') }} flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:bg-brand-accent transition-all duration-300 group-hover:scale-110 group-hover:rotate-2">
                     <i class="{{ item.icon | default('fas fa-folder') }} text-3xl md:text-4xl {{ item.iconColor | default('text-gray-600 dark:text-gray-400') }} group-hover:text-brand-dark transition-colors duration-300" aria-hidden="true"></i>
                 </div>
 
@@ -99,9 +99,38 @@
 
 
 {% if type == 'project' %}
+<style>
+    #projects-track .card-item {
+        width: 100%;
+    }
+    #prev-btn {
+        left: 0.5rem;
+    }
+    #next-btn {
+        right: 0.5rem;
+    }
+    @media (min-width: 768px) {
+        #projects-track .card-item {
+            width: calc((100% - 32px) / 2);
+        }
+    }
+    @media (min-width: 1024px) {
+        #projects-track .card-item {
+            width: calc((100% - 64px) / 3);
+        }
+    }
+    @media (min-width: 1280px) {
+        #prev-btn {
+            left: -1.75rem;
+        }
+        #next-btn {
+            right: -1.75rem;
+        }
+    }
+</style>
 <!-- Horizontal Carousel View for Projects -->
-<div class="projects-carousel relative w-full overflow-hidden">
-    <div class="carousel-viewport overflow-hidden w-full px-1 py-4">
+<div class="projects-carousel relative w-full">
+    <div class="carousel-viewport overflow-hidden w-full px-4 py-8 -mx-4 -my-4">
         <div class="carousel-track flex transition-transform duration-500 ease-in-out gap-8" id="projects-track">
             {% for item in items %}
                 {% set card_id = type ~ "-" ~ item.id %}
@@ -110,7 +139,7 @@
                     hx-get="{{ modal_url }}"
                     hx-target="#modalContent"
                     hx-trigger="click"
-                    class="card-item group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-1 transition-all duration-500 no-underline w-full md:w-[calc(50%-16px)] lg:w-[calc(33.333%-22px)] shrink-0"
+                    class="card-item group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:border-brand-accent/50 dark:hover:border-brand-accent/50 hover:-translate-y-1 transition-all duration-500 no-underline shrink-0"
                     role="button"
                     aria-labelledby="{{ card_id }}-title">
                     {{ render_card_content(item, type, card_id) }}
@@ -119,20 +148,18 @@
         </div>
     </div>
 
-    <!-- Navigation Overlay / Centered Buttons -->
+    <!-- Floating Arrow Buttons -->
     {% if items | length > 1 %}
-    <div class="flex justify-center items-center gap-6 mt-8">
-        <button type="button" id="prev-btn" onclick="slideProjects(-1)" class="w-12 h-12 rounded-full border border-gray-200 bg-white hover:border-brand-accent hover:text-brand-accent flex items-center justify-center dark:border-gray-700 dark:bg-gray-800 transition-colors shadow-sm disabled:opacity-30 disabled:pointer-events-none" aria-label="Previous projects">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div id="carousel-dots" class="flex gap-2">
-            <!-- Populated via JS -->
-        </div>
-        <button type="button" id="next-btn" onclick="slideProjects(1)" class="w-12 h-12 rounded-full border border-gray-200 bg-white hover:border-brand-accent hover:text-brand-accent flex items-center justify-center dark:border-gray-700 dark:bg-gray-800 transition-colors shadow-sm disabled:opacity-30 disabled:pointer-events-none" aria-label="Next projects">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
+    <button type="button" id="prev-btn" onclick="slideProjects(-1)" class="absolute top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/90 dark:bg-gray-850/90 backdrop-blur-md border border-gray-200 dark:border-gray-750 hover:border-brand-accent hover:text-brand-accent flex items-center justify-center transition-all shadow-md hover:shadow-xl z-20 hover:scale-110 cursor-pointer" aria-label="Previous projects">
+        <i class="fas fa-chevron-left text-lg"></i>
+    </button>
+    <button type="button" id="next-btn" onclick="slideProjects(1)" class="absolute top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/90 dark:bg-gray-850/90 backdrop-blur-md border border-gray-200 dark:border-gray-750 hover:border-brand-accent hover:text-brand-accent flex items-center justify-center transition-all shadow-md hover:shadow-xl z-20 hover:scale-110 cursor-pointer" aria-label="Next projects">
+        <i class="fas fa-chevron-right text-lg"></i>
+    </button>
     {% endif %}
+</div>
+<div id="carousel-dots" class="flex justify-center gap-2 mt-6">
+    <!-- Populated via JS -->
 </div>
 
 <script>
@@ -285,9 +312,13 @@
         const showNav = cards.length > visible;
         
         if (prevBtn && nextBtn) {
-            prevBtn.parentElement.style.display = showNav ? 'flex' : 'none';
+            prevBtn.style.display = showNav ? 'flex' : 'none';
+            nextBtn.style.display = showNav ? 'flex' : 'none';
             prevBtn.disabled = false;
             nextBtn.disabled = false;
+        }
+        if (dotsContainer) {
+            dotsContainer.style.display = showNav ? 'flex' : 'none';
         }
         
         track.style.transition = 'none';
@@ -317,7 +348,7 @@
         hx-get="{{ modal_url }}"
         hx-target="#modalContent"
         hx-trigger="click"
-        class="card-item {% if is_hidden %}card-overflow hidden{% endif %} group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:-translate-y-1 transition-all duration-500 no-underline"
+        class="card-item {% if is_hidden %}card-overflow hidden{% endif %} group relative block cursor-pointer bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-gray-100 dark:border-gray-700/50 shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-brand-accent/30 dark:hover:shadow-brand-accent/20 hover:border-brand-accent/50 dark:hover:border-brand-accent/50 hover:-translate-y-1 transition-all duration-500 no-underline"
         role="button"
         aria-labelledby="{{ card_id }}-title">
         {{ render_card_content(item, type, card_id) }}
