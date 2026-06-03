@@ -1538,3 +1538,56 @@ def quick_add():
     return redirect(url_for("admin.dashboard"))
 
 
+@admin_bp.route("/job-tracker/<int:app_id>/update-stage-ajax", methods=["POST"])
+@admin_required
+def update_job_stage_ajax(app_id: int):
+    app = db.session.get(JobApplication, app_id)
+    if not app:
+        abort(404)
+
+    stage = request.form.get("stage", "").strip()
+    additional_notes = request.form.get("additional_notes", "").strip()
+    date_val = request.form.get("date_val", "").strip()
+
+    if stage:
+        app.stage = stage
+
+    # Normalization of date (handling UK format DD/MM/YYYY [HH:MM])
+    normalized_date = None
+    if date_val:
+        if "/" in date_val:
+            try:
+                if " " in date_val:
+                    d_part, t_part = date_val.split(" ", 1)
+                    day, month, year = d_part.split("/")
+                    # Validate time part
+                    if ":" in t_part:
+                        normalized_date = f"{year}-{month.zfill(2)}-{day.zfill(2)}T{t_part}"
+                    else:
+                        normalized_date = f"{year}-{month.zfill(2)}-{day.zfill(2)}T{t_part}:00"
+                else:
+                    day, month, year = date_val.split("/")
+                    normalized_date = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
+            except Exception:
+                normalized_date = date_val
+        else:
+            normalized_date = date_val.replace(" ", "T")
+
+    if stage == 'Interview':
+        app.interview_date = normalized_date
+    elif stage == 'Assessment':
+        app.interview_date = normalized_date
+    elif stage in ('Not Applied Yet', 'Missed Deadline'):
+        app.application_deadline = normalized_date
+
+    if additional_notes:
+        sep = "\n\n" if app.notes else ""
+        note_prefix = "Rejection Feedback:" if stage == 'Rejected' else "Offer Details:"
+        app.notes = f"{app.notes}{sep}{note_prefix} {additional_notes}"
+
+    db.session.commit()
+    flash(f"Stage updated to '{stage}'.", "success")
+    return redirect(url_for("admin.job_tracker"))
+
+
+

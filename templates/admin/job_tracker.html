@@ -12,12 +12,17 @@
     }
     @media (min-width: 640px) {
         .stats-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+    @media (min-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
         }
     }
     @media (min-width: 1024px) {
         .stats-grid {
-            grid-template-columns: repeat(7, minmax(0, 1fr));
+            grid-template-columns: repeat(9, minmax(0, 1fr));
         }
     }
     
@@ -41,7 +46,9 @@
     .stat-card-total { border-left: 4px solid #7a756c; }
     .stat-card-not-applied { border-left: 4px solid #6366f1; background-color: rgba(99, 102, 241, 0.03); }
     .stat-card-applied { border-left: 4px solid #3b82f6; background-color: rgba(59, 130, 246, 0.03); }
+    .stat-card-assessment { border-left: 4px solid #a855f7; background-color: rgba(168, 85, 247, 0.03); }
     .stat-card-interview { border-left: 4px solid #f59e0b; background-color: rgba(245, 158, 11, 0.03); }
+    .stat-card-offer { border-left: 4px solid #0d9488; background-color: rgba(13, 148, 136, 0.03); }
     .stat-card-got-job { border-left: 4px solid #10b981; background-color: rgba(16, 185, 129, 0.03); }
     .stat-card-rejected { border-left: 4px solid #ef4444; background-color: rgba(239, 68, 68, 0.03); }
     .stat-card-missed { border-left: 4px solid #f43f5e; background-color: rgba(244, 63, 94, 0.03); }
@@ -88,7 +95,9 @@
     }
     .badge-not-applied { background-color: #e0e7ff; color: #3730a3; }
     .badge-applied { background-color: #dbeafe; color: #1e40af; }
+    .badge-assessment { background-color: #f3e8ff; color: #6b21a8; }
     .badge-interview { background-color: #fef3c7; color: #92400e; }
+    .badge-offer { background-color: #ccfbf1; color: #115e59; }
     .badge-got-job { background-color: #dcfce7; color: #166534; }
     .badge-rejected { background-color: #fee2e2; color: #991b1b; }
     .badge-missed { background-color: #ffe4e6; color: #9f1239; border: 1px solid #fda4af; }
@@ -106,6 +115,7 @@
     .info-box-not-applied { background-color: #f5f3ff; border-color: #e0e7ff; color: #4f46e5; }
     .info-box-missed { background-color: #fff5f5; border-color: #ffe3e3; color: #e03131; }
     .info-box-interview { background-color: #fffbeb; border-color: #fef3c7; color: #d97706; }
+    .info-box-assessment { background-color: #faf5ff; border-color: #f3e8ff; color: #7e22ce; }
     
     .info-box-val {
         font-weight: 800;
@@ -113,6 +123,7 @@
     .info-box-not-applied .info-box-val { color: #312e81; }
     .info-box-missed .info-box-val { color: #9f1239; }
     .info-box-interview .info-box-val { color: #78350f; }
+    .info-box-assessment .info-box-val { color: #581c87; }
 
     /* Action Buttons in card */
     .btn-edit {
@@ -168,6 +179,37 @@
     .app-card-notes::-webkit-scrollbar-thumb:hover {
         background: #a8a49c;
     }
+
+    /* Context Menu styling */
+    #job-context-menu {
+        min-width: 13rem;
+        background-color: #ffffff;
+        border: 1px solid #e8e6e1;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        padding: 0.35rem 0;
+        z-index: 1000;
+        position: absolute;
+    }
+    #job-context-menu button {
+        width: 100%;
+        text-align: left;
+        padding: 0.5rem 0.875rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #45413a;
+        background: transparent;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    #job-context-menu button:hover {
+        background-color: #fafaf8;
+        color: #1a1815;
+    }
 </style>
 
 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -201,10 +243,22 @@
             {{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }}
         </span>
     </div>
+    <div class="stat-card stat-card-assessment">
+        <span class="text-[10px] font-black uppercase tracking-wider text-purple-650" style="color: #8b5cf6;">Assessment:</span>
+        <span class="text-2xl font-black mt-1" style="color: #6d28d9;">
+            {{ applications|selectattr('stage', 'equalto', 'Assessment')|list|length }}
+        </span>
+    </div>
     <div class="stat-card stat-card-interview">
         <span class="text-[10px] font-black uppercase tracking-wider text-amber-600">Interviews:</span>
         <span class="text-2xl font-black text-amber-700 mt-1">
             {{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }}
+        </span>
+    </div>
+    <div class="stat-card stat-card-offer">
+        <span class="text-[10px] font-black uppercase tracking-wider text-teal-650" style="color: #0d9488;">Offers:</span>
+        <span class="text-2xl font-black mt-1" style="color: #0f766e;">
+            {{ applications|selectattr('stage', 'equalto', 'Offer')|list|length }}
         </span>
     </div>
     <div class="stat-card stat-card-got-job">
@@ -238,8 +292,14 @@
     <button onclick="switchTab('Applied')" data-tab="Applied" class="tab-button">
         Applied ({{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }})
     </button>
+    <button onclick="switchTab('Assessment')" data-tab="Assessment" class="tab-button">
+        Assessments ({{ applications|selectattr('stage', 'equalto', 'Assessment')|list|length }})
+    </button>
     <button onclick="switchTab('Interview')" data-tab="Interview" class="tab-button">
         Interviews ({{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }})
+    </button>
+    <button onclick="switchTab('Offer')" data-tab="Offer" class="tab-button">
+        Offers ({{ applications|selectattr('stage', 'equalto', 'Offer')|list|length }})
     </button>
     <button onclick="switchTab('Got Job')" data-tab="Got Job" class="tab-button">
         Got Job ({{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }})
@@ -255,7 +315,7 @@
 <!-- Job Cards Grid -->
 <div id="applications-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
     {% for app in applications %}
-    <div class="app-card rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:border-brand-accent hover:shadow-md" data-stage="{{ app.stage }}">
+    <div class="app-card rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:border-brand-accent hover:shadow-md cursor-context-menu" data-stage="{{ app.stage }}" title="Right-click for quick status update">
         <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">
                 <h3 class="text-lg font-black text-warm-900 leading-snug break-words">{{ app.role }}</h3>
@@ -266,8 +326,12 @@
                 <span class="stage-badge badge-not-applied">Not Applied</span>
                 {% elif app.stage == 'Applied' %}
                 <span class="stage-badge badge-applied">Applied</span>
+                {% elif app.stage == 'Assessment' %}
+                <span class="stage-badge badge-assessment">Assessment</span>
                 {% elif app.stage == 'Interview' %}
                 <span class="stage-badge badge-interview">Interview</span>
+                {% elif app.stage == 'Offer' %}
+                <span class="stage-badge badge-offer">Offer</span>
                 {% elif app.stage == 'Got Job' %}
                 <span class="stage-badge badge-got-job">Got Job</span>
                 {% elif app.stage == 'Rejected' %}
@@ -282,57 +346,29 @@
             {% if app.stage == 'Not Applied Yet' %}
             <div class="info-box info-box-not-applied">
                 <span class="font-bold">Apply Deadline:</span>
-                <span class="info-box-val">
-                    {% if app.application_deadline %}
-                        {% if 'T' in app.application_deadline %}
-                            {% set parts = app.application_deadline.split('T') %}
-                            {{ parts[0] }} at {{ parts[1] }}
-                        {% else %}
-                            {{ app.application_deadline }}
-                        {% endif %}
-                    {% else %}
-                        None
-                    {% endif %}
-                </span>
+                <span class="info-box-val date-uk">{{ app.application_deadline }}</span>
             </div>
             {% elif app.stage == 'Missed Deadline' %}
             <div class="info-box info-box-missed">
                 <span class="font-bold">Missed Deadline:</span>
-                <span class="info-box-val">
-                    {% if app.application_deadline %}
-                        {% if 'T' in app.application_deadline %}
-                            {% set parts = app.application_deadline.split('T') %}
-                            {{ parts[0] }} at {{ parts[1] }}
-                        {% else %}
-                            {{ app.application_deadline }}
-                        {% endif %}
-                    {% else %}
-                        None
-                    {% endif %}
-                </span>
+                <span class="info-box-val date-uk">{{ app.application_deadline }}</span>
             </div>
             {% else %}
             <div class="flex justify-between px-1">
                 <span>Applied On:</span>
-                <span class="font-bold text-warm-700">{{ app.applied_date }}</span>
+                <span class="font-bold text-warm-700 date-uk">{{ app.applied_date }}</span>
             </div>
             {% endif %}
             
             {% if app.stage == 'Interview' %}
             <div class="info-box info-box-interview">
                 <span class="font-bold">Interview Scheduled:</span>
-                <span class="info-box-val">
-                    {% if app.interview_date %}
-                        {% if 'T' in app.interview_date %}
-                            {% set parts = app.interview_date.split('T') %}
-                            {{ parts[0] }} at {{ parts[1] }}
-                        {% else %}
-                            {{ app.interview_date }}
-                        {% endif %}
-                    {% else %}
-                        TBD
-                    {% endif %}
-                </span>
+                <span class="info-box-val date-uk">{{ app.interview_date }}</span>
+            </div>
+            {% elif app.stage == 'Assessment' %}
+            <div class="info-box info-box-assessment">
+                <span class="font-bold">Assessment Date:</span>
+                <span class="info-box-val date-uk">{{ app.interview_date }}</span>
             </div>
             {% endif %}
         </div>
@@ -373,6 +409,35 @@
     {% endfor %}
 </div>
 
+<!-- Custom Context Menu -->
+<div id="job-context-menu" class="hidden absolute z-50">
+    <div class="px-3 py-1.5 border-b border-warm-100 text-[10px] font-black uppercase tracking-wider text-warm-400">Quick Stage Update</div>
+    <button onclick="updateJobStageContext('Not Applied Yet')">
+        <span class="w-2.5 h-2.5 rounded-full animate-pulse" style="background-color: #6366f1;"></span> Not Applied Yet
+    </button>
+    <button onclick="updateJobStageContext('Applied')">
+        <span class="w-2.5 h-2.5 rounded-full" style="background-color: #3b82f6;"></span> Applied
+    </button>
+    <button onclick="updateJobStageContext('Assessment')">
+        <span class="w-2.5 h-2.5 rounded-full" style="background-color: #a855f7;"></span> Got Assessment
+    </button>
+    <button onclick="updateJobStageContext('Interview')">
+        <span class="w-2.5 h-2.5 rounded-full" style="background-color: #f59e0b;"></span> Got Interview
+    </button>
+    <button onclick="updateJobStageContext('Offer')">
+        <span class="w-2.5 h-2.5 rounded-full" style="background-color: #0d9488;"></span> Got Offer
+    </button>
+    <button onclick="updateJobStageContext('Got Job')">
+        <span class="w-2.5 h-2.5 rounded-full" style="background-color: #10b981;"></span> Got Job
+    </button>
+    <button onclick="updateJobStageContext('Rejected')">
+        <span class="w-2.5 h-2.5 rounded-full" style="background-color: #ef4444;"></span> Got Rejected
+    </button>
+    <button onclick="updateJobStageContext('Missed Deadline')">
+        <span class="w-2.5 h-2.5 rounded-full" style="background-color: #f43f5e;"></span> Missed Deadline
+    </button>
+</div>
+
 <!-- Modals -->
 <!-- Add Modal -->
 <div id="add-modal" class="fixed inset-0 z-50 hidden bg-warm-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -396,7 +461,9 @@
                     <select name="stage" onchange="handleStageChange(this, 'add')" class="admin-input w-full rounded-lg">
                         <option value="Not Applied Yet">Not Applied Yet</option>
                         <option value="Applied" selected>Applied</option>
+                        <option value="Assessment">Assessment</option>
                         <option value="Interview">Interview</option>
+                        <option value="Offer">Offer</option>
                         <option value="Got Job">Got Job</option>
                         <option value="Rejected">Rejected</option>
                         <option value="Missed Deadline">Missed Deadline</option>
@@ -412,7 +479,7 @@
                 <input type="datetime-local" name="interview_date" class="admin-input w-full rounded-lg">
             </div>
             <div id="add-deadline-group" class="hidden">
-                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500 text-indigo-600">Application Deadline</label>
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500 text-indigo-650" style="color: #4f46e5;">Application Deadline</label>
                 <input type="datetime-local" name="application_deadline" class="admin-input w-full border-indigo-200 rounded-lg">
             </div>
             <div>
@@ -449,7 +516,9 @@
                     <select id="edit-stage" name="stage" onchange="handleStageChange(this, 'edit')" class="admin-input w-full rounded-lg">
                         <option value="Not Applied Yet">Not Applied Yet</option>
                         <option value="Applied">Applied</option>
+                        <option value="Assessment">Assessment</option>
                         <option value="Interview">Interview</option>
+                        <option value="Offer">Offer</option>
                         <option value="Got Job">Got Job</option>
                         <option value="Rejected">Rejected</option>
                         <option value="Missed Deadline">Missed Deadline</option>
@@ -465,7 +534,7 @@
                 <input type="datetime-local" id="edit-interview-date" name="interview_date" class="admin-input w-full rounded-lg">
             </div>
             <div id="edit-deadline-group" class="hidden">
-                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500 text-indigo-600">Application Deadline</label>
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500 text-indigo-600" style="color: #4f46e5;">Application Deadline</label>
                 <input type="datetime-local" id="edit-application-deadline" name="application_deadline" class="admin-input w-full border-indigo-200 rounded-lg">
             </div>
             <div>
@@ -486,11 +555,72 @@ function openModal(id) {
     document.getElementById(id).classList.add('flex');
 }
 
-// Ensure first page load checks select status for conditional rendering
+// Global active ID for context menu updates
+let activeJobIdForContext = null;
+
+// Helper to convert dates to UK format (DD/MM/YYYY)
+function formatToUK(val) {
+    if (!val || val === 'None' || val === 'TBD') return val || '';
+    
+    let datePart = '';
+    let timePart = '';
+    
+    if (val.includes('T')) {
+        [datePart, timePart] = val.split('T');
+    } else if (val.includes(' ') && val.split(' ')[0].includes('-')) {
+        [datePart, timePart] = val.split(' ');
+    } else if (val.includes('-')) {
+        datePart = val;
+    } else {
+        return val; // fallback
+    }
+    
+    if (datePart.includes('-')) {
+        const parts = datePart.split('-');
+        if (parts.length === 3) {
+            const ukDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            return timePart ? `${ukDate} at ${timePart}` : ukDate;
+        }
+    }
+    return val;
+}
+
+// Convert all dates in DOM on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     // default states for add modal select element
     const addSelect = document.querySelector('#add-modal select[name="stage"]');
     if (addSelect) handleStageChange(addSelect, 'add');
+
+    // Run UK formatting
+    document.querySelectorAll('.date-uk').forEach(el => {
+        const val = el.textContent.trim();
+        el.textContent = formatToUK(val);
+    });
+
+    // Custom Right-Click Context Menu Trigger
+    document.querySelectorAll('.app-card').forEach(card => {
+        card.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            
+            const editBtn = card.querySelector('.btn-edit');
+            activeJobIdForContext = editBtn ? editBtn.getAttribute('data-id') : null;
+            
+            if (!activeJobIdForContext) return;
+            
+            const menu = document.getElementById('job-context-menu');
+            menu.classList.remove('hidden');
+            menu.style.left = `${e.pageX}px`;
+            menu.style.top = `${e.pageY}px`;
+        });
+    });
+
+    // Dismiss context menu
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('job-context-menu');
+        if (menu && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
 });
 
 function closeModal(id) {
@@ -505,8 +635,12 @@ function handleStageChange(selectElem, prefix) {
     const dateLabel = document.getElementById(prefix + '-date-label');
 
     // Toggle interview date
-    if (stage === 'Interview') {
+    if (stage === 'Interview' || stage === 'Assessment') {
         interviewGroup.classList.remove('hidden');
+        const interviewLabel = interviewGroup.querySelector('label');
+        if (interviewLabel) {
+            interviewLabel.innerText = stage === 'Assessment' ? 'Assessment Date & Time' : 'Interview Date & Time';
+        }
     } else {
         interviewGroup.classList.add('hidden');
     }
@@ -613,6 +747,60 @@ function switchTab(stage) {
     } else {
         emptyState.classList.add('hidden');
     }
+}
+
+// Function to handle Quick Context Stage Updates
+function updateJobStageContext(stage) {
+    const menu = document.getElementById('job-context-menu');
+    if (menu) menu.classList.add('hidden');
+    if (!activeJobIdForContext) return;
+    
+    let additionalNotes = "";
+    let dateVal = "";
+    
+    if (stage === 'Interview') {
+        const dt = prompt("When is the interview?\n(e.g., 07/06/2026 18:00 or 07/06/2026)");
+        if (dt === null) return; // user cancelled
+        dateVal = dt.trim();
+    } else if (stage === 'Assessment') {
+        const dt = prompt("When is the assessment deadline/scheduled date?\n(e.g., 07/06/2026 18:00 or 07/06/2026)");
+        if (dt === null) return;
+        dateVal = dt.trim();
+    } else if (stage === 'Rejected') {
+        const reason = prompt("Did they give a reason why?\n(Leave blank if no feedback was given):");
+        if (reason === null) return;
+        additionalNotes = reason.trim();
+    } else if (stage === 'Offer') {
+        const details = prompt("Enter any offer details (e.g. Salary, Benefits):");
+        if (details === null) return;
+        additionalNotes = details.trim();
+    }
+    
+    // Create form to submit updates
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/job-tracker/${activeJobIdForContext}/update-stage-ajax`;
+    
+    const inputStage = document.createElement('input');
+    inputStage.type = 'hidden';
+    inputStage.name = 'stage';
+    inputStage.value = stage;
+    form.appendChild(inputStage);
+    
+    const inputNotes = document.createElement('input');
+    inputNotes.type = 'hidden';
+    inputNotes.name = 'additional_notes';
+    inputNotes.value = additionalNotes;
+    form.appendChild(inputNotes);
+    
+    const inputDate = document.createElement('input');
+    inputDate.type = 'hidden';
+    inputDate.name = 'date_val';
+    inputDate.value = dateVal;
+    form.appendChild(inputDate);
+    
+    document.body.appendChild(form);
+    form.submit();
 }
 </script>
 {% endblock %}
