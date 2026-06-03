@@ -1,4 +1,4 @@
-<div class="flex flex-col">
+<div class="flex flex-col w-full" style="min-height: 72vh;">
     <!-- Header -->
     <div class="flex justify-between items-center mb-4 pb-3 border-b border-warm-200 dark:border-gray-800">
         <div>
@@ -13,8 +13,8 @@
         </a>
     </div>
 
-    <!-- Full-Width Preview Panel (Explicit viewport-based height) -->
-    <div class="w-full h-[65vh] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-[#525659] shadow-inner">
+    <!-- Full-Width Preview Panel with bulletproof inline styles to bypass Tailwind gaps -->
+    <div class="w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-[#525659] shadow-inner grow" style="height: 62vh; min-height: 480px;">
         <object id="cv-preview-object" data="/get-cv#view=Fit" type="application/pdf" class="w-full h-full">
             <iframe id="cv-preview-iframe" src="/get-cv#view=Fit" class="w-full h-full" frameborder="0">
                 <p class="p-10 text-center dark:text-white text-xs">
