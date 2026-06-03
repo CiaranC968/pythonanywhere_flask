@@ -1306,6 +1306,34 @@ def _mask_database_uri(uri):
 def job_tracker():
     from datetime import datetime
     today_str = datetime.today().strftime("%Y-%m-%d")
+    today_now = datetime.today()
+
+    # Dynamic check of missed deadlines
+    modified = False
+    all_apps = JobApplication.query.all()
+    for app in all_apps:
+        if app.stage == 'Not Applied Yet' and app.application_deadline:
+            try:
+                dl_str = app.application_deadline.strip()
+                if 'T' in dl_str:
+                    dl_dt = datetime.strptime(dl_str, "%Y-%m-%dT%H:%M")
+                elif ' ' in dl_str:
+                    dl_dt = datetime.strptime(dl_str, "%Y-%m-%d %H:%M")
+                else:
+                    dl_dt = datetime.strptime(dl_str, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+
+                if today_now > dl_dt:
+                    app.stage = 'Missed Deadline'
+                    modified = True
+            except ValueError:
+                date_part = app.application_deadline.split('T')[0].split(' ')[0]
+                if today_str > date_part:
+                    app.stage = 'Missed Deadline'
+                    modified = True
+
+    if modified:
+        db.session.commit()
+
     applications = JobApplication.query.order_by(JobApplication.id.desc()).all()
     return render_template(
         "admin/job_tracker.html",
@@ -1323,6 +1351,7 @@ def add_job_application():
     stage = request.form.get("stage", "Applied").strip()
     applied_date = request.form.get("applied_date", "").strip()
     interview_date = request.form.get("interview_date", "").strip()
+    application_deadline = request.form.get("application_deadline", "").strip()
     notes = request.form.get("notes", "").strip()
 
     if not company or not role:
@@ -1338,6 +1367,7 @@ def add_job_application():
         stage=stage,
         applied_date=applied_date,
         interview_date=interview_date if interview_date else None,
+        application_deadline=application_deadline if application_deadline else None,
         notes=notes,
     )
     db.session.add(app)
@@ -1358,6 +1388,7 @@ def edit_job_application(app_id: int):
     stage = request.form.get("stage", "Applied").strip()
     applied_date = request.form.get("applied_date", "").strip()
     interview_date = request.form.get("interview_date", "").strip()
+    application_deadline = request.form.get("application_deadline", "").strip()
     notes = request.form.get("notes", "").strip()
 
     if not company or not role:
@@ -1369,6 +1400,7 @@ def edit_job_application(app_id: int):
     app.stage = stage
     app.applied_date = applied_date
     app.interview_date = interview_date if interview_date else None
+    app.application_deadline = application_deadline if application_deadline else None
     app.notes = notes
 
     if _commit_or_flash():

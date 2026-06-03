@@ -142,6 +142,15 @@ def ensure_schema():
             "sort_order": "INTEGER NOT NULL DEFAULT 0",
             "is_visible": f"{boolean} NOT NULL DEFAULT 1",
         },
+        "job_application": {
+            "company": "VARCHAR(180) NOT NULL DEFAULT ''",
+            "role": "VARCHAR(180) NOT NULL DEFAULT ''",
+            "stage": "VARCHAR(80) NOT NULL DEFAULT 'Applied'",
+            "applied_date": "VARCHAR(80) NOT NULL DEFAULT ''",
+            "interview_date": "VARCHAR(80) NULL",
+            "application_deadline": "VARCHAR(80) NULL",
+            "notes": "TEXT NULL",
+        },
     }
 
     for table, additions in schema_additions.items():

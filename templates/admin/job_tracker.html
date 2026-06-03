@@ -13,33 +13,45 @@
 </div>
 
 <!-- Statistics Cards -->
-<div class="mb-8 grid gap-4 grid-cols-2 md:grid-cols-5">
-    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
-        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Total Applications</h3>
-        <p class="mt-2 text-3xl font-black text-warm-900">{{ applications|length }}</p>
+<div class="mb-8 grid gap-4 grid-cols-2 md:grid-cols-7">
+    <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+        <h3 class="text-[10px] font-black uppercase tracking-wider text-warm-500">Total</h3>
+        <p class="mt-1 text-2xl font-black text-warm-900">{{ applications|length }}</p>
     </div>
-    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
-        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Applied</h3>
-        <p class="mt-2 text-3xl font-black text-blue-600">
+    <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+        <h3 class="text-[10px] font-black uppercase tracking-wider text-warm-500 text-indigo-600">Not Applied</h3>
+        <p class="mt-1 text-2xl font-black text-indigo-600">
+            {{ applications|selectattr('stage', 'equalto', 'Not Applied Yet')|list|length }}
+        </p>
+    </div>
+    <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+        <h3 class="text-[10px] font-black uppercase tracking-wider text-warm-500 text-blue-600">Applied</h3>
+        <p class="mt-1 text-2xl font-black text-blue-600">
             {{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }}
         </p>
     </div>
-    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
-        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Interviews</h3>
-        <p class="mt-2 text-3xl font-black text-amber-500">
+    <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+        <h3 class="text-[10px] font-black uppercase tracking-wider text-warm-500 text-amber-500">Interviews</h3>
+        <p class="mt-1 text-2xl font-black text-amber-500">
             {{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }}
         </p>
     </div>
-    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
-        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Got Job</h3>
-        <p class="mt-2 text-3xl font-black text-green-600">
+    <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+        <h3 class="text-[10px] font-black uppercase tracking-wider text-warm-500 text-green-600">Got Job</h3>
+        <p class="mt-1 text-2xl font-black text-green-600">
             {{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }}
         </p>
     </div>
-    <div class="rounded-2xl border border-warm-200 bg-white p-5 shadow-sm">
-        <h3 class="text-xs font-black uppercase tracking-wider text-warm-500">Rejected</h3>
-        <p class="mt-2 text-3xl font-black text-red-500">
+    <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+        <h3 class="text-[10px] font-black uppercase tracking-wider text-warm-500 text-red-500">Rejected</h3>
+        <p class="mt-1 text-2xl font-black text-red-500">
             {{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }}
+        </p>
+    </div>
+    <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+        <h3 class="text-[10px] font-black uppercase tracking-wider text-warm-500 text-rose-700">Missed DL</h3>
+        <p class="mt-1 text-2xl font-black text-rose-700">
+            {{ applications|selectattr('stage', 'equalto', 'Missed Deadline')|list|length }}
         </p>
     </div>
 </div>
@@ -47,8 +59,11 @@
 <!-- Tabs selector -->
 <div class="mb-6 border-b border-warm-200">
     <nav class="flex flex-wrap gap-2 -mb-px" aria-label="Tabs">
-        <button onclick="switchTab('all')" data-tab="all" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-black text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all border-brand-accent text-warm-900 font-black">
-            All Applications ({{ applications|length }})
+        <button onclick="switchTab('all')" data-tab="all" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-black text-warm-900 border-brand-accent transition-all">
+            All ({{ applications|length }})
+        </button>
+        <button onclick="switchTab('Not Applied Yet')" data-tab="Not Applied Yet" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
+            Not Applied ({{ applications|selectattr('stage', 'equalto', 'Not Applied Yet')|list|length }})
         </button>
         <button onclick="switchTab('Applied')" data-tab="Applied" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
             Applied ({{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }})
@@ -57,10 +72,13 @@
             Interviews ({{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }})
         </button>
         <button onclick="switchTab('Got Job')" data-tab="Got Job" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
-            Got Job / Offers ({{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }})
+            Got Job ({{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }})
         </button>
         <button onclick="switchTab('Rejected')" data-tab="Rejected" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
             Rejected ({{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }})
+        </button>
+        <button onclick="switchTab('Missed Deadline')" data-tab="Missed Deadline" class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-warm-500 hover:text-warm-800 hover:border-warm-300 transition-all">
+            Missed DL ({{ applications|selectattr('stage', 'equalto', 'Missed Deadline')|list|length }})
         </button>
     </nav>
 </div>
@@ -75,23 +93,40 @@
                 <p class="text-sm font-bold text-warm-600">{{ app.company }}</p>
             </div>
             <span>
-                {% if app.stage == 'Applied' %}
+                {% if app.stage == 'Not Applied Yet' %}
+                <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-black text-indigo-700">Not Applied</span>
+                {% elif app.stage == 'Applied' %}
                 <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-black text-blue-700">Applied</span>
                 {% elif app.stage == 'Interview' %}
                 <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-700">Interview</span>
                 {% elif app.stage == 'Got Job' %}
                 <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-black text-green-700">Got Job</span>
-                {% else %}
+                {% elif app.stage == 'Rejected' %}
                 <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-700">Rejected</span>
+                {% else %}
+                <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-750 border border-rose-250">Missed DL</span>
                 {% endif %}
             </span>
         </div>
 
         <div class="mt-4 space-y-2 text-xs text-warm-500 border-t border-warm-100 pt-3">
+            {% if app.stage == 'Not Applied Yet' %}
+            <div class="flex justify-between rounded-lg bg-indigo-50 p-2 border border-indigo-200">
+                <span class="text-indigo-700 font-bold">Apply Deadline:</span>
+                <span class="font-black text-indigo-900">{{ app.application_deadline or 'None' }}</span>
+            </div>
+            {% elif app.stage == 'Missed Deadline' %}
+            <div class="flex justify-between rounded-lg bg-rose-50 p-2 border border-rose-200">
+                <span class="text-rose-700 font-bold">Missed Deadline:</span>
+                <span class="font-black text-rose-900 text-rose-800">{{ app.application_deadline or 'None' }}</span>
+            </div>
+            {% else %}
             <div class="flex justify-between">
                 <span>Applied On:</span>
                 <span class="font-bold text-warm-700">{{ app.applied_date }}</span>
             </div>
+            {% endif %}
+            
             {% if app.stage == 'Interview' %}
             <div class="flex justify-between rounded-lg bg-amber-50 p-2 border border-amber-200">
                 <span class="text-amber-700 font-bold">Interview Scheduled:</span>
@@ -146,21 +181,27 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Stage</label>
-                    <select name="stage" onchange="toggleInterviewField(this, 'add-interview-group')" class="admin-input w-full rounded-lg">
-                        <option value="Applied">Applied</option>
+                    <select name="stage" onchange="handleStageChange(this, 'add')" class="admin-input w-full rounded-lg">
+                        <option value="Not Applied Yet">Not Applied Yet</option>
+                        <option value="Applied" selected>Applied</option>
                         <option value="Interview">Interview</option>
-                        <option value="Rejected">Rejected</option>
                         <option value="Got Job">Got Job</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Missed Deadline">Missed Deadline</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Applied Date</label>
+                    <label id="add-date-label" class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Applied Date</label>
                     <input type="date" name="applied_date" value="{{ today }}" class="admin-input w-full rounded-lg">
                 </div>
             </div>
             <div id="add-interview-group" class="hidden">
                 <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Interview Date & Time</label>
                 <input type="datetime-local" name="interview_date" class="admin-input w-full rounded-lg">
+            </div>
+            <div id="add-deadline-group" class="hidden">
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500 text-indigo-600">Application Deadline</label>
+                <input type="datetime-local" name="application_deadline" class="admin-input w-full border-indigo-200 rounded-lg">
             </div>
             <div>
                 <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Notes / Feedback / Link</label>
@@ -193,21 +234,27 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Stage</label>
-                    <select id="edit-stage" name="stage" onchange="toggleInterviewField(this, 'edit-interview-group')" class="admin-input w-full rounded-lg">
+                    <select id="edit-stage" name="stage" onchange="handleStageChange(this, 'edit')" class="admin-input w-full rounded-lg">
+                        <option value="Not Applied Yet">Not Applied Yet</option>
                         <option value="Applied">Applied</option>
                         <option value="Interview">Interview</option>
-                        <option value="Rejected">Rejected</option>
                         <option value="Got Job">Got Job</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Missed Deadline">Missed Deadline</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Applied Date</label>
+                    <label id="edit-date-label" class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Applied Date</label>
                     <input type="date" id="edit-applied-date" name="applied_date" class="admin-input w-full rounded-lg">
                 </div>
             </div>
             <div id="edit-interview-group" class="hidden">
                 <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Interview Date & Time</label>
                 <input type="datetime-local" id="edit-interview-date" name="interview_date" class="admin-input w-full rounded-lg">
+            </div>
+            <div id="edit-deadline-group" class="hidden">
+                <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500 text-indigo-600">Application Deadline</label>
+                <input type="datetime-local" id="edit-application-deadline" name="application_deadline" class="admin-input w-full border-indigo-200 rounded-lg">
             </div>
             <div>
                 <label class="block mb-1 text-xs font-black uppercase tracking-wider text-warm-500">Notes / Feedback / Link</label>
@@ -227,17 +274,43 @@ function openModal(id) {
     document.getElementById(id).classList.add('flex');
 }
 
+// Ensure first page load checks select status for conditional rendering
+document.addEventListener('DOMContentLoaded', () => {
+    // default states for add modal select element
+    const addSelect = document.querySelector('#add-modal select[name="stage"]');
+    if (addSelect) handleStageChange(addSelect, 'add');
+});
+
 function closeModal(id) {
     document.getElementById(id).classList.add('hidden');
     document.getElementById(id).classList.remove('flex');
 }
 
-function toggleInterviewField(selectElem, fieldId) {
-    const field = document.getElementById(fieldId);
-    if (selectElem.value === 'Interview') {
-        field.classList.remove('hidden');
+function handleStageChange(selectElem, prefix) {
+    const stage = selectElem.value;
+    const interviewGroup = document.getElementById(prefix + '-interview-group');
+    const deadlineGroup = document.getElementById(prefix + '-deadline-group');
+    const dateLabel = document.getElementById(prefix + '-date-label');
+
+    // Toggle interview date
+    if (stage === 'Interview') {
+        interviewGroup.classList.remove('hidden');
     } else {
-        field.classList.add('hidden');
+        interviewGroup.classList.add('hidden');
+    }
+
+    // Toggle deadline date
+    if (stage === 'Not Applied Yet' || stage === 'Missed Deadline') {
+        deadlineGroup.classList.remove('hidden');
+    } else {
+        deadlineGroup.classList.add('hidden');
+    }
+
+    // Toggle label descriptive name
+    if (stage === 'Not Applied Yet' || stage === 'Missed Deadline') {
+        dateLabel.innerText = "Creation Date";
+    } else {
+        dateLabel.innerText = "Applied Date";
     }
 }
 
@@ -253,16 +326,23 @@ function openEditModal(app) {
     document.getElementById('edit-applied-date').value = app.applied_date || '';
     document.getElementById('edit-notes').value = app.notes || '';
 
-    // Handle conditional interview date field
+    // Handle conditional fields
     const selectElem = document.getElementById('edit-stage');
-    toggleInterviewField(selectElem, 'edit-interview-group');
+    handleStageChange(selectElem, 'edit');
 
-    // Fill interview date (formatting input type=datetime-local requires YYYY-MM-DDTHH:MM)
+    // Fill interview date
     let interviewDate = app.interview_date || '';
     if (interviewDate.includes(' ')) {
         interviewDate = interviewDate.replace(' ', 'T');
     }
     document.getElementById('edit-interview-date').value = interviewDate;
+
+    // Fill deadline date
+    let deadlineDate = app.application_deadline || '';
+    if (deadlineDate.includes(' ')) {
+        deadlineDate = deadlineDate.replace(' ', 'T');
+    }
+    document.getElementById('edit-application-deadline').value = deadlineDate;
 
     openModal('edit-modal');
 }
@@ -271,7 +351,8 @@ function switchTab(stage) {
     // 1. Update tab navigation styling
     const tabs = document.querySelectorAll('.tab-button');
     tabs.forEach(tab => {
-        const matches = tab.getAttribute('data-tab') === stage;
+        const tabStage = tab.getAttribute('data-tab');
+        const matches = tabStage === stage;
         if (matches) {
             tab.classList.add('border-brand-accent', 'text-warm-900', 'font-black');
             tab.classList.remove('border-transparent', 'text-warm-500', 'font-semibold');
