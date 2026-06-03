@@ -82,6 +82,11 @@
         color: #111827;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
     }
+    .tab-button[data-tab="follow-up"].active {
+        background-color: #f59e0b;
+        border-color: #f59e0b;
+        color: #ffffff;
+    }
 
     /* Badge styles inside cards */
     .stage-badge {
@@ -225,6 +230,22 @@
     </div>
 </div>
 
+<!-- Follow-up Reminder Banner -->
+<div id="stale-banner" class="hidden mb-6 rounded-2xl border border-amber-250 bg-amber-50/50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+    <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+            <i class="fas fa-clock text-lg"></i>
+        </div>
+        <div>
+            <h4 class="text-sm font-black text-amber-900">Follow-up Reminder</h4>
+            <p class="text-xs text-amber-700 mt-0.5">You have <span id="stale-banner-count" class="font-black">0</span> application(s) that have been pending for 24+ days. Consider checking in or sending a follow-up email.</p>
+        </div>
+    </div>
+    <button onclick="switchTab('follow-up')" class="shrink-0 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 text-xs font-black text-amber-800 transition-colors cursor-pointer">
+        View Needs Follow Up
+    </button>
+</div>
+
 <!-- Statistics Cards -->
 <div class="mb-8 stats-grid">
     <div class="stat-card stat-card-total">
@@ -292,6 +313,9 @@
     <button onclick="switchTab('Applied')" data-tab="Applied" class="tab-button">
         Applied ({{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }})
     </button>
+    <button onclick="switchTab('follow-up')" data-tab="follow-up" class="tab-button flex items-center gap-1.5">
+        <i class="fas fa-exclamation-triangle text-amber-650" style="color: #d97706;"></i> Follow Up (<span id="follow-up-count">0</span>)
+    </button>
     <button onclick="switchTab('Assessment')" data-tab="Assessment" class="tab-button">
         Assessments ({{ applications|selectattr('stage', 'equalto', 'Assessment')|list|length }})
     </button>
@@ -318,7 +342,10 @@
     <div class="app-card rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:border-brand-accent hover:shadow-md cursor-context-menu" data-stage="{{ app.stage }}" title="Right-click for quick status update">
         <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">
-                <h3 class="text-lg font-black text-warm-900 leading-snug break-words">{{ app.role }}</h3>
+                <h3 class="text-lg font-black text-warm-900 leading-snug break-words flex items-center gap-2 flex-wrap">
+                    <span>{{ app.role }}</span>
+                    <span class="stale-warning hidden rounded bg-amber-100 px-2 py-0.5 text-[9px] font-black text-amber-800 uppercase tracking-wider">Follow Up</span>
+                </h3>
                 <p class="text-sm font-bold text-warm-600 mt-0.5 break-words">{{ app.company }}</p>
             </div>
             <div class="shrink-0">
@@ -435,6 +462,9 @@
     </button>
     <button onclick="updateJobStageContext('Missed Deadline')" data-context-stage="Missed Deadline">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: #f43f5e;"></span> Missed Deadline
+    </button>
+    <button onclick="markFollowedUp()" id="context-follow-up" class="hidden border-t border-warm-100/50 mt-1 pt-1.5" style="border-top-style: dashed;">
+        <span class="w-2.5 h-2.5 rounded-full flex items-center justify-center text-[10px] text-amber-600"><i class="fas fa-check-double"></i></span> Mark as Followed Up
     </button>
 </div>
 
@@ -608,6 +638,57 @@ document.addEventListener('DOMContentLoaded', () => {
         el.textContent = formatToUK(val);
     });
 
+    // Highlight stale "Applied" applications (e.g. >= 24 days without response)
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    let staleCount = 0;
+    
+    document.querySelectorAll('.app-card').forEach(card => {
+        const stage = card.getAttribute('data-stage');
+        if (stage !== 'Applied') return;
+        
+        const editBtn = card.querySelector('.btn-edit');
+        const appliedDateRaw = editBtn ? editBtn.getAttribute('data-applied-date') : null;
+        if (!appliedDateRaw) return;
+        
+        // Safely parse date portion
+        const dateStr = appliedDateRaw.split('T')[0].split(' ')[0];
+        const appliedDate = new Date(dateStr);
+        appliedDate.setHours(0,0,0,0);
+        
+        if (isNaN(appliedDate.getTime())) return;
+        
+        const diffTime = today - appliedDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays >= 24) {
+            staleCount++;
+            const warningTag = card.querySelector('.stale-warning');
+            if (warningTag) {
+                warningTag.classList.remove('hidden');
+                warningTag.textContent = `${diffDays} days - Follow Up`;
+                warningTag.title = `Applied ${diffDays} days ago with no response. Consider sending a follow-up email!`;
+            }
+            // Add a subtle styling border to the card
+            card.classList.add('border-amber-300', 'bg-amber-50/10');
+            card.setAttribute('data-stale', 'true');
+        }
+    });
+
+    // Update Follow Up count badges
+    const followUpCountEl = document.getElementById('follow-up-count');
+    if (followUpCountEl) {
+        followUpCountEl.textContent = staleCount;
+    }
+    const staleBannerCountEl = document.getElementById('stale-banner-count');
+    if (staleBannerCountEl) {
+        staleBannerCountEl.textContent = staleCount;
+    }
+    const staleBanner = document.getElementById('stale-banner');
+    if (staleBanner && staleCount > 0) {
+        staleBanner.classList.remove('hidden');
+    }
+
     // Custom Right-Click Context Menu Trigger
     document.querySelectorAll('.app-card').forEach(card => {
         card.addEventListener('contextmenu', (e) => {
@@ -629,6 +710,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.classList.remove('hidden');
                 }
             });
+
+            // Toggle Follow Up button based on stale status
+            const followUpBtn = document.getElementById('context-follow-up');
+            if (followUpBtn) {
+                if (currentStage === 'Applied' && card.getAttribute('data-stale') === 'true') {
+                    followUpBtn.classList.remove('hidden');
+                } else {
+                    followUpBtn.classList.add('hidden');
+                }
+            }
             
             const menu = document.getElementById('job-context-menu');
             menu.classList.remove('hidden');
@@ -743,7 +834,17 @@ function switchTab(stage) {
     let visibleCount = 0;
     cards.forEach(card => {
         const cardStage = card.getAttribute('data-stage');
-        if (stage === 'all' || cardStage === stage) {
+        let show = false;
+        
+        if (stage === 'all') {
+            show = true;
+        } else if (stage === 'follow-up') {
+            show = (cardStage === 'Applied' && card.getAttribute('data-stale') === 'true');
+        } else {
+            show = (cardStage === stage);
+        }
+        
+        if (show) {
             card.style.display = 'block';
             visibleCount++;
         } else {
@@ -824,6 +925,41 @@ function updateJobStageContext(stage) {
     inputDate.type = 'hidden';
     inputDate.name = 'date_val';
     inputDate.value = dateVal;
+    form.appendChild(inputDate);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function markFollowedUp() {
+    const menu = document.getElementById('job-context-menu');
+    if (menu) menu.classList.add('hidden');
+    if (!activeJobIdForContext) return;
+    
+    if (!confirm("Mark this application as followed up? This will reset the timer by updating the Applied Date to today and adding a follow-up note.")) return;
+    
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/job-tracker/${activeJobIdForContext}/update-stage-ajax`;
+    
+    const inputStage = document.createElement('input');
+    inputStage.type = 'hidden';
+    inputStage.name = 'stage';
+    inputStage.value = 'Applied';
+    form.appendChild(inputStage);
+    
+    const inputNotes = document.createElement('input');
+    inputNotes.type = 'hidden';
+    inputNotes.name = 'additional_notes';
+    inputNotes.value = `Followed up.`;
+    form.appendChild(inputNotes);
+    
+    const inputDate = document.createElement('input');
+    inputDate.type = 'hidden';
+    inputDate.name = 'date_val';
+    inputDate.value = todayStr;
     form.appendChild(inputDate);
     
     document.body.appendChild(form);

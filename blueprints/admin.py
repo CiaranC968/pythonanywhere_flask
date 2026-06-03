@@ -546,10 +546,25 @@ def dashboard():
                     query = query.filter_by(is_visible=True)
                 counts[section] = query.count()
         counts["job_applications"] = JobApplication.query.count()
+        
+        # Calculate stale applications (Applied for 24+ days)
+        stale_count = 0
+        try:
+            from datetime import datetime, timedelta
+            limit_date = (datetime.today() - timedelta(days=24)).strftime("%Y-%m-%d")
+            applied_apps = JobApplication.query.filter_by(stage='Applied').all()
+            for app in applied_apps:
+                app_date_str = (app.applied_date or "").split("T")[0].split(" ")[0].strip()
+                if app_date_str and app_date_str <= limit_date:
+                    stale_count += 1
+        except Exception:
+            pass
+        counts["stale_job_applications"] = stale_count
     except SQLAlchemyError as exc:
         database_error = str(exc)
         counts = {section: 0 for section in SECTIONS}
         counts["job_applications"] = 0
+        counts["stale_job_applications"] = 0
 
     admin_password_missing = not current_app.config.get("ADMIN_PASSWORD_HASH") and not current_app.config.get(
         "ADMIN_PASSWORD")
@@ -1579,10 +1594,18 @@ def update_job_stage_ajax(app_id: int):
         app.interview_date = normalized_date
     elif stage in ('Not Applied Yet', 'Missed Deadline'):
         app.application_deadline = normalized_date
+    elif stage == 'Applied':
+        if normalized_date:
+            app.applied_date = normalized_date
 
     if additional_notes:
         sep = "\n\n" if app.notes else ""
-        note_prefix = "Rejection Feedback:" if stage == 'Rejected' else "Offer Details:"
+        if stage == 'Rejected':
+            note_prefix = "Rejection Feedback:"
+        elif stage == 'Offer':
+            note_prefix = "Offer Details:"
+        else:
+            note_prefix = "Update:"
         app.notes = f"{app.notes}{sep}{note_prefix} {additional_notes}"
 
     db.session.commit()
