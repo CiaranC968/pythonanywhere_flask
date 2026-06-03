@@ -75,6 +75,6 @@
 
         {% block content %}{% endblock %}
     </main>
-    <script src="/static/js/admin.js" defer></script>
+    <script src="/static/js/admin.js?v={{ range(1, 99999)|random }}" defer></script>
 </body>
 </html>

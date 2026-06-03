@@ -35,11 +35,11 @@
             <h2 class="text-2xl font-black text-warm-900 mb-4">Edit Portfolio</h2>
             <div class="grid gap-4 sm:grid-cols-2">
                 {% for section, config in sections.items() %}
-                <div class="relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
+                <div onclick="window.location='{{ url_for('admin.list_items', section=section) }}'" class="cursor-pointer group relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
                     <div>
                         <div class="flex items-center justify-between gap-3">
-                            <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xl font-black text-warm-900 hover:underline leading-snug">{{ config.label }}</a>
-                            <div class="flex items-center gap-2">
+                            <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xl font-black text-warm-900 hover:underline leading-snug" onclick="event.stopPropagation();">{{ config.label }}</a>
+                            <div class="flex items-center gap-2" onclick="event.stopPropagation();">
                                 <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ counts[section] }}</span>
                                 {% if not config.singleton %}
                                 <a href="{{ url_for('admin.new_item', section=section) }}" class="rounded-lg bg-warm-50 border border-warm-200/50 hover:bg-brand-accent p-1.5 text-xs text-warm-700 hover:text-brand-dark transition-all" title="Add item">
@@ -51,7 +51,7 @@
                         <p class="mt-2 text-sm text-warm-500">{{ config.description }}</p>
                     </div>
                     <div class="mt-4">
-                        <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xs font-black text-brand-hover hover:underline">
+                        <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xs font-black text-brand-hover hover:underline" onclick="event.stopPropagation();">
                             View All <i class="fas fa-arrow-right ml-1"></i>
                         </a>
                     </div>
@@ -59,11 +59,11 @@
                 {% endfor %}
                 
                 <!-- Job Tracker Card -->
-                <div class="relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
+                <div onclick="window.location='{{ url_for('admin.job_tracker') }}'" class="cursor-pointer group relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
                     <div>
                         <div class="flex items-center justify-between gap-3">
-                            <a href="{{ url_for('admin.job_tracker') }}" class="text-xl font-black text-warm-900 hover:underline leading-snug">Job Tracker</a>
-                            <div class="flex items-center gap-2">
+                            <a href="{{ url_for('admin.job_tracker') }}" class="text-xl font-black text-warm-900 hover:underline leading-snug" onclick="event.stopPropagation();">Job Tracker</a>
+                            <div class="flex items-center gap-2" onclick="event.stopPropagation();">
                                 {% if counts['stale_job_applications'] > 0 %}
                                 <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800 animate-pulse flex items-center gap-1" title="{{ counts['stale_job_applications'] }} application(s) need follow-up">
                                     <i class="fas fa-exclamation-triangle text-amber-600"></i>{{ counts['stale_job_applications'] }} Follow Up
@@ -75,7 +75,7 @@
                         <p class="mt-2 text-sm text-warm-500">Track and manage job applications, interview dates, stages, and notes.</p>
                     </div>
                     <div class="mt-4">
-                        <a href="{{ url_for('admin.job_tracker') }}" class="text-xs font-black text-brand-hover hover:underline">
+                        <a href="{{ url_for('admin.job_tracker') }}" class="text-xs font-black text-brand-hover hover:underline" onclick="event.stopPropagation();">
                             Open Tracker <i class="fas fa-arrow-right ml-1"></i>
                         </a>
                     </div>
