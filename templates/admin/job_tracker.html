@@ -412,28 +412,28 @@
 <!-- Custom Context Menu -->
 <div id="job-context-menu" class="hidden absolute z-50">
     <div class="px-3 py-1.5 border-b border-warm-100 text-[10px] font-black uppercase tracking-wider text-warm-400">Quick Stage Update</div>
-    <button onclick="updateJobStageContext('Not Applied Yet')">
+    <button onclick="updateJobStageContext('Not Applied Yet')" data-context-stage="Not Applied Yet">
         <span class="w-2.5 h-2.5 rounded-full animate-pulse" style="background-color: #6366f1;"></span> Not Applied Yet
     </button>
-    <button onclick="updateJobStageContext('Applied')">
+    <button onclick="updateJobStageContext('Applied')" data-context-stage="Applied">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: #3b82f6;"></span> Applied
     </button>
-    <button onclick="updateJobStageContext('Assessment')">
+    <button onclick="updateJobStageContext('Assessment')" data-context-stage="Assessment">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: #a855f7;"></span> Got Assessment
     </button>
-    <button onclick="updateJobStageContext('Interview')">
+    <button onclick="updateJobStageContext('Interview')" data-context-stage="Interview">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: #f59e0b;"></span> Got Interview
     </button>
-    <button onclick="updateJobStageContext('Offer')">
+    <button onclick="updateJobStageContext('Offer')" data-context-stage="Offer">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: #0d9488;"></span> Got Offer
     </button>
-    <button onclick="updateJobStageContext('Got Job')">
+    <button onclick="updateJobStageContext('Got Job')" data-context-stage="Got Job">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: #10b981;"></span> Got Job
     </button>
-    <button onclick="updateJobStageContext('Rejected')">
+    <button onclick="updateJobStageContext('Rejected')" data-context-stage="Rejected">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: #ef4444;"></span> Got Rejected
     </button>
-    <button onclick="updateJobStageContext('Missed Deadline')">
+    <button onclick="updateJobStageContext('Missed Deadline')" data-context-stage="Missed Deadline">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: #f43f5e;"></span> Missed Deadline
     </button>
 </div>
@@ -606,6 +606,18 @@ document.addEventListener('DOMContentLoaded', () => {
             activeJobIdForContext = editBtn ? editBtn.getAttribute('data-id') : null;
             
             if (!activeJobIdForContext) return;
+            
+            const currentStage = card.getAttribute('data-stage');
+            
+            // Hide the button for the current stage, show all others
+            const menuButtons = document.querySelectorAll('#job-context-menu button[data-context-stage]');
+            menuButtons.forEach(btn => {
+                if (btn.getAttribute('data-context-stage') === currentStage) {
+                    btn.classList.add('hidden');
+                } else {
+                    btn.classList.remove('hidden');
+                }
+            });
             
             const menu = document.getElementById('job-context-menu');
             menu.classList.remove('hidden');
