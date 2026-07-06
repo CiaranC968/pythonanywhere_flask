@@ -22,8 +22,8 @@
     <!-- Theme initialization -->
     <script>
         (function() {
-            var t = localStorage.getItem('theme');
-            var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const t = localStorage.getItem('theme');
+            const d = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (t === 'dark' || (!t && d)) document.documentElement.classList.add('dark');
         })();
     </script>

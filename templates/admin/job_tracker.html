@@ -4,54 +4,7 @@
 <style>
     /* Custom Scoped Styles for Job Tracker to bypass Tailwind compilation gaps */
     
-    /* Stats Grid & Cards */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem;
-    }
-    @media (min-width: 640px) {
-        .stats-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-    }
-    @media (min-width: 768px) {
-        .stats-grid {
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-        }
-    }
-    @media (min-width: 1024px) {
-        .stats-grid {
-            grid-template-columns: repeat(9, minmax(0, 1fr));
-        }
-    }
-    
-    .stat-card {
-        border-radius: 0.75rem;
-        background-color: #ffffff;
-        border: 1px solid #e8e6e1;
-        padding: 0.75rem 1rem;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .stat-card:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    }
-    
-    /* Status-specific card borders & backgrounds */
-    .stat-card-total { border-left: 4px solid #7a756c; }
-    .stat-card-not-applied { border-left: 4px solid #6366f1; background-color: rgba(99, 102, 241, 0.03); }
-    .stat-card-applied { border-left: 4px solid #3b82f6; background-color: rgba(59, 130, 246, 0.03); }
-    .stat-card-assessment { border-left: 4px solid #a855f7; background-color: rgba(168, 85, 247, 0.03); }
-    .stat-card-interview { border-left: 4px solid #f59e0b; background-color: rgba(245, 158, 11, 0.03); }
-    .stat-card-offer { border-left: 4px solid #0d9488; background-color: rgba(13, 148, 136, 0.03); }
-    .stat-card-got-job { border-left: 4px solid #10b981; background-color: rgba(16, 185, 129, 0.03); }
-    .stat-card-rejected { border-left: 4px solid #ef4444; background-color: rgba(239, 68, 68, 0.03); }
-    .stat-card-missed { border-left: 4px solid #f43f5e; background-color: rgba(244, 63, 94, 0.03); }
+    /* Custom Scoped Styles for Job Tracker to bypass Tailwind compilation gaps */
 
     /* Custom Capsule Tabs */
     .tabs-container {
@@ -246,60 +199,12 @@
     </button>
 </div>
 
-<!-- Statistics Cards -->
-<div class="mb-8 stats-grid">
-    <div class="stat-card stat-card-total">
-        <span class="text-[10px] font-black uppercase tracking-wider text-warm-500">Total:</span>
-        <span class="text-2xl font-black text-warm-900 mt-1">{{ applications|length }}</span>
+<!-- Search bar -->
+<div class="mb-6 relative">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <i class="fas fa-search text-warm-400"></i>
     </div>
-    <div class="stat-card stat-card-not-applied">
-        <span class="text-[10px] font-black uppercase tracking-wider text-indigo-600">Not Applied:</span>
-        <span class="text-2xl font-black text-indigo-700 mt-1">
-            {{ applications|selectattr('stage', 'equalto', 'Not Applied Yet')|list|length }}
-        </span>
-    </div>
-    <div class="stat-card stat-card-applied">
-        <span class="text-[10px] font-black uppercase tracking-wider text-blue-600">Applied:</span>
-        <span class="text-2xl font-black text-blue-700 mt-1">
-            {{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }}
-        </span>
-    </div>
-    <div class="stat-card stat-card-assessment">
-        <span class="text-[10px] font-black uppercase tracking-wider text-purple-650" style="color: #8b5cf6;">Assessment:</span>
-        <span class="text-2xl font-black mt-1" style="color: #6d28d9;">
-            {{ applications|selectattr('stage', 'equalto', 'Assessment')|list|length }}
-        </span>
-    </div>
-    <div class="stat-card stat-card-interview">
-        <span class="text-[10px] font-black uppercase tracking-wider text-amber-600">Interviews:</span>
-        <span class="text-2xl font-black text-amber-700 mt-1">
-            {{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }}
-        </span>
-    </div>
-    <div class="stat-card stat-card-offer">
-        <span class="text-[10px] font-black uppercase tracking-wider text-teal-650" style="color: #0d9488;">Offers:</span>
-        <span class="text-2xl font-black mt-1" style="color: #0f766e;">
-            {{ applications|selectattr('stage', 'equalto', 'Offer')|list|length }}
-        </span>
-    </div>
-    <div class="stat-card stat-card-got-job">
-        <span class="text-[10px] font-black uppercase tracking-wider text-green-600">Got Job:</span>
-        <span class="text-2xl font-black text-green-700 mt-1">
-            {{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }}
-        </span>
-    </div>
-    <div class="stat-card stat-card-rejected">
-        <span class="text-[10px] font-black uppercase tracking-wider text-red-500">Rejected:</span>
-        <span class="text-2xl font-black text-red-700 mt-1">
-            {{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }}
-        </span>
-    </div>
-    <div class="stat-card stat-card-missed">
-        <span class="text-[10px] font-black uppercase tracking-wider text-rose-500">Missed DL:</span>
-        <span class="text-2xl font-black text-rose-700 mt-1 flex items-center justify-between">
-            {{ applications|selectattr('stage', 'equalto', 'Missed Deadline')|list|length }}
-        </span>
-    </div>
+    <input type="text" id="job-search-input" onkeyup="filterJobs()" placeholder="Search company, role, location, or notes..." class="admin-input w-full rounded-xl pl-10 py-3 shadow-sm border border-warm-200 focus:border-brand-accent focus:ring-brand-accent">
 </div>
 
 <!-- Tabs selector -->
@@ -977,35 +882,50 @@ function openEditModal(button) {
     openModal('edit-modal');
 }
 
+let currentTabStage = 'all';
+
 function switchTab(stage) {
+    currentTabStage = stage;
     // 1. Update tab navigation styling
     const tabs = document.querySelectorAll('.tab-button');
     tabs.forEach(tab => {
         const tabStage = tab.getAttribute('data-tab');
-        const matches = tabStage === stage;
-        if (matches) {
+        if (tabStage === stage) {
             tab.classList.add('active');
         } else {
             tab.classList.remove('active');
         }
     });
 
-    // 2. Filter application cards
+    applyFilters();
+}
+
+function filterJobs() {
+    applyFilters();
+}
+
+function applyFilters() {
     const cards = document.querySelectorAll('.app-card');
+    const searchInput = document.getElementById('job-search-input');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
     let visibleCount = 0;
+
     cards.forEach(card => {
         const cardStage = card.getAttribute('data-stage');
-        let show = false;
+        let showByTab = false;
         
-        if (stage === 'all') {
-            show = true;
-        } else if (stage === 'follow-up') {
-            show = (cardStage === 'Applied' && card.getAttribute('data-stale') === 'true');
+        if (currentTabStage === 'all') {
+            showByTab = true;
+        } else if (currentTabStage === 'follow-up') {
+            showByTab = (cardStage === 'Applied' && card.getAttribute('data-stale') === 'true');
         } else {
-            show = (cardStage === stage);
+            showByTab = (cardStage === currentTabStage);
         }
         
-        if (show) {
+        const cardText = card.textContent.toLowerCase();
+        const showBySearch = searchTerm === '' || cardText.includes(searchTerm);
+        
+        if (showByTab && showBySearch) {
             card.style.display = 'block';
             visibleCount++;
         } else {
@@ -1021,8 +941,8 @@ function switchTab(stage) {
         emptyState.className = 'col-span-full rounded-2xl border border-dashed border-warm-300 bg-warm-50 py-12 text-center hidden';
         emptyState.innerHTML = `
             <i class="fas fa-folder-open text-4xl text-warm-300 mb-3"></i>
-            <h3 class="text-lg font-black text-warm-800">No applications in this category</h3>
-            <p class="text-sm text-warm-500 mt-1">Keep searching and apply to some roles!</p>
+            <h3 class="text-lg font-black text-warm-800">No applications match your criteria</h3>
+            <p class="text-sm text-warm-500 mt-1">Try adjusting your search or tab selection!</p>
         `;
         document.getElementById('applications-grid').appendChild(emptyState);
     }
