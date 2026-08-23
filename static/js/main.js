@@ -111,6 +111,11 @@ const GlobalEvents = {
         document.addEventListener('click', (e) => {
             const target = e.target;
 
+            if (target.closest('[data-reload-page]')) {
+                window.location.reload();
+                return;
+            }
+
             // A. Theme Toggle
             if (target.closest('#mobile-theme-btn') || target.closest('#theme-toggle-fixed')) {
                 ThemeManager.toggle();
@@ -449,7 +454,76 @@ const RevealManager = {
 };
 
 // =========================================
-// 10. CARD SHOW MORE TOGGLE
+// 10. PROJECT CAROUSEL
+// =========================================
+const ProjectCarousel = {
+    init() {
+        this.mount(document);
+        document.body.addEventListener('htmx:afterSwap', (event) => this.mount(event.detail.target));
+    },
+
+    mount(root) {
+        const track = root.matches?.('#projects-track') ? root : root.querySelector?.('#projects-track');
+        if (!track || track.dataset.carouselReady) return;
+        track.dataset.carouselReady = 'true';
+
+        const cards = [...track.querySelectorAll('.card-item')];
+        const carousel = track.closest('.projects-carousel');
+        const previous = carousel?.querySelector('[data-carousel-direction="-1"]');
+        const next = carousel?.querySelector('[data-carousel-direction="1"]');
+        const dots = carousel?.nextElementSibling;
+        let index = 0;
+        let resizeTimer;
+
+        const visibleCards = () => window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
+        const positionCount = () => Math.max(cards.length - visibleCards() + 1, 1);
+
+        const render = () => {
+            const positions = positionCount();
+            index = Math.min(index, positions - 1);
+            const cardWidth = cards[0]?.offsetWidth || 0;
+            track.style.transform = `translateX(-${index * (cardWidth + 32)}px)`;
+
+            [previous, next].forEach((button) => {
+                if (button) button.hidden = positions <= 1;
+            });
+            if (!dots) return;
+
+            dots.hidden = positions <= 1;
+            dots.replaceChildren();
+            for (let position = 0; position < positions; position += 1) {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = position === index
+                    ? 'w-6 h-2.5 rounded-full bg-brand-accent transition-all'
+                    : 'w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-600 transition-all';
+                dot.setAttribute('aria-label', `Go to project group ${position + 1}`);
+                dot.addEventListener('click', () => {
+                    index = position;
+                    render();
+                });
+                dots.appendChild(dot);
+            }
+        };
+
+        carousel?.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-carousel-direction]');
+            if (!button) return;
+            const positions = positionCount();
+            index = (index + Number(button.dataset.carouselDirection) + positions) % positions;
+            render();
+        });
+
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(render, 100);
+        });
+        requestAnimationFrame(render);
+    }
+};
+
+// =========================================
+// 11. CARD SHOW MORE TOGGLE
 // =========================================
 const CardToggle = {
     toggle(button) {
@@ -470,7 +544,7 @@ const CardToggle = {
 };
 
 // =========================================
-// 11. HTMX ERROR HANDLING
+// 12. HTMX ERROR HANDLING
 // =========================================
 const HtmxErrors = {
     init() {
@@ -502,7 +576,7 @@ const HtmxErrors = {
 };
 
 // =========================================
-// 12. INITIALIZATION
+// 13. INITIALIZATION
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Set Footer Year
@@ -517,7 +591,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ScrollToTop.init();
     ScrollProgress.init();
     RevealManager.init();
+    ProjectCarousel.init();
     HtmxErrors.init();
-
-    console.log('Portfolio Ready');
 });

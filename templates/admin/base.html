@@ -6,61 +6,32 @@
     <meta name="robots" content="noindex,nofollow">
     <title>{{ title | default('Portfolio Admin') }}</title>
     <link rel="stylesheet" href="/static/css/output.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .admin-input {
-            width: 100%;
-            border-radius: 0.75rem;
-            border: 1px solid #e8e6e1;
-            background: #fff;
-            padding: 0.75rem 1rem;
-            outline: none;
-        }
-        .admin-input:focus {
-            border-color: #facc15;
-            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.25);
-        }
-        .structured-row {
-            border-radius: 1rem;
-            border: 1px solid #e8e6e1;
-            background: #fafaf8;
-            padding: 1rem;
-        }
-        .admin-tab[aria-selected="true"] {
-            border-color: #facc15;
-            background: #facc15;
-            color: #111827;
-        }
-        .icon-square-button {
-            aspect-ratio: 1 / 1;
-        }
-        .icon-picker-option {
-            aspect-ratio: 1 / 1;
-            min-height: 5.75rem;
-        }
-        [data-icon-list] {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
-        }
-        .style-choice[aria-pressed="true"] {
-            border-color: #facc15;
-            box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.55);
-        }
-    </style>
+    {% block head %}{% endblock %}
 </head>
-<body class="min-h-dvh bg-warm-100 text-warm-800">
-    <header class="border-b border-warm-200 bg-white">
-        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <a href="{{ url_for('admin.dashboard') }}" class="text-xl font-black text-warm-900">Portfolio Admin</a>
+<body class="min-h-dvh">
+    <header class="admin-header">
+        <div class="admin-header-inner">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-brand">
+                <span class="admin-brand-mark"><i class="fas fa-command" aria-hidden="true"></i></span>
+                Portfolio Admin
+            </a>
             {% if session.get('admin_authenticated') %}
+            <nav class="admin-nav" aria-label="Admin navigation">
+                <a href="{{ url_for('admin.dashboard') }}" {% if request.endpoint == 'admin.dashboard' %}aria-current="page"{% endif %}>Overview</a>
+                <a href="{{ url_for('admin.job_tracker') }}" {% if request.endpoint == 'admin.job_tracker' %}aria-current="page"{% endif %}>Applications</a>
+                <a href="{{ url_for('admin.resume_builder') }}" {% if request.endpoint == 'admin.resume_builder' %}aria-current="page"{% endif %}>Resume builder</a>
+                <a href="{{ url_for('admin.cv_builder') }}" {% if request.endpoint == 'admin.cv_builder' %}aria-current="page"{% endif %}>CV builder</a>
+            </nav>
             <form method="post" action="{{ url_for('admin.logout') }}">
-                <button class="rounded-lg border border-warm-200 bg-white px-4 py-2 text-sm font-bold text-warm-800 hover:border-brand-accent">Log out</button>
+                <button class="icon-button" title="Log out" aria-label="Log out"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i></button>
             </form>
             {% endif %}
         </div>
     </header>
 
-    <main class="mx-auto max-w-6xl px-6 py-8">
+    <main class="admin-main">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             <div class="mb-6 space-y-3">
@@ -75,6 +46,7 @@
 
         {% block content %}{% endblock %}
     </main>
-    <script src="/static/js/admin.js?v={{ range(1, 99999)|random }}" defer></script>
+    <script src="/static/js/admin.js" defer></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

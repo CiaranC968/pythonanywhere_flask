@@ -31,7 +31,7 @@
         <tbody class="divide-y divide-warm-100" {% if section == 'projects' %}data-sortable-section="projects" data-sort-url="{{ url_for('admin.reorder_projects') }}"{% endif %}>
             {% for item in items %}
              <tr class="cursor-pointer hover:bg-warm-50/50 transition-colors {% if item.is_visible is defined and not item.is_visible %}bg-warm-50 opacity-70{% endif %}"
-                onclick="if (!event.target.closest('a, button, form')) window.location='{{ url_for('admin.edit_item', section=section, item_id=item.id) }}';"
+                data-row-href="{{ url_for('admin.edit_item', section=section, item_id=item.id) }}"
                 {% if section == 'projects' and item.is_visible %}draggable="true" data-sortable-id="{{ item.id }}"{% endif %}>
                 {% if section == 'projects' %}
                 <td class="px-5 py-4 align-middle">
@@ -56,7 +56,7 @@
                     <div class="flex justify-end gap-2">
                         <a href="{{ url_for('admin.edit_item', section=section, item_id=item.id) }}" class="rounded-lg border border-warm-200 px-3 py-2 font-bold text-warm-700 hover:border-brand-accent">Edit</a>
                         {% if item.is_visible %}
-                        <form method="post" action="{{ url_for('admin.delete_item', section=section, item_id=item.id) }}" onsubmit="return confirm('Archive this item?');">
+                        <form method="post" action="{{ url_for('admin.delete_item', section=section, item_id=item.id) }}" data-confirm="Archive this item?">
                             <button class="rounded-lg border border-warm-200 px-3 py-2 font-bold text-warm-700 hover:border-brand-accent">Archive</button>
                         </form>
                         {% else %}

@@ -7,9 +7,6 @@
         <p class="mt-2 text-warm-500">Manage the content that powers the site and generated PDF.</p>
     </div>
     <div class="flex flex-wrap gap-3">
-        <a href="{{ url_for('admin.job_tracker') }}" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">Job Tracker</a>
-        <a href="{{ url_for('admin.cv_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">CV Builder</a>
-        <a href="{{ url_for('admin.resume_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Resume Builder</a>
         <a href="{{ url_for('admin.diagnostics') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Diagnostics</a>
         <a href="{{ url_for('admin.deployment_checklist') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Deployment</a>
         <a href="{{ url_for('cv.get_cv') }}" target="_blank" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Preview PDF</a>
@@ -32,14 +29,14 @@
     <!-- Left Column: Main Editor Cards & Utilities -->
     <div class="space-y-6">
         <div>
-            <h2 class="text-2xl font-black text-warm-900 mb-4">Edit Portfolio</h2>
+            <h2 class="text-2xl font-black text-warm-900 mb-4">Content</h2>
             <div class="grid gap-4 sm:grid-cols-2">
                 {% for section, config in sections.items() %}
-                <div onclick="window.location='{{ url_for('admin.list_items', section=section) }}'" class="cursor-pointer group relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
+                <div class="group relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
                     <div>
                         <div class="flex items-center justify-between gap-3">
-                            <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xl font-black text-warm-900 hover:underline leading-snug" onclick="event.stopPropagation();">{{ config.label }}</a>
-                            <div class="flex items-center gap-2" onclick="event.stopPropagation();">
+                            <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xl font-black text-warm-900 hover:underline leading-snug">{{ config.label }}</a>
+                            <div class="flex items-center gap-2">
                                 <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ counts[section] }}</span>
                                 {% if not config.singleton %}
                                 <a href="{{ url_for('admin.new_item', section=section) }}" class="rounded-lg bg-warm-50 border border-warm-200/50 hover:bg-brand-accent p-1.5 text-xs text-warm-700 hover:text-brand-dark transition-all" title="Add item">
@@ -51,35 +48,13 @@
                         <p class="mt-2 text-sm text-warm-500">{{ config.description }}</p>
                     </div>
                     <div class="mt-4">
-                        <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xs font-black text-brand-hover hover:underline" onclick="event.stopPropagation();">
+                        <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xs font-black text-brand-hover hover:underline">
                             View All <i class="fas fa-arrow-right ml-1"></i>
                         </a>
                     </div>
                 </div>
                 {% endfor %}
                 
-                <!-- Job Tracker Card -->
-                <div onclick="window.location='{{ url_for('admin.job_tracker') }}'" class="cursor-pointer group relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
-                    <div>
-                        <div class="flex items-center justify-between gap-3">
-                            <a href="{{ url_for('admin.job_tracker') }}" class="text-xl font-black text-warm-900 hover:underline leading-snug" onclick="event.stopPropagation();">Job Tracker</a>
-                            <div class="flex items-center gap-2" onclick="event.stopPropagation();">
-                                {% if counts['stale_job_applications'] > 0 %}
-                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800 animate-pulse flex items-center gap-1" title="{{ counts['stale_job_applications'] }} application(s) need follow-up">
-                                    <i class="fas fa-exclamation-triangle text-amber-600"></i>{{ counts['stale_job_applications'] }} Follow Up
-                                </span>
-                                {% endif %}
-                                <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ counts['job_applications'] }}</span>
-                            </div>
-                        </div>
-                        <p class="mt-2 text-sm text-warm-500">Track and manage job applications, interview dates, stages, and notes.</p>
-                    </div>
-                    <div class="mt-4">
-                        <a href="{{ url_for('admin.job_tracker') }}" class="text-xs font-black text-brand-hover hover:underline" onclick="event.stopPropagation();">
-                            Open Tracker <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -136,16 +111,16 @@
             
             <!-- Quick Creator Tabs -->
             <div class="mt-4 flex border-b border-warm-200">
-                <button type="button" onclick="switchQuickTab('quick-exp')" id="tab-quick-exp" class="flex-1 pb-2 text-center text-xs font-black uppercase tracking-wider text-warm-900 border-b-2 border-brand-accent transition-all cursor-pointer">
+                <button type="button" data-quick-tab="quick-exp" aria-selected="true" class="quick-tab">
                     Experience
                 </button>
-                <button type="button" onclick="switchQuickTab('quick-skill')" id="tab-quick-skill" class="flex-1 pb-2 text-center text-xs font-bold uppercase tracking-wider text-warm-500 border-b-2 border-transparent hover:text-warm-800 transition-all cursor-pointer">
+                <button type="button" data-quick-tab="quick-skill" aria-selected="false" class="quick-tab">
                     Skill
                 </button>
             </div>
             
             <!-- Experience Form -->
-            <form id="form-quick-exp" method="post" action="{{ url_for('admin.quick_add') }}" class="mt-4 space-y-3">
+            <form data-quick-panel="quick-exp" method="post" action="{{ url_for('admin.quick_add') }}" class="mt-4 space-y-3">
                 <input type="hidden" name="section" value="experience">
                 <div>
                     <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Company</label>
@@ -189,7 +164,7 @@
             </form>
             
             <!-- Skill Form -->
-            <form id="form-quick-skill" method="post" action="{{ url_for('admin.quick_add') }}" class="mt-4 space-y-3 hidden">
+            <form data-quick-panel="quick-skill" method="post" action="{{ url_for('admin.quick_add') }}" class="mt-4 space-y-3 hidden">
                 <input type="hidden" name="section" value="skills">
                 <div>
                     <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Skill Title / Group</label>
@@ -227,24 +202,4 @@
     </div>
 </div>
 
-<script>
-function switchQuickTab(tab) {
-    const tabExp = document.getElementById('tab-quick-exp');
-    const tabSkill = document.getElementById('tab-quick-skill');
-    const formExp = document.getElementById('form-quick-exp');
-    const formSkill = document.getElementById('form-quick-skill');
-    
-    if (tab === 'quick-exp') {
-        tabExp.className = "flex-1 pb-2 text-center text-xs font-black uppercase tracking-wider text-warm-900 border-b-2 border-brand-accent transition-all cursor-pointer";
-        tabSkill.className = "flex-1 pb-2 text-center text-xs font-bold uppercase tracking-wider text-warm-500 border-b-2 border-transparent hover:text-warm-800 transition-all cursor-pointer";
-        formExp.classList.remove('hidden');
-        formSkill.classList.add('hidden');
-    } else {
-        tabSkill.className = "flex-1 pb-2 text-center text-xs font-black uppercase tracking-wider text-warm-900 border-b-2 border-brand-accent transition-all cursor-pointer";
-        tabExp.className = "flex-1 pb-2 text-center text-xs font-bold uppercase tracking-wider text-warm-500 border-b-2 border-transparent hover:text-warm-800 transition-all cursor-pointer";
-        formSkill.classList.remove('hidden');
-        formExp.classList.add('hidden');
-    }
-}
-</script>
 {% endblock %}

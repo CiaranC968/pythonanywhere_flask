@@ -1,16 +1,7 @@
 {% extends "admin/base.html" %}
 
 {% macro status_options(current) %}
-    {% for value, label in [
-        ('Not Applied Yet', 'Saved'),
-        ('Applied', 'Applied'),
-        ('Assessment', 'Assessment'),
-        ('Interview', 'Interview'),
-        ('Offer', 'Offer'),
-        ('Got Job', 'Got job'),
-        ('Rejected', 'Rejected'),
-        ('Missed Deadline', 'Missed deadline')
-    ] %}
+    {% for value, label in job_stages %}
     <option value="{{ value }}" {% if current == value %}selected{% endif %}>{{ label }}</option>
     {% endfor %}
 {% endmacro %}
@@ -63,14 +54,8 @@
 
     <fieldset class="milestone-fieldset">
         <legend>Milestones reached</legend>
-        <label>
-            <input type="checkbox" name="reached_assessment" {% if app and app.reached_assessment %}checked{% endif %}>
-            <span>Got assessment</span>
-        </label>
-        <label>
-            <input type="checkbox" name="reached_interview" {% if app and app.reached_interview %}checked{% endif %}>
-            <span>Got interview</span>
-        </label>
+        <label><input type="checkbox" name="reached_assessment" {% if app and app.reached_assessment %}checked{% endif %}> Got assessment</label>
+        <label><input type="checkbox" name="reached_interview" {% if app and app.reached_interview %}checked{% endif %}> Got interview</label>
     </fieldset>
 
     <div class="tracker-form-grid">
@@ -98,281 +83,15 @@
 {% endmacro %}
 
 {% block content %}
-<style>
-    .tracker-shell {
-        --tracker-border: #ddd9d1;
-        --tracker-muted: #716c63;
-        --tracker-ink: #1f1d1a;
-        --tracker-surface: #fff;
-    }
-    .tracker-header {
-        display: flex;
-        align-items: end;
-        justify-content: space-between;
-        gap: 1.5rem;
-        margin-bottom: 1.75rem;
-    }
-    .tracker-eyebrow {
-        color: #8a6400;
-        font-size: .75rem;
-        font-weight: 800;
-        letter-spacing: 0;
-        text-transform: uppercase;
-    }
-    .tracker-title {
-        color: var(--tracker-ink);
-        font-size: clamp(1.75rem, 4vw, 2.4rem);
-        font-weight: 850;
-        line-height: 1.1;
-        margin-top: .35rem;
-    }
-    .tracker-subtitle { color: var(--tracker-muted); margin-top: .6rem; }
-    .tracker-primary {
-        align-items: center;
-        background: #1f2937;
-        border: 1px solid #1f2937;
-        border-radius: 6px;
-        color: #fff;
-        display: inline-flex;
-        font-size: .875rem;
-        font-weight: 750;
-        gap: .55rem;
-        justify-content: center;
-        min-height: 2.75rem;
-        padding: .65rem 1rem;
-    }
-    .tracker-primary:hover { background: #111827; }
-    .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        border: 1px solid var(--tracker-border);
-        border-radius: 8px;
-        background: var(--tracker-surface);
-        margin-bottom: 1.5rem;
-        overflow: hidden;
-    }
-    .metric {
-        min-width: 0;
-        padding: 1rem;
-        border-right: 1px solid var(--tracker-border);
-    }
-    .metric:last-child { border-right: 0; }
-    .metric-label {
-        color: var(--tracker-muted);
-        display: block;
-        font-size: .7rem;
-        font-weight: 750;
-        line-height: 1.25;
-        text-transform: uppercase;
-    }
-    .metric-value {
-        color: var(--tracker-ink);
-        display: block;
-        font-size: 1.65rem;
-        font-weight: 850;
-        line-height: 1.15;
-        margin-top: .35rem;
-    }
-    .metric-note { color: var(--tracker-muted); display: block; font-size: .72rem; margin-top: .2rem; }
-    .tracker-toolbar {
-        align-items: center;
-        display: flex;
-        gap: .75rem;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-    }
-    .tracker-search { flex: 1; max-width: 32rem; position: relative; }
-    .tracker-search i {
-        color: #8d887f;
-        left: .9rem;
-        pointer-events: none;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-    .tracker-search input { padding-left: 2.55rem; border-radius: 6px; }
-    .tracker-result-count { color: var(--tracker-muted); font-size: .8rem; white-space: nowrap; }
-    .status-tabs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .45rem;
-        margin-bottom: 1.25rem;
-    }
-    .status-tab {
-        background: transparent;
-        border: 1px solid var(--tracker-border);
-        border-radius: 5px;
-        color: #5f5a52;
-        font-size: .78rem;
-        font-weight: 750;
-        padding: .5rem .72rem;
-    }
-    .status-tab:hover { border-color: #9c9589; color: var(--tracker-ink); }
-    .status-tab.active { background: #1f2937; border-color: #1f2937; color: #fff; }
-    .applications-list { display: grid; gap: .75rem; }
-    .application-card {
-        background: var(--tracker-surface);
-        border: 1px solid var(--tracker-border);
-        border-radius: 7px;
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: minmax(13rem, 1.4fr) minmax(11rem, .8fr) minmax(13rem, 1fr) auto;
-        padding: 1rem;
-        transition: border-color 150ms ease, box-shadow 150ms ease;
-    }
-    .application-card:hover { border-color: #b9b1a4; box-shadow: 0 3px 12px rgb(31 29 26 / 7%); }
-    .application-role { color: var(--tracker-ink); font-size: 1rem; font-weight: 800; line-height: 1.25; }
-    .application-company { color: var(--tracker-muted); font-size: .85rem; font-weight: 650; margin-top: .25rem; }
-    .badge-row { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .6rem; }
-    .custom-badge {
-        background: #f1efe9;
-        border: 1px solid #e1ddd4;
-        border-radius: 4px;
-        color: #5b554c;
-        font-size: .65rem;
-        font-weight: 750;
-        padding: .2rem .38rem;
-    }
-    .status-badge {
-        align-items: center;
-        border-radius: 4px;
-        display: inline-flex;
-        font-size: .7rem;
-        font-weight: 800;
-        padding: .3rem .48rem;
-        white-space: nowrap;
-    }
-    .status-saved { background: #eef2ff; color: #3730a3; }
-    .status-applied { background: #e0f2fe; color: #075985; }
-    .status-assessment { background: #f3e8ff; color: #6b21a8; }
-    .status-interview { background: #fef3c7; color: #854d0e; }
-    .status-offer, .status-got-job { background: #dcfce7; color: #166534; }
-    .status-rejected, .status-missed-deadline { background: #fee2e2; color: #991b1b; }
-    .application-dates { color: var(--tracker-muted); display: grid; font-size: .75rem; gap: .35rem; }
-    .application-dates strong { color: #45413b; font-weight: 750; }
-    .application-notes {
-        color: #625d55;
-        display: -webkit-box;
-        font-size: .78rem;
-        line-height: 1.45;
-        overflow: hidden;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
-    }
-    .application-actions { align-items: center; display: flex; gap: .4rem; justify-content: end; }
-    .quick-status { align-items: center; display: flex; gap: .35rem; }
-    .quick-status select { border-radius: 5px; font-size: .72rem; min-width: 7.5rem; padding: .5rem .6rem; }
-    .icon-button {
-        align-items: center;
-        background: #fff;
-        border: 1px solid var(--tracker-border);
-        border-radius: 5px;
-        color: #514c45;
-        display: inline-flex;
-        height: 2.35rem;
-        justify-content: center;
-        width: 2.35rem;
-    }
-    .icon-button:hover { border-color: #9c9589; color: #111827; }
-    .icon-button-danger { color: #b42318; }
-    .empty-state {
-        border: 1px dashed #cfc8bc;
-        border-radius: 7px;
-        color: var(--tracker-muted);
-        padding: 3rem 1.25rem;
-        text-align: center;
-    }
-    .tracker-dialog {
-        background: #fff;
-        border: 0;
-        border-radius: 8px;
-        box-shadow: 0 24px 60px rgb(17 24 39 / 22%);
-        color: var(--tracker-ink);
-        max-height: min(90dvh, 58rem);
-        max-width: 48rem;
-        overflow-y: auto;
-        padding: 0;
-        width: calc(100% - 2rem);
-    }
-    .tracker-dialog::backdrop { background: rgb(17 24 39 / 55%); }
-    .dialog-header {
-        align-items: center;
-        background: #fff;
-        border-bottom: 1px solid var(--tracker-border);
-        display: flex;
-        justify-content: space-between;
-        padding: 1rem 1.25rem;
-        position: sticky;
-        top: 0;
-        z-index: 2;
-    }
-    .dialog-header h2 { font-size: 1.15rem; font-weight: 800; }
-    .dialog-body { padding: 1.25rem; }
-    .tracker-form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .tracker-field { display: grid; gap: .4rem; min-width: 0; }
-    .tracker-field > span, .milestone-fieldset legend { color: #4f4a43; font-size: .75rem; font-weight: 750; }
-    .tracker-field small { color: var(--tracker-muted); font-size: .68rem; }
-    .tracker-field-wide { grid-column: 1 / -1; }
-    .milestone-fieldset {
-        border-bottom: 1px solid var(--tracker-border);
-        border-top: 1px solid var(--tracker-border);
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem 1.5rem;
-        margin: 1.25rem 0;
-        padding: 1rem 0;
-    }
-    .milestone-fieldset legend { padding-right: 1rem; }
-    .milestone-fieldset label { align-items: center; display: flex; font-size: .82rem; font-weight: 650; gap: .45rem; }
-    .milestone-fieldset input { accent-color: #1f2937; height: 1rem; width: 1rem; }
-    .dialog-actions {
-        align-items: center;
-        border-top: 1px solid var(--tracker-border);
-        display: flex;
-        gap: .75rem;
-        justify-content: end;
-        margin-top: 1.25rem;
-        padding-top: 1rem;
-    }
-    .tracker-secondary { border: 1px solid var(--tracker-border); border-radius: 6px; font-size: .85rem; font-weight: 700; padding: .65rem 1rem; }
-    @media (max-width: 980px) {
-        .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .metric:nth-child(3) { border-right: 0; }
-        .metric:nth-child(-n+3) { border-bottom: 1px solid var(--tracker-border); }
-        .application-card { grid-template-columns: minmax(0, 1fr) auto; }
-        .application-dates, .application-notes { grid-column: 1 / -1; }
-        .application-actions { grid-column: 1 / -1; justify-content: start; }
-    }
-    @media (max-width: 640px) {
-        .tracker-header { align-items: stretch; flex-direction: column; }
-        .tracker-primary { width: 100%; }
-        .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .metric, .metric:nth-child(3) { border-bottom: 1px solid var(--tracker-border); border-right: 1px solid var(--tracker-border); }
-        .metric:nth-child(even) { border-right: 0; }
-        .metric:nth-last-child(-n+2) { border-bottom: 0; }
-        .tracker-toolbar { align-items: stretch; flex-direction: column; }
-        .tracker-search { max-width: none; }
-        .tracker-result-count { align-self: end; }
-        .application-card { grid-template-columns: minmax(0, 1fr); }
-        .application-card > * { grid-column: 1; }
-        .application-actions { align-items: stretch; flex-wrap: wrap; }
-        .quick-status { flex: 1 1 100%; }
-        .quick-status select { flex: 1; }
-        .tracker-form-grid { grid-template-columns: 1fr; }
-        .tracker-field-wide { grid-column: auto; }
-    }
-</style>
-
 <div class="tracker-shell">
     <header class="tracker-header">
         <div>
-            <a href="{{ url_for('admin.dashboard') }}" class="tracker-eyebrow">Admin / Job tracker</a>
+            <span class="tracker-eyebrow">Job search</span>
             <h1 class="tracker-title">Job applications</h1>
-            <p class="tracker-subtitle">Track each application from saved role to offer, including the milestones reached along the way.</p>
+            <p class="tracker-subtitle">Track each application from saved role to offer, including milestones reached along the way.</p>
         </div>
-        <button type="button" class="tracker-primary" onclick="openJobDialog('add-job-dialog')">
-            <i class="fas fa-plus" aria-hidden="true"></i>
-            Add application
+        <button type="button" class="tracker-primary" data-dialog-open="add-job-dialog">
+            <i class="fas fa-plus" aria-hidden="true"></i> Add application
         </button>
     </header>
 
@@ -396,13 +115,9 @@
 
     <nav class="status-tabs" aria-label="Filter applications by status">
         <button type="button" class="status-tab active" data-filter="all">All <span>{{ applications|length }}</span></button>
-        <button type="button" class="status-tab" data-filter="Applied">Applied <span>{{ applications|selectattr('stage', 'equalto', 'Applied')|list|length }}</span></button>
-        <button type="button" class="status-tab" data-filter="Assessment">Assessment <span>{{ applications|selectattr('stage', 'equalto', 'Assessment')|list|length }}</span></button>
-        <button type="button" class="status-tab" data-filter="Interview">Interview <span>{{ applications|selectattr('stage', 'equalto', 'Interview')|list|length }}</span></button>
-        <button type="button" class="status-tab" data-filter="Offer">Offer <span>{{ applications|selectattr('stage', 'equalto', 'Offer')|list|length }}</span></button>
-        <button type="button" class="status-tab" data-filter="Got Job">Got job <span>{{ applications|selectattr('stage', 'equalto', 'Got Job')|list|length }}</span></button>
-        <button type="button" class="status-tab" data-filter="Rejected">Rejected <span>{{ applications|selectattr('stage', 'equalto', 'Rejected')|list|length }}</span></button>
-        <button type="button" class="status-tab" data-filter="Not Applied Yet">Saved <span>{{ applications|selectattr('stage', 'equalto', 'Not Applied Yet')|list|length }}</span></button>
+        {% for value, label in job_stages %}
+        <button type="button" class="status-tab" data-filter="{{ value }}">{{ label }} <span>{{ stage_counts.get(value, 0) }}</span></button>
+        {% endfor %}
     </nav>
 
     <div id="applications-list" class="applications-list">
@@ -426,16 +141,16 @@
                 {% if app.application_deadline and app.stage == 'Not Applied Yet' %}<span>Deadline <strong class="format-date">{{ app.application_deadline }}</strong></span>{% endif %}
             </div>
             <div>
-                {% if app.notes %}<p class="application-notes">{{ app.notes }}</p>{% else %}<p class="application-notes">No notes added.</p>{% endif %}
-                {% if app.job_url %}<a href="{{ app.job_url }}" target="_blank" rel="noopener noreferrer" class="tracker-eyebrow" style="display:inline-block;margin-top:.5rem;">Open job advert <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>{% endif %}
+                <p class="application-notes">{{ app.notes or 'No notes added.' }}</p>
+                {% if app.job_url %}<a href="{{ app.job_url }}" target="_blank" rel="noopener noreferrer" class="tracker-eyebrow application-link">Open job advert <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>{% endif %}
             </div>
             <div class="application-actions">
                 <form method="post" action="{{ url_for('admin.update_job_stage_ajax', app_id=app.id) }}" class="quick-status">
                     <select name="stage" class="admin-input" aria-label="Update status for {{ app.role }}">{{ status_options(app.stage) }}</select>
                     <button class="icon-button" title="Save status" aria-label="Save status"><i class="fas fa-check" aria-hidden="true"></i></button>
                 </form>
-                <button type="button" class="icon-button" title="Edit application" aria-label="Edit {{ app.role }}" onclick="openJobDialog('edit-job-{{ app.id }}')"><i class="fas fa-pen" aria-hidden="true"></i></button>
-                <form method="post" action="{{ url_for('admin.delete_job_application', app_id=app.id) }}" onsubmit="return confirm('Delete this application?');">
+                <button type="button" class="icon-button" title="Edit application" aria-label="Edit {{ app.role }}" data-dialog-open="edit-job-{{ app.id }}"><i class="fas fa-pen" aria-hidden="true"></i></button>
+                <form method="post" action="{{ url_for('admin.delete_job_application', app_id=app.id) }}" data-confirm="Delete this application?">
                     <button class="icon-button icon-button-danger" title="Delete application" aria-label="Delete {{ app.role }}"><i class="fas fa-trash" aria-hidden="true"></i></button>
                 </form>
             </div>
@@ -445,16 +160,16 @@
 
     <div id="tracker-empty" class="empty-state {% if applications %}hidden{% endif %}">
         <i class="fas fa-briefcase" aria-hidden="true"></i>
-        <p style="margin:.6rem auto 0;">No applications match this view.</p>
+        <p>No applications match this view.</p>
     </div>
 </div>
 
 <dialog id="add-job-dialog" class="tracker-dialog">
     <form method="post" action="{{ url_for('admin.add_job_application') }}">
-        <header class="dialog-header"><h2>Add application</h2><button type="button" class="icon-button" onclick="closeJobDialog(this)" aria-label="Close"><i class="fas fa-xmark"></i></button></header>
+        <header class="dialog-header"><h2>Add application</h2><button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button></header>
         <div class="dialog-body">
             {{ application_fields() }}
-            <div class="dialog-actions"><button type="button" class="tracker-secondary" onclick="closeJobDialog(this)">Cancel</button><button class="tracker-primary">Add application</button></div>
+            <div class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Add application</button></div>
         </div>
     </form>
 </dialog>
@@ -462,69 +177,16 @@
 {% for app in applications %}
 <dialog id="edit-job-{{ app.id }}" class="tracker-dialog">
     <form method="post" action="{{ url_for('admin.edit_job_application', app_id=app.id) }}">
-        <header class="dialog-header"><h2>Edit application</h2><button type="button" class="icon-button" onclick="closeJobDialog(this)" aria-label="Close"><i class="fas fa-xmark"></i></button></header>
+        <header class="dialog-header"><h2>Edit application</h2><button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button></header>
         <div class="dialog-body">
             {{ application_fields(app) }}
-            <div class="dialog-actions"><button type="button" class="tracker-secondary" onclick="closeJobDialog(this)">Cancel</button><button class="tracker-primary">Save changes</button></div>
+            <div class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Save changes</button></div>
         </div>
     </form>
 </dialog>
 {% endfor %}
+{% endblock %}
 
-<script>
-    let activeJobFilter = 'all';
-
-    function openJobDialog(id) {
-        const dialog = document.getElementById(id);
-        if (dialog) dialog.showModal();
-    }
-
-    function closeJobDialog(button) {
-        button.closest('dialog').close();
-    }
-
-    function filterApplications() {
-        const query = document.getElementById('job-search').value.trim().toLowerCase();
-        const cards = [...document.querySelectorAll('.application-card')];
-        let visible = 0;
-
-        cards.forEach((card) => {
-            const matchesSearch = !query || card.dataset.search.includes(query);
-            const matchesStatus = activeJobFilter === 'all' || card.dataset.stage === activeJobFilter;
-            const show = matchesSearch && matchesStatus;
-            card.hidden = !show;
-            if (show) visible += 1;
-        });
-
-        document.getElementById('tracker-result-count').textContent = `${visible} ${visible === 1 ? 'application' : 'applications'}`;
-        document.getElementById('tracker-empty').classList.toggle('hidden', visible !== 0);
-    }
-
-    document.getElementById('job-search').addEventListener('input', filterApplications);
-    document.querySelectorAll('.status-tab').forEach((tab) => {
-        tab.addEventListener('click', () => {
-            activeJobFilter = tab.dataset.filter;
-            document.querySelectorAll('.status-tab').forEach((item) => item.classList.toggle('active', item === tab));
-            filterApplications();
-        });
-    });
-
-    document.querySelectorAll('.tracker-dialog').forEach((dialog) => {
-        dialog.addEventListener('click', (event) => {
-            if (event.target === dialog) dialog.close();
-        });
-    });
-
-    document.querySelectorAll('.format-date').forEach((element) => {
-        const raw = element.textContent.trim();
-        const date = new Date(raw.length === 10 ? `${raw}T00:00:00` : raw);
-        if (!Number.isNaN(date.getTime())) {
-            const includesTime = raw.includes('T') || raw.includes(' ');
-            element.textContent = new Intl.DateTimeFormat('en-GB', {
-                day: '2-digit', month: 'short', year: 'numeric',
-                ...(includesTime ? { hour: '2-digit', minute: '2-digit' } : {})
-            }).format(date);
-        }
-    });
-</script>
+{% block scripts %}
+<script src="/static/js/job_tracker.js" defer></script>
 {% endblock %}

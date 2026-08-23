@@ -1,6 +1,8 @@
 import json
 import os
 import re
+from collections import Counter
+from datetime import datetime, timedelta
 from functools import wraps
 from importlib import import_module
 
@@ -29,6 +31,46 @@ from models import Certificate, Education, Experience, Profile, Project, ResumeT
 from portfolio_data import get_portfolio, get_profile
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+JOB_STAGES = (
+    ("Not Applied Yet", "Saved"),
+    ("Applied", "Applied"),
+    ("Assessment", "Assessment"),
+    ("Interview", "Interview"),
+    ("Offer", "Offer"),
+    ("Got Job", "Got job"),
+    ("Rejected", "Rejected"),
+    ("Missed Deadline", "Missed deadline"),
+)
+JOB_STAGE_VALUES = {value for value, _label in JOB_STAGES}
+JOB_INTERVIEW_STAGES = {"Interview", "Offer", "Got Job"}
+JOB_OPTIONAL_FIELDS = {
+    "interview_date",
+    "assessment_date",
+    "application_deadline",
+    "job_url",
+    "company_url",
+    "company_address",
+    "linkedin_url",
+    "salary",
+    "location",
+}
+JOB_TEXT_FIELDS = (
+    "company",
+    "role",
+    "applied_date",
+    "interview_date",
+    "assessment_date",
+    "application_deadline",
+    "badges",
+    "notes",
+    "job_url",
+    "company_url",
+    "company_address",
+    "linkedin_url",
+    "salary",
+    "location",
+)
 
 from blueprints.admin_config import (
     IMAGE_FIELDS,
@@ -106,20 +148,12 @@ def dashboard():
                     query = query.filter_by(is_visible=True)
                 counts[section] = query.count()
         counts["job_applications"] = JobApplication.query.count()
-        
-        # Calculate stale applications (Applied for 24+ days)
-        stale_count = 0
-        try:
-            from datetime import datetime, timedelta
-            limit_date = (datetime.today() - timedelta(days=24)).strftime("%Y-%m-%d")
-            applied_apps = JobApplication.query.filter_by(stage='Applied').all()
-            for app in applied_apps:
-                app_date_str = (app.applied_date or "").split("T")[0].split(" ")[0].strip()
-                if app_date_str and app_date_str <= limit_date:
-                    stale_count += 1
-        except Exception:
-            pass
-        counts["stale_job_applications"] = stale_count
+        cutoff = datetime.now() - timedelta(days=24)
+        counts["stale_job_applications"] = sum(
+            bool(applied_at and applied_at <= cutoff)
+            for application in JobApplication.query.filter_by(stage="Applied")
+            if (applied_at := _parse_job_datetime(application.applied_date))
+        )
     except SQLAlchemyError as exc:
         database_error = str(exc)
         counts = {section: 0 for section in SECTIONS}
@@ -286,29 +320,21 @@ def resume_builder():
     return render_template(
         "admin/resume_builder.html",
         profile=get_profile(),
-        sentence_templates=_resume_sentence_templates(),
-        custom_sentence_templates=_custom_resume_templates(include_hidden=True),
-        role_presets=RESUME_ROLE_PRESETS,
-        template_targets=ALLOWED_RESUME_TEMPLATE_TARGETS,
+        resume_presets=(RESUME_ROLE_PRESETS[0], RESUME_ROLE_PRESETS[-1]),
     )
 
 
 @admin_bp.route("/resume-builder/templates", methods=["POST"])
 @admin_required
 def add_resume_template():
-    target = request.form.get("template_target", "").strip()
-    label = request.form.get("template_label", "").strip()
-    text_value = request.form.get("template_text", "").strip()
-
-    if target not in ALLOWED_RESUME_TEMPLATE_TARGETS or not label or not text_value:
+    values = _resume_template_form_values()
+    if not values:
         flash("Choose a section, label, and sentence before saving a template.", "error")
         return redirect(url_for("admin.resume_builder"))
 
     max_order = db.session.query(func.max(ResumeTemplate.sort_order)).scalar()
     template = ResumeTemplate()
-    template.target = target
-    template.label = label
-    template.text = text_value
+    _apply_resume_template_values(template, values)
     template.sort_order = (max_order or 0) + 10
     template.is_visible = True
     db.session.add(template)
@@ -324,16 +350,12 @@ def edit_resume_template(template_id: int):
     if not template:
         abort(404)
 
-    target = request.form.get("template_target", "").strip()
-    label = request.form.get("template_label", "").strip()
-    text_value = request.form.get("template_text", "").strip()
-    if target not in ALLOWED_RESUME_TEMPLATE_TARGETS or not label or not text_value:
+    values = _resume_template_form_values()
+    if not values:
         flash("Choose a section, label, and sentence before saving the template.", "error")
         return redirect(url_for("admin.resume_builder"))
 
-    template.target = target
-    template.label = label
-    template.text = text_value
+    _apply_resume_template_values(template, values)
     template.sort_order = _form_integer("sort_order", template.sort_order)
     if _commit_or_flash():
         flash("Template sentence saved.", "success")
@@ -573,6 +595,22 @@ def _custom_resume_templates(include_hidden=False):
         current_app.logger.exception("Could not load custom resume templates: %s", exc)
         db.session.rollback()
         return []
+
+
+def _resume_template_form_values():
+    values = {
+        "target": request.form.get("template_target", "").strip(),
+        "label": request.form.get("template_label", "").strip(),
+        "text": request.form.get("template_text", "").strip(),
+    }
+    if values["target"] not in ALLOWED_RESUME_TEMPLATE_TARGETS:
+        return None
+    return values if values["label"] and values["text"] else None
+
+
+def _apply_resume_template_values(template, values):
+    for field, value in values.items():
+        setattr(template, field, value)
 
 
 def _document_item_label(section, item):
@@ -876,125 +914,131 @@ def _mask_database_uri(uri):
     return f"{prefix}://{credentials}@{host_part}"
 
 
+def _job_application_form_values():
+    values = {field: request.form.get(field, "").strip() for field in JOB_TEXT_FIELDS}
+    stage = request.form.get("stage", "Applied").strip()
+    values["stage"] = stage if stage in JOB_STAGE_VALUES else "Applied"
+    values["reached_interview"] = (
+        request.form.get("reached_interview") == "on" or values["stage"] in JOB_INTERVIEW_STAGES
+    )
+    values["reached_assessment"] = (
+        request.form.get("reached_assessment") == "on" or values["stage"] == "Assessment"
+    )
+    return values
+
+
+def _apply_job_application_values(application, values):
+    for field, value in values.items():
+        if field in JOB_OPTIONAL_FIELDS:
+            value = value or None
+        setattr(application, field, value)
+
+
+def _refresh_job_application_state(applications, now):
+    modified = False
+    for application in applications:
+        if application.stage == "Assessment" and not application.reached_assessment:
+            application.reached_assessment = True
+            modified = True
+        if application.stage in JOB_INTERVIEW_STAGES and not application.reached_interview:
+            application.reached_interview = True
+            modified = True
+        if application.stage != "Not Applied Yet" or not application.application_deadline:
+            continue
+
+        deadline = _parse_job_datetime(application.application_deadline, end_of_day=True)
+        if deadline and now > deadline:
+            application.stage = "Missed Deadline"
+            modified = True
+    return modified
+
+
+def _parse_job_datetime(value, end_of_day=False):
+    value = (value or "").strip().replace(" ", "T")
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    if end_of_day and "T" not in value:
+        return parsed.replace(hour=23, minute=59, second=59)
+    return parsed
+
+
+def _normalise_job_datetime(value):
+    value = (value or "").strip()
+    if not value:
+        return None
+    for date_format in ("%d/%m/%Y %H:%M", "%d/%m/%Y"):
+        try:
+            parsed = datetime.strptime(value, date_format)
+            return parsed.isoformat(timespec="minutes") if "%H" in date_format else parsed.date().isoformat()
+        except ValueError:
+            continue
+    return value.replace(" ", "T")
+
+
+def _job_tracker_metrics(applications):
+    submitted = [
+        application
+        for application in applications
+        if application.stage not in {"Not Applied Yet", "Missed Deadline"}
+    ]
+    submitted_count = len(submitted)
+    interviews = sum(
+        bool(application.reached_interview or application.stage in JOB_INTERVIEW_STAGES)
+        for application in submitted
+    )
+    assessments = sum(
+        bool(application.reached_assessment or application.stage == "Assessment")
+        for application in submitted
+    )
+    rejections = sum(application.stage == "Rejected" for application in submitted)
+
+    def rate(count):
+        return round((count / submitted_count) * 100) if submitted_count else 0
+
+    return {
+        "submitted": submitted_count,
+        "interviews": interviews,
+        "assessments": assessments,
+        "rejections": rejections,
+        "interview_rate": rate(interviews),
+        "assessment_rate": rate(assessments),
+        "rejection_rate": rate(rejections),
+    }
+
+
 @admin_bp.route("/job-tracker")
 @admin_required
 def job_tracker():
-    from datetime import datetime
-    today_str = datetime.today().strftime("%Y-%m-%d")
-    today_now = datetime.today()
-
-    # Dynamic check of missed deadlines
-    modified = False
-    all_apps = JobApplication.query.all()
-    for app in all_apps:
-        if app.stage == "Assessment" and not app.reached_assessment:
-            app.reached_assessment = True
-            modified = True
-        if app.stage in ("Interview", "Offer", "Got Job") and not app.reached_interview:
-            app.reached_interview = True
-            modified = True
-        if app.stage == 'Not Applied Yet' and app.application_deadline:
-            try:
-                dl_str = app.application_deadline.strip()
-                if 'T' in dl_str:
-                    dl_dt = datetime.strptime(dl_str, "%Y-%m-%dT%H:%M")
-                elif ' ' in dl_str:
-                    dl_dt = datetime.strptime(dl_str, "%Y-%m-%d %H:%M")
-                else:
-                    dl_dt = datetime.strptime(dl_str, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
-
-                if today_now > dl_dt:
-                    app.stage = 'Missed Deadline'
-                    modified = True
-            except ValueError:
-                date_part = app.application_deadline.split('T')[0].split(' ')[0]
-                if today_str > date_part:
-                    app.stage = 'Missed Deadline'
-                    modified = True
-
-    if modified:
+    now = datetime.now()
+    applications = JobApplication.query.order_by(JobApplication.id.desc()).all()
+    if _refresh_job_application_state(applications, now):
         db.session.commit()
 
-    applications = JobApplication.query.order_by(JobApplication.id.desc()).all()
-    submitted = [
-        app for app in applications
-        if app.stage not in ("Not Applied Yet", "Missed Deadline")
-    ]
-    interview_count = sum(
-        bool(app.reached_interview or app.stage in ("Interview", "Offer", "Got Job"))
-        for app in submitted
-    )
-    assessment_count = sum(
-        bool(app.reached_assessment or app.stage == "Assessment")
-        for app in submitted
-    )
-    rejected_count = sum(app.stage == "Rejected" for app in submitted)
-    submitted_count = len(submitted)
-    tracker_metrics = {
-        "submitted": submitted_count,
-        "interviews": interview_count,
-        "assessments": assessment_count,
-        "rejections": rejected_count,
-        "interview_rate": round((interview_count / submitted_count) * 100) if submitted_count else 0,
-        "assessment_rate": round((assessment_count / submitted_count) * 100) if submitted_count else 0,
-        "rejection_rate": round((rejected_count / submitted_count) * 100) if submitted_count else 0,
-    }
     return render_template(
         "admin/job_tracker.html",
         applications=applications,
-        tracker_metrics=tracker_metrics,
-        today=today_str,
+        job_stages=JOB_STAGES,
+        stage_counts=Counter(app.stage for app in applications),
+        tracker_metrics=_job_tracker_metrics(applications),
+        today=now.strftime("%Y-%m-%d"),
     )
 
 
 @admin_bp.route("/job-tracker/add", methods=["POST"])
 @admin_required
 def add_job_application():
-    from datetime import datetime
-    company = request.form.get("company", "").strip()
-    role = request.form.get("role", "").strip()
-    stage = request.form.get("stage", "Applied").strip()
-    applied_date = request.form.get("applied_date", "").strip()
-    interview_date = request.form.get("interview_date", "").strip()
-    assessment_date = request.form.get("assessment_date", "").strip()
-    application_deadline = request.form.get("application_deadline", "").strip()
-    reached_interview = request.form.get("reached_interview") == "on" or stage in ("Interview", "Offer", "Got Job")
-    reached_assessment = request.form.get("reached_assessment") == "on" or stage == "Assessment"
-    badges = request.form.get("badges", "").strip()
-    notes = request.form.get("notes", "").strip()
-    job_url = request.form.get("job_url", "").strip()
-    company_url = request.form.get("company_url", "").strip()
-    company_address = request.form.get("company_address", "").strip()
-    linkedin_url = request.form.get("linkedin_url", "").strip()
-    salary = request.form.get("salary", "").strip()
-    location = request.form.get("location", "").strip()
-
-    if not company or not role:
+    values = _job_application_form_values()
+    if not values["company"] or not values["role"]:
         flash("Company and Role are required.", "error")
         return redirect(url_for("admin.job_tracker"))
 
-    if not applied_date:
-        applied_date = datetime.today().strftime("%Y-%m-%d")
-
-    app = JobApplication(
-        company=company,
-        role=role,
-        stage=stage,
-        applied_date=applied_date,
-        interview_date=interview_date if interview_date else None,
-        assessment_date=assessment_date if assessment_date else None,
-        application_deadline=application_deadline if application_deadline else None,
-        reached_interview=reached_interview,
-        reached_assessment=reached_assessment,
-        badges=badges,
-        notes=notes,
-        job_url=job_url if job_url else None,
-        company_url=company_url if company_url else None,
-        company_address=company_address if company_address else None,
-        linkedin_url=linkedin_url if linkedin_url else None,
-        salary=salary if salary else None,
-        location=location if location else None,
-    )
+    values["applied_date"] = values["applied_date"] or datetime.now().strftime("%Y-%m-%d")
+    app = JobApplication()
+    _apply_job_application_values(app, values)
     db.session.add(app)
     if _commit_or_flash():
         flash("Job application added successfully.", "success")
@@ -1008,45 +1052,12 @@ def edit_job_application(app_id: int):
     if not app:
         abort(404)
 
-    company = request.form.get("company", "").strip()
-    role = request.form.get("role", "").strip()
-    stage = request.form.get("stage", "Applied").strip()
-    applied_date = request.form.get("applied_date", "").strip()
-    interview_date = request.form.get("interview_date", "").strip()
-    assessment_date = request.form.get("assessment_date", "").strip()
-    application_deadline = request.form.get("application_deadline", "").strip()
-    reached_interview = request.form.get("reached_interview") == "on" or stage in ("Interview", "Offer", "Got Job")
-    reached_assessment = request.form.get("reached_assessment") == "on" or stage == "Assessment"
-    badges = request.form.get("badges", "").strip()
-    notes = request.form.get("notes", "").strip()
-    job_url = request.form.get("job_url", "").strip()
-    company_url = request.form.get("company_url", "").strip()
-    company_address = request.form.get("company_address", "").strip()
-    linkedin_url = request.form.get("linkedin_url", "").strip()
-    salary = request.form.get("salary", "").strip()
-    location = request.form.get("location", "").strip()
-
-    if not company or not role:
+    values = _job_application_form_values()
+    if not values["company"] or not values["role"]:
         flash("Company and Role are required.", "error")
         return redirect(url_for("admin.job_tracker"))
 
-    app.company = company
-    app.role = role
-    app.stage = stage
-    app.applied_date = applied_date
-    app.interview_date = interview_date if interview_date else None
-    app.assessment_date = assessment_date if assessment_date else None
-    app.application_deadline = application_deadline if application_deadline else None
-    app.reached_interview = reached_interview
-    app.reached_assessment = reached_assessment
-    app.badges = badges
-    app.notes = notes
-    app.job_url = job_url if job_url else None
-    app.company_url = company_url if company_url else None
-    app.company_address = company_address if company_address else None
-    app.linkedin_url = linkedin_url if linkedin_url else None
-    app.salary = salary if salary else None
-    app.location = location if location else None
+    _apply_job_application_values(app, values)
 
     if _commit_or_flash():
         flash("Job application updated successfully.", "success")
@@ -1194,33 +1205,17 @@ def update_job_stage_ajax(app_id: int):
     additional_notes = request.form.get("additional_notes", "").strip()
     date_val = request.form.get("date_val", "").strip()
 
-    if stage:
+    if stage in JOB_STAGE_VALUES:
         app.stage = stage
-        if stage in ('Interview', 'Offer', 'Got Job'):
+        if stage in JOB_INTERVIEW_STAGES:
             app.reached_interview = True
-        if stage == 'Assessment':
+        if stage == "Assessment":
             app.reached_assessment = True
+    else:
+        flash("Choose a valid application status.", "error")
+        return redirect(url_for("admin.job_tracker"))
 
-    # Normalization of date (handling UK format DD/MM/YYYY [HH:MM])
-    normalized_date = None
-    if date_val:
-        if "/" in date_val:
-            try:
-                if " " in date_val:
-                    d_part, t_part = date_val.split(" ", 1)
-                    day, month, year = d_part.split("/")
-                    # Validate time part
-                    if ":" in t_part:
-                        normalized_date = f"{year}-{month.zfill(2)}-{day.zfill(2)}T{t_part}"
-                    else:
-                        normalized_date = f"{year}-{month.zfill(2)}-{day.zfill(2)}T{t_part}:00"
-                else:
-                    day, month, year = date_val.split("/")
-                    normalized_date = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
-            except Exception:
-                normalized_date = date_val
-        else:
-            normalized_date = date_val.replace(" ", "T")
+    normalized_date = _normalise_job_datetime(date_val)
 
     if stage == 'Interview':
         app.interview_date = normalized_date
@@ -1245,4 +1240,3 @@ def update_job_stage_ajax(app_id: int):
     db.session.commit()
     flash(f"Stage updated to '{stage}'.", "success")
     return redirect(url_for("admin.job_tracker"))
-

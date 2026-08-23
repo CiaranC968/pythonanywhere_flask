@@ -341,6 +341,15 @@
         });
     }
 
+    function activateQuickTab(name) {
+        document.querySelectorAll('[data-quick-tab]').forEach((tab) => {
+            tab.setAttribute('aria-selected', String(tab.dataset.quickTab === name));
+        });
+        document.querySelectorAll('[data-quick-panel]').forEach((panel) => {
+            panel.classList.toggle('hidden', panel.dataset.quickPanel !== name);
+        });
+    }
+
     function updateStyleChoice(targetName, value) {
         const input = document.getElementById(targetName);
         if (input) input.value = value;
@@ -529,6 +538,18 @@
         });
 
         document.addEventListener('click', (event) => {
+            const linkedRow = event.target.closest('[data-row-href]');
+            if (linkedRow && !event.target.closest('a, button, form, input, select, textarea')) {
+                window.location.assign(linkedRow.dataset.rowHref);
+                return;
+            }
+
+            const quickTab = event.target.closest('[data-quick-tab]');
+            if (quickTab) {
+                activateQuickTab(quickTab.dataset.quickTab);
+                return;
+            }
+
             const tab = event.target.closest('[data-form-tab]');
             if (tab) {
                 activateFormTab(tab.dataset.formTab);
@@ -561,6 +582,11 @@
 
             const item = event.target.closest('[data-document-item]');
             if (item) syncDocumentLimit(item.dataset.documentItem);
+        });
+
+        document.addEventListener('submit', (event) => {
+            const form = event.target.closest('[data-confirm]');
+            if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
         });
 
         document.querySelector('[data-close-icon-picker]')?.addEventListener('click', closeIconPicker);
