@@ -887,6 +887,12 @@ def job_tracker():
     modified = False
     all_apps = JobApplication.query.all()
     for app in all_apps:
+        if app.stage == "Assessment" and not app.reached_assessment:
+            app.reached_assessment = True
+            modified = True
+        if app.stage in ("Interview", "Offer", "Got Job") and not app.reached_interview:
+            app.reached_interview = True
+            modified = True
         if app.stage == 'Not Applied Yet' and app.application_deadline:
             try:
                 dl_str = app.application_deadline.strip()
@@ -910,9 +916,33 @@ def job_tracker():
         db.session.commit()
 
     applications = JobApplication.query.order_by(JobApplication.id.desc()).all()
+    submitted = [
+        app for app in applications
+        if app.stage not in ("Not Applied Yet", "Missed Deadline")
+    ]
+    interview_count = sum(
+        bool(app.reached_interview or app.stage in ("Interview", "Offer", "Got Job"))
+        for app in submitted
+    )
+    assessment_count = sum(
+        bool(app.reached_assessment or app.stage == "Assessment")
+        for app in submitted
+    )
+    rejected_count = sum(app.stage == "Rejected" for app in submitted)
+    submitted_count = len(submitted)
+    tracker_metrics = {
+        "submitted": submitted_count,
+        "interviews": interview_count,
+        "assessments": assessment_count,
+        "rejections": rejected_count,
+        "interview_rate": round((interview_count / submitted_count) * 100) if submitted_count else 0,
+        "assessment_rate": round((assessment_count / submitted_count) * 100) if submitted_count else 0,
+        "rejection_rate": round((rejected_count / submitted_count) * 100) if submitted_count else 0,
+    }
     return render_template(
         "admin/job_tracker.html",
         applications=applications,
+        tracker_metrics=tracker_metrics,
         today=today_str,
     )
 
@@ -926,7 +956,11 @@ def add_job_application():
     stage = request.form.get("stage", "Applied").strip()
     applied_date = request.form.get("applied_date", "").strip()
     interview_date = request.form.get("interview_date", "").strip()
+    assessment_date = request.form.get("assessment_date", "").strip()
     application_deadline = request.form.get("application_deadline", "").strip()
+    reached_interview = request.form.get("reached_interview") == "on" or stage in ("Interview", "Offer", "Got Job")
+    reached_assessment = request.form.get("reached_assessment") == "on" or stage == "Assessment"
+    badges = request.form.get("badges", "").strip()
     notes = request.form.get("notes", "").strip()
     job_url = request.form.get("job_url", "").strip()
     company_url = request.form.get("company_url", "").strip()
@@ -948,7 +982,11 @@ def add_job_application():
         stage=stage,
         applied_date=applied_date,
         interview_date=interview_date if interview_date else None,
+        assessment_date=assessment_date if assessment_date else None,
         application_deadline=application_deadline if application_deadline else None,
+        reached_interview=reached_interview,
+        reached_assessment=reached_assessment,
+        badges=badges,
         notes=notes,
         job_url=job_url if job_url else None,
         company_url=company_url if company_url else None,
@@ -975,7 +1013,11 @@ def edit_job_application(app_id: int):
     stage = request.form.get("stage", "Applied").strip()
     applied_date = request.form.get("applied_date", "").strip()
     interview_date = request.form.get("interview_date", "").strip()
+    assessment_date = request.form.get("assessment_date", "").strip()
     application_deadline = request.form.get("application_deadline", "").strip()
+    reached_interview = request.form.get("reached_interview") == "on" or stage in ("Interview", "Offer", "Got Job")
+    reached_assessment = request.form.get("reached_assessment") == "on" or stage == "Assessment"
+    badges = request.form.get("badges", "").strip()
     notes = request.form.get("notes", "").strip()
     job_url = request.form.get("job_url", "").strip()
     company_url = request.form.get("company_url", "").strip()
@@ -993,7 +1035,11 @@ def edit_job_application(app_id: int):
     app.stage = stage
     app.applied_date = applied_date
     app.interview_date = interview_date if interview_date else None
+    app.assessment_date = assessment_date if assessment_date else None
     app.application_deadline = application_deadline if application_deadline else None
+    app.reached_interview = reached_interview
+    app.reached_assessment = reached_assessment
+    app.badges = badges
     app.notes = notes
     app.job_url = job_url if job_url else None
     app.company_url = company_url if company_url else None
@@ -1150,6 +1196,10 @@ def update_job_stage_ajax(app_id: int):
 
     if stage:
         app.stage = stage
+        if stage in ('Interview', 'Offer', 'Got Job'):
+            app.reached_interview = True
+        if stage == 'Assessment':
+            app.reached_assessment = True
 
     # Normalization of date (handling UK format DD/MM/YYYY [HH:MM])
     normalized_date = None
@@ -1175,7 +1225,7 @@ def update_job_stage_ajax(app_id: int):
     if stage == 'Interview':
         app.interview_date = normalized_date
     elif stage == 'Assessment':
-        app.interview_date = normalized_date
+        app.assessment_date = normalized_date
     elif stage in ('Not Applied Yet', 'Missed Deadline'):
         app.application_deadline = normalized_date
     elif stage == 'Applied':
@@ -1195,6 +1245,4 @@ def update_job_stage_ajax(app_id: int):
     db.session.commit()
     flash(f"Stage updated to '{stage}'.", "success")
     return redirect(url_for("admin.job_tracker"))
-
-
 
