@@ -112,6 +112,7 @@ def ensure_schema():
             "company": "VARCHAR(180) NOT NULL DEFAULT ''",
             "role": "VARCHAR(180) NOT NULL DEFAULT ''",
             "stage": "VARCHAR(80) NOT NULL DEFAULT 'Applied'",
+            "stage_updated_at": "VARCHAR(80) NULL",
             "applied_date": "VARCHAR(80) NOT NULL DEFAULT ''",
             "interview_date": "VARCHAR(80) NULL",
             "assessment_date": "VARCHAR(80) NULL",

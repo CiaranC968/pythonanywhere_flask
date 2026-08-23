@@ -22,6 +22,10 @@
             <select name="stage" class="admin-input">{{ status_options(current_stage) }}</select>
         </label>
         <label class="tracker-field">
+            <span>Status updated on</span>
+            <input type="date" name="stage_updated_at" value="{{ app.stage_updated_at[:10] if app and app.stage_updated_at else today }}" class="admin-input">
+        </label>
+        <label class="tracker-field">
             <span>Applied on</span>
             <input type="date" name="applied_date" value="{{ app.applied_date[:10] if app and app.applied_date else today }}" class="admin-input">
         </label>
@@ -97,11 +101,72 @@
 
     <section class="metrics-grid" aria-label="Application funnel">
         <div class="metric"><span class="metric-label">Applications</span><strong class="metric-value">{{ tracker_metrics.submitted }}</strong><span class="metric-note">submitted</span></div>
-        <div class="metric"><span class="metric-label">Interviews</span><strong class="metric-value">{{ tracker_metrics.interviews }}</strong><span class="metric-note">milestones reached</span></div>
-        <div class="metric"><span class="metric-label">Interview reach</span><strong class="metric-value">{{ tracker_metrics.interview_rate }}%</strong><span class="metric-note">of applications</span></div>
-        <div class="metric"><span class="metric-label">Assessments</span><strong class="metric-value">{{ tracker_metrics.assessments }}</strong><span class="metric-note">milestones reached</span></div>
-        <div class="metric"><span class="metric-label">Assessment reach</span><strong class="metric-value">{{ tracker_metrics.assessment_rate }}%</strong><span class="metric-note">of applications</span></div>
+        <div class="metric"><span class="metric-label">Companies</span><strong class="metric-value">{{ tracker_metrics.companies }}</strong><span class="metric-note">{{ tracker_metrics.repeat_companies }} applied to more than once</span></div>
+        <div class="metric"><span class="metric-label">Interviews</span><strong class="metric-value">{{ tracker_metrics.interviews }}</strong><span class="metric-note">{{ tracker_metrics.interview_rate }}% reach rate</span></div>
+        <div class="metric"><span class="metric-label">Assessments</span><strong class="metric-value">{{ tracker_metrics.assessments }}</strong><span class="metric-note">{{ tracker_metrics.assessment_rate }}% reach rate</span></div>
+        <div class="metric"><span class="metric-label">Offers</span><strong class="metric-value">{{ tracker_metrics.offers }}</strong><span class="metric-note">{{ tracker_metrics.offer_rate }}% conversion</span></div>
         <div class="metric"><span class="metric-label">Rejection rate</span><strong class="metric-value">{{ tracker_metrics.rejection_rate }}%</strong><span class="metric-note">{{ tracker_metrics.rejections }} rejected</span></div>
+    </section>
+
+    <section class="tracker-insights" aria-label="Job search analytics">
+        <article class="insight-panel">
+            <header class="insight-header">
+                <div><span class="tracker-eyebrow">Pipeline</span><h2>Search health</h2></div>
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+            </header>
+            <dl class="insight-list">
+                <div><dt>Active applications</dt><dd>{{ tracker_metrics.active }}</dd></div>
+                <div><dt>Applied in last 30 days</dt><dd>{{ tracker_metrics.recent_applications }}</dd></div>
+                <div><dt>Waiting over 14 days</dt><dd>{{ tracker_metrics.waiting_over_14_days }}</dd></div>
+                <div><dt>Repeat applications</dt><dd>{{ tracker_metrics.repeat_applications }}</dd></div>
+                <div><dt>Jobs secured</dt><dd>{{ tracker_metrics.jobs }}</dd></div>
+            </dl>
+        </article>
+
+        <article class="insight-panel">
+            <header class="insight-header">
+                <div><span class="tracker-eyebrow">Timing</span><h2>Average wait</h2></div>
+                <i class="fas fa-clock" aria-hidden="true"></i>
+            </header>
+            <dl class="insight-list insight-list-timing">
+                <div><dt>Between tracked stages</dt><dd>{{ tracker_metrics.average_stage_wait if tracker_metrics.average_stage_wait is not none else '—' }}{% if tracker_metrics.average_stage_wait is not none %} days{% endif %}</dd></div>
+                <div><dt>Application to assessment</dt><dd>{{ tracker_metrics.average_assessment_wait if tracker_metrics.average_assessment_wait is not none else '—' }}{% if tracker_metrics.average_assessment_wait is not none %} days{% endif %}</dd></div>
+                <div><dt>Application to interview</dt><dd>{{ tracker_metrics.average_interview_wait if tracker_metrics.average_interview_wait is not none else '—' }}{% if tracker_metrics.average_interview_wait is not none %} days{% endif %}</dd></div>
+                <div><dt>Assessment to interview</dt><dd>{{ tracker_metrics.average_assessment_to_interview if tracker_metrics.average_assessment_to_interview is not none else '—' }}{% if tracker_metrics.average_assessment_to_interview is not none %} days{% endif %}</dd></div>
+                <div><dt>Application to rejection</dt><dd>{{ tracker_metrics.average_rejection_wait if tracker_metrics.average_rejection_wait is not none else '—' }}{% if tracker_metrics.average_rejection_wait is not none %} days{% endif %}</dd></div>
+                <div><dt>Time in active status</dt><dd>{{ tracker_metrics.average_active_wait if tracker_metrics.average_active_wait is not none else '—' }}{% if tracker_metrics.average_active_wait is not none %} days{% endif %}</dd></div>
+            </dl>
+            <p class="insight-footnote">Based on dates saved for {{ tracker_metrics.timed_transitions }} completed status transitions.</p>
+        </article>
+    </section>
+
+    <section class="company-analysis" aria-labelledby="company-analysis-title">
+        <header class="company-analysis-header">
+            <div><span class="tracker-eyebrow">Companies</span><h2 id="company-analysis-title">Application history</h2></div>
+            <span>{{ tracker_metrics.companies }} total</span>
+        </header>
+        {% if tracker_metrics.company_stats %}
+        <div class="company-table-wrap">
+            <table class="company-table">
+                <thead><tr><th>Company</th><th>Applied</th><th>Assessments</th><th>Interviews</th><th>Rejected</th><th>Interview rate</th><th>Latest status</th></tr></thead>
+                <tbody>
+                    {% for company in tracker_metrics.company_stats %}
+                    <tr>
+                        <th scope="row">{{ company.company }}</th>
+                        <td><strong>{{ company.applications }}</strong>{% if company.applications > 1 %}<span class="table-note">repeat company</span>{% endif %}</td>
+                        <td>{{ company.assessments }}</td>
+                        <td>{{ company.interviews }}</td>
+                        <td>{{ company.rejections }}</td>
+                        <td>{{ company.interview_rate }}%</td>
+                        <td><span class="status-badge status-{{ 'saved' if company.latest_stage == 'Not Applied Yet' else company.latest_stage|lower|replace(' ', '-') }}">{{ company.latest_stage }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="company-analysis-empty">Company performance will appear after the first application.</p>
+        {% endif %}
     </section>
 
     <div class="tracker-toolbar">
@@ -129,6 +194,8 @@
                 <p class="application-company">{{ app.company }}{% if app.location %} · {{ app.location }}{% endif %}{% if app.salary %} · {{ app.salary }}{% endif %}</p>
                 <div class="badge-row">
                     <span class="status-badge status-{{ status_class }}">{{ 'Saved' if app.stage == 'Not Applied Yet' else app.stage }}</span>
+                    {% set company_application_count = tracker_metrics.company_counts_by_id.get(app.id, 1) %}
+                    {% if company_application_count > 1 %}<span class="custom-badge">Applied here {{ company_application_count }} times</span>{% endif %}
                     {% if app.reached_assessment %}<span class="custom-badge">Assessment reached</span>{% endif %}
                     {% if app.reached_interview %}<span class="custom-badge">Interview reached</span>{% endif %}
                     {% for badge in (app.badges or '').split(',') %}{% if badge.strip() %}<span class="custom-badge">{{ badge.strip() }}</span>{% endif %}{% endfor %}

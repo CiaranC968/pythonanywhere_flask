@@ -273,6 +273,145 @@ textarea.admin-input {
     margin-top: .2rem;
 }
 
+.tracker-insights {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    margin-bottom: 1rem;
+}
+
+.insight-panel,
+.company-analysis {
+    background: var(--tracker-surface);
+    border: 1px solid var(--tracker-border);
+    border-radius: 8px;
+}
+
+.insight-panel {
+    padding: 1rem 1.1rem;
+}
+
+.insight-header,
+.company-analysis-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.insight-header h2,
+.company-analysis-header h2 {
+    color: var(--tracker-ink);
+    font-size: 1rem;
+    font-weight: 800;
+    margin-top: .2rem;
+}
+
+.insight-header > i {
+    color: #68747f;
+    font-size: 1rem;
+}
+
+.insight-list {
+    margin-top: .8rem;
+}
+
+.insight-list > div {
+    align-items: baseline;
+    border-top: 1px solid #eeeae3;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: .58rem 0;
+}
+
+.insight-list dt {
+    color: var(--tracker-muted);
+    font-size: .78rem;
+}
+
+.insight-list dd {
+    color: var(--tracker-ink);
+    font-size: .88rem;
+    font-weight: 800;
+    text-align: right;
+}
+
+.insight-footnote {
+    color: var(--tracker-muted);
+    font-size: .7rem;
+    line-height: 1.45;
+    margin-top: .55rem;
+}
+
+.company-analysis {
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.company-analysis-header {
+    border-bottom: 1px solid var(--tracker-border);
+    padding: .9rem 1rem;
+}
+
+.company-analysis-header > span,
+.company-analysis-empty {
+    color: var(--tracker-muted);
+    font-size: .75rem;
+}
+
+.company-analysis-empty {
+    padding: 1rem;
+}
+
+.company-table-wrap {
+    overflow-x: auto;
+}
+
+.company-table {
+    border-collapse: collapse;
+    min-width: 46rem;
+    width: 100%;
+}
+
+.company-table th,
+.company-table td {
+    border-bottom: 1px solid #eeeae3;
+    padding: .7rem 1rem;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.company-table thead th {
+    background: #faf9f7;
+    color: var(--tracker-muted);
+    font-size: .66rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.company-table tbody th {
+    color: var(--tracker-ink);
+    font-size: .82rem;
+    font-weight: 750;
+}
+
+.company-table tbody td {
+    color: #58534c;
+    font-size: .78rem;
+}
+
+.company-table tbody tr:last-child > * {
+    border-bottom: 0;
+}
+
+.table-note {
+    color: var(--tracker-muted);
+    display: block;
+    font-size: .64rem;
+    margin-top: .1rem;
+}
+
 .tracker-toolbar {
     align-items: center;
     display: flex;
@@ -771,6 +910,10 @@ textarea.admin-input {
 
     .metrics-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .tracker-insights {
+        grid-template-columns: 1fr;
     }
 
     .metric:nth-child(3) {

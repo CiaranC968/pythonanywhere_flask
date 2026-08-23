@@ -121,6 +121,7 @@ class JobApplication(db.Model):
     company = db.Column(db.String(180), nullable=False)
     role = db.Column(db.String(180), nullable=False)
     stage = db.Column(db.String(80), nullable=False, default="Applied")  # Not Applied Yet, Applied, Interview, Rejected, Got Job, Missed Deadline
+    stage_updated_at = db.Column(db.String(80), nullable=True)
     applied_date = db.Column(db.String(80), nullable=False, default="")
     interview_date = db.Column(db.String(80), nullable=True)  # Format: YYYY-MM-DD or datetime
     assessment_date = db.Column(db.String(80), nullable=True)
@@ -135,4 +136,3 @@ class JobApplication(db.Model):
     linkedin_url = db.Column(db.String(500), nullable=True)
     salary = db.Column(db.String(120), nullable=True)
     location = db.Column(db.String(180), nullable=True)
-

@@ -44,7 +44,9 @@ JOB_STAGES = (
 )
 JOB_STAGE_VALUES = {value for value, _label in JOB_STAGES}
 JOB_INTERVIEW_STAGES = {"Interview", "Offer", "Got Job"}
+JOB_ACTIVE_STAGES = {"Applied", "Assessment", "Interview", "Offer"}
 JOB_OPTIONAL_FIELDS = {
+    "stage_updated_at",
     "interview_date",
     "assessment_date",
     "application_deadline",
@@ -59,6 +61,7 @@ JOB_TEXT_FIELDS = (
     "company",
     "role",
     "applied_date",
+    "stage_updated_at",
     "interview_date",
     "assessment_date",
     "application_deadline",
@@ -949,6 +952,7 @@ def _refresh_job_application_state(applications, now):
         deadline = _parse_job_datetime(application.application_deadline, end_of_day=True)
         if deadline and now > deadline:
             application.stage = "Missed Deadline"
+            application.stage_updated_at = now.isoformat(timespec="minutes")
             modified = True
     return modified
 
@@ -979,7 +983,7 @@ def _normalise_job_datetime(value):
     return value.replace(" ", "T")
 
 
-def _job_tracker_metrics(applications):
+def _job_tracker_metrics(applications, now):
     submitted = [
         application
         for application in applications
@@ -994,7 +998,114 @@ def _job_tracker_metrics(applications):
         bool(application.reached_assessment or application.stage == "Assessment")
         for application in submitted
     )
+    offers = sum(application.stage in {"Offer", "Got Job"} for application in submitted)
+    jobs = sum(application.stage == "Got Job" for application in submitted)
     rejections = sum(application.stage == "Rejected" for application in submitted)
+    active = sum(application.stage in JOB_ACTIVE_STAGES for application in submitted)
+
+    company_groups = {}
+    company_counts_by_id = {}
+    transition_waits = []
+    assessment_waits = []
+    interview_waits = []
+    assessment_to_interview_waits = []
+    rejection_waits = []
+    active_waits = []
+    recent_applications = 0
+    waiting_over_14_days = 0
+
+    def elapsed_days(start, end):
+        if not start or not end or end < start:
+            return None
+        return (end - start).total_seconds() / 86400
+
+    for application in submitted:
+        company_key = " ".join(application.company.casefold().split())
+        company = company_groups.setdefault(
+            company_key,
+            {
+                "company": application.company,
+                "applications": 0,
+                "interviews": 0,
+                "assessments": 0,
+                "offers": 0,
+                "rejections": 0,
+                "latest_stage": application.stage,
+                "application_ids": [],
+            },
+        )
+        company["applications"] += 1
+        company["interviews"] += bool(
+            application.reached_interview or application.stage in JOB_INTERVIEW_STAGES
+        )
+        company["assessments"] += bool(
+            application.reached_assessment or application.stage == "Assessment"
+        )
+        company["offers"] += application.stage in {"Offer", "Got Job"}
+        company["rejections"] += application.stage == "Rejected"
+        company["application_ids"].append(application.id)
+
+        applied_at = _parse_job_datetime(application.applied_date)
+        assessment_at = _parse_job_datetime(application.assessment_date)
+        interview_at = _parse_job_datetime(application.interview_date)
+        stage_updated_at = _parse_job_datetime(application.stage_updated_at)
+
+        if applied_at and applied_at >= now - timedelta(days=30):
+            recent_applications += 1
+
+        assessment_wait = elapsed_days(applied_at, assessment_at)
+        if assessment_wait is not None:
+            assessment_waits.append(assessment_wait)
+            transition_waits.append(assessment_wait)
+
+        interview_wait = elapsed_days(applied_at, interview_at)
+        if interview_wait is not None:
+            interview_waits.append(interview_wait)
+
+        interview_transition = elapsed_days(assessment_at or applied_at, interview_at)
+        if interview_transition is not None:
+            assessment_to_interview_waits.append(interview_transition)
+            transition_waits.append(interview_transition)
+
+        if application.stage == "Rejected":
+            rejection_wait = elapsed_days(applied_at, stage_updated_at)
+            if rejection_wait is not None:
+                rejection_waits.append(rejection_wait)
+
+        if application.stage in {"Rejected", "Offer", "Got Job"}:
+            final_transition = elapsed_days(
+                interview_at or assessment_at or applied_at,
+                stage_updated_at,
+            )
+            if final_transition is not None:
+                transition_waits.append(final_transition)
+
+        if application.stage in JOB_ACTIVE_STAGES:
+            status_started_at = stage_updated_at
+            if not status_started_at and application.stage == "Assessment":
+                status_started_at = assessment_at
+            if not status_started_at and application.stage == "Interview":
+                status_started_at = interview_at
+            status_started_at = status_started_at or applied_at
+            active_wait = elapsed_days(status_started_at, now)
+            if active_wait is not None:
+                active_waits.append(active_wait)
+            application_age = elapsed_days(applied_at, now)
+            if application.stage == "Applied" and application_age is not None:
+                waiting_over_14_days += application_age >= 14
+
+    company_stats = []
+    for company in company_groups.values():
+        application_count = company["applications"]
+        company["interview_rate"] = round((company["interviews"] / application_count) * 100)
+        company["rejection_rate"] = round((company["rejections"] / application_count) * 100)
+        for application_id in company.pop("application_ids"):
+            company_counts_by_id[application_id] = application_count
+        company_stats.append(company)
+    company_stats.sort(key=lambda item: (-item["applications"], item["company"].casefold()))
+
+    def average(values):
+        return round(sum(values) / len(values), 1) if values else None
 
     def rate(count):
         return round((count / submitted_count) * 100) if submitted_count else 0
@@ -1003,10 +1114,30 @@ def _job_tracker_metrics(applications):
         "submitted": submitted_count,
         "interviews": interviews,
         "assessments": assessments,
+        "offers": offers,
+        "jobs": jobs,
         "rejections": rejections,
+        "active": active,
+        "companies": len(company_groups),
+        "repeat_companies": sum(company["applications"] > 1 for company in company_stats),
+        "repeat_applications": submitted_count - len(company_groups),
+        "recent_applications": recent_applications,
+        "waiting_over_14_days": waiting_over_14_days,
         "interview_rate": rate(interviews),
         "assessment_rate": rate(assessments),
+        "offer_rate": rate(offers),
         "rejection_rate": rate(rejections),
+        "average_stage_wait": average(transition_waits),
+        "average_assessment_wait": average(assessment_waits),
+        "average_interview_wait": average(interview_waits),
+        "average_assessment_to_interview": average(assessment_to_interview_waits),
+        "average_rejection_wait": average(rejection_waits),
+        "average_active_wait": average(active_waits),
+        "fastest_interview": round(min(interview_waits), 1) if interview_waits else None,
+        "longest_active_wait": round(max(active_waits), 1) if active_waits else None,
+        "timed_transitions": len(transition_waits),
+        "company_stats": company_stats,
+        "company_counts_by_id": company_counts_by_id,
     }
 
 
@@ -1023,7 +1154,7 @@ def job_tracker():
         applications=applications,
         job_stages=JOB_STAGES,
         stage_counts=Counter(app.stage for app in applications),
-        tracker_metrics=_job_tracker_metrics(applications),
+        tracker_metrics=_job_tracker_metrics(applications, now),
         today=now.strftime("%Y-%m-%d"),
     )
 
@@ -1037,6 +1168,7 @@ def add_job_application():
         return redirect(url_for("admin.job_tracker"))
 
     values["applied_date"] = values["applied_date"] or datetime.now().strftime("%Y-%m-%d")
+    values["stage_updated_at"] = values["stage_updated_at"] or datetime.now().isoformat(timespec="minutes")
     app = JobApplication()
     _apply_job_application_values(app, values)
     db.session.add(app)
@@ -1057,7 +1189,10 @@ def edit_job_application(app_id: int):
         flash("Company and Role are required.", "error")
         return redirect(url_for("admin.job_tracker"))
 
+    previous_stage = app.stage
     _apply_job_application_values(app, values)
+    if app.stage != previous_stage and not app.stage_updated_at:
+        app.stage_updated_at = datetime.now().isoformat(timespec="minutes")
 
     if _commit_or_flash():
         flash("Job application updated successfully.", "success")
@@ -1205,6 +1340,7 @@ def update_job_stage_ajax(app_id: int):
     additional_notes = request.form.get("additional_notes", "").strip()
     date_val = request.form.get("date_val", "").strip()
 
+    previous_stage = app.stage
     if stage in JOB_STAGE_VALUES:
         app.stage = stage
         if stage in JOB_INTERVIEW_STAGES:
@@ -1216,6 +1352,8 @@ def update_job_stage_ajax(app_id: int):
         return redirect(url_for("admin.job_tracker"))
 
     normalized_date = _normalise_job_datetime(date_val)
+    if stage != previous_stage:
+        app.stage_updated_at = normalized_date or datetime.now().isoformat(timespec="minutes")
 
     if stage == 'Interview':
         app.interview_date = normalized_date
