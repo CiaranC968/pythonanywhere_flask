@@ -1,4 +1,4 @@
-/* noinspection ALL */
+/*noinspection ALL*/
 
 /*! tailwindcss v4.1.18 | MIT License | https://tailwindcss.com */
 @layer properties;
@@ -132,6 +132,10 @@
     --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
+    --default-font-feature-settings: normal;
+    --default-font-variation-settings: normal;
+    --default-mono-font-feature-settings: normal;
+    --default-mono-font-variation-settings: normal;
     --color-brand-dark: #111827;
     --color-brand-accent: #d5a13a;
     --color-brand-hover: #bd8428;

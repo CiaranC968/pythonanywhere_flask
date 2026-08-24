@@ -1,4 +1,4 @@
-/* noinspection ALL */
+/*noinspection ALL*/
 
 @import "tailwindcss";
 
@@ -7,6 +7,10 @@
 
 @theme {
   --font-sans: 'Inter', sans-serif;
+  --default-font-feature-settings: normal;
+  --default-font-variation-settings: normal;
+  --default-mono-font-feature-settings: normal;
+  --default-mono-font-variation-settings: normal;
 
   /* Brand colors - single source of truth */
   --color-brand-dark: #111827;
