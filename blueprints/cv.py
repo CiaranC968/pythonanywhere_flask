@@ -56,103 +56,295 @@ def get_cv():
 
 def build_cv_pdf(profile=None, portfolio=None, include_sections=None, resume_options=None):
     from reportlab.lib import colors
-    from reportlab.lib.utils import ImageReader
     from reportlab.lib.pagesizes import A4
-    from reportlab.pdfbase.pdfmetrics import stringWidth
-    from reportlab.pdfgen import canvas
+    from reportlab.lib.enums import TA_RIGHT
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import (
+        HRFlowable,
+        KeepTogether,
+        ListFlowable,
+        ListItem,
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
+    from xml.sax.saxutils import escape
 
     profile = profile or get_profile()
     portfolio = portfolio or get_portfolio()
     include_sections = set(DEFAULT_PDF_SECTIONS if include_sections is None else include_sections)
     resume_options = resume_options or {}
     buffer = BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
-
     color_theme = resume_options.get("theme_color", "burgundy").strip().lower()
-    
     palettes = {
-        "burgundy": {
-            "accent": "#7a1f3d",
-            "heading": "#6b2418",
-            "soft": "#eee8d8"
-        },
-        "yellow": {
-            "accent": "#b45309",
-            "heading": "#1a1815",
-            "soft": "#fef9c3"
-        },
-        "blue": {
-            "accent": "#1d4ed8",
-            "heading": "#0f172a",
-            "soft": "#dbeafe"
-        },
-        "green": {
-            "accent": "#047857",
-            "heading": "#111827",
-            "soft": "#d1fae5"
-        },
-        "slate": {
-            "accent": "#475569",
-            "heading": "#0f172a",
-            "soft": "#f1f5f9"
-        }
+        "burgundy": {"accent": "#7a1f3d", "heading": "#6b2418"},
+        "yellow": {"accent": "#b45309", "heading": "#1a1815"},
+        "blue": {"accent": "#1d4ed8", "heading": "#0f172a"},
+        "green": {"accent": "#047857", "heading": "#111827"},
+        "slate": {"accent": "#475569", "heading": "#0f172a"},
     }
-    
     selected_palette = palettes.get(color_theme, palettes["burgundy"])
+    ink = colors.HexColor("#28282b")
+    muted = colors.HexColor("#595959")
+    line = colors.HexColor("#d9d4cc")
+    accent = colors.HexColor(selected_palette["accent"])
+    heading = colors.HexColor(selected_palette["heading"])
 
-    theme = {
-        "ink": colors.HexColor("#28282b"),
-        "muted": colors.HexColor("#646464"),
-        "line": colors.HexColor("#d9d4cc"),
-        "accent": colors.HexColor(selected_palette["accent"]),
-        "heading": colors.HexColor(selected_palette["heading"]),
-        "soft": colors.HexColor(selected_palette["soft"]),
-        "pill": colors.HexColor("#f4f1ec"),
-        "white": colors.white,
-        "globe_blue": colors.HexColor("#2ba4d6"),
-        "globe_green": colors.HexColor("#5aa36a"),
-        "globe_gold": colors.HexColor("#b99b45"),
+    document = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=15 * mm,
+        rightMargin=15 * mm,
+        topMargin=10 * mm,
+        bottomMargin=11 * mm,
+        title=resume_options.get("document_title") or f"{profile.full_name} CV",
+        author=_text(profile.full_name),
+        pageCompression=1,
+        allowSplitting=1,
+    )
+    sample_styles = getSampleStyleSheet()
+    styles = {
+        "name": ParagraphStyle(
+            "CVName", parent=sample_styles["Heading1"], fontName="Helvetica-Bold",
+            fontSize=25, leading=27, textColor=ink, spaceAfter=2,
+        ),
+        "subtitle": ParagraphStyle(
+            "CVSubtitle", parent=sample_styles["Normal"], fontName="Helvetica-Bold",
+            fontSize=11.2, leading=13, textColor=accent, spaceAfter=7,
+        ),
+        "contact": ParagraphStyle(
+            "CVContact", parent=sample_styles["Normal"], fontName="Helvetica",
+            fontSize=7.4, leading=9.2, textColor=ink, splitLongWords=1,
+        ),
+        "section": ParagraphStyle(
+            "CVSection", parent=sample_styles["Heading2"], fontName="Helvetica-Bold",
+            fontSize=14, leading=16, textColor=heading, spaceBefore=8, spaceAfter=2,
+            keepWithNext=True,
+        ),
+        "role": ParagraphStyle(
+            "CVRole", parent=sample_styles["Heading3"], fontName="Helvetica-Bold",
+            fontSize=10.2, leading=12, textColor=ink, spaceAfter=1, keepWithNext=True,
+        ),
+        "organisation": ParagraphStyle(
+            "CVOrganisation", parent=sample_styles["Normal"], fontName="Helvetica-Bold",
+            fontSize=8.5, leading=10, textColor=accent, spaceAfter=1, keepWithNext=True,
+        ),
+        "meta": ParagraphStyle(
+            "CVMeta", parent=sample_styles["Normal"], fontName="Helvetica",
+            fontSize=7.7, leading=9.4, textColor=muted, spaceAfter=3, keepWithNext=True,
+        ),
+        "body": ParagraphStyle(
+            "CVBody", parent=sample_styles["BodyText"], fontName="Helvetica",
+            fontSize=8.1, leading=10.2, textColor=muted, spaceAfter=3,
+            splitLongWords=1, allowWidows=0, allowOrphans=0,
+        ),
+        "body_bold": ParagraphStyle(
+            "CVBodyBold", parent=sample_styles["BodyText"], fontName="Helvetica-Bold",
+            fontSize=8.1, leading=10.2, textColor=muted, spaceAfter=3,
+            splitLongWords=1,
+        ),
+        "small": ParagraphStyle(
+            "CVSmall", parent=sample_styles["BodyText"], fontName="Helvetica",
+            fontSize=7.4, leading=9.2, textColor=muted, spaceAfter=2,
+            splitLongWords=1,
+        ),
+        "final_section": ParagraphStyle(
+            "CVFinalSection", parent=sample_styles["Heading2"], fontName="Helvetica-Bold",
+            fontSize=12.2, leading=13.5, textColor=heading, spaceBefore=0, spaceAfter=1,
+        ),
+        "footer": ParagraphStyle(
+            "CVFooter", parent=sample_styles["Normal"], fontName="Helvetica",
+            fontSize=7, leading=8, textColor=muted, alignment=TA_RIGHT,
+        ),
     }
-    ctx = {
-        "pdf": pdf,
-        "image_reader": ImageReader,
-        "string_width": stringWidth,
-        "theme": theme,
-        "margin": 27,
-        "left_x": 27,
-        "left_w": 316,
-        "right_x": 378,
-        "right_w": 195,
-        "bottom": 32,
-        "header_subtitle": _text(resume_options.get("header_subtitle", "")),
-    }
 
-    pdf.setFillColor(theme["white"])
-    pdf.rect(0, 0, width, height, fill=1, stroke=0)
+    def clean(value):
+        return escape(
+            _text(value)
+            .replace("\u2011", "-")
+            .replace("\u2013", "-")
+            .replace("\u2014", "-")
+        )
 
-    _draw_header(ctx, profile, width, height)
-    section_top = height - 136
+    def add_section(story, title):
+        story.append(Paragraph(clean(title).upper(), styles["section"]))
+        story.append(HRFlowable(width="100%", thickness=1.2, color=heading, spaceAfter=7))
+
+    def add_bullets(story, values):
+        items = [
+            ListItem(Paragraph(clean(value), styles["body"]), leftIndent=9)
+            for value in values
+            if _text(value)
+        ]
+        if items:
+            story.append(
+                ListFlowable(
+                    items, bulletType="bullet", leftIndent=12, bulletIndent=2,
+                    bulletFontName="Helvetica", bulletFontSize=5, spaceAfter=4,
+                )
+            )
+
+    story = [
+        Paragraph(clean(_caps(profile.full_name)), styles["name"]),
+        Paragraph(
+            clean(resume_options.get("header_subtitle") or profile.cv_subtitle or profile.title),
+            styles["subtitle"],
+        ),
+    ]
+    contact_values = [
+        ("Email", profile.email),
+        ("Phone", profile.phone),
+        ("Location", profile.location or profile.address),
+        ("LinkedIn", _short_url(profile.linkedin_url)),
+        ("GitHub", _short_url(profile.github_url)),
+        ("Website", _short_url(profile.website_url)),
+    ]
+    contact_cells = [
+        Paragraph(f"<b>{clean(label)}:</b> {clean(value)}", styles["contact"])
+        for label, value in contact_values
+        if _text(value)
+    ]
+    contact_rows = [contact_cells[index:index + 2] for index in range(0, len(contact_cells), 2)]
+    if contact_rows:
+        if len(contact_rows[-1]) == 1:
+            contact_rows[-1].append("")
+        contact_table = Table(contact_rows, colWidths=[document.width / 2] * 2)
+        contact_table.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ]
+            )
+        )
+        story.extend([contact_table, Spacer(1, 5)])
+    story.append(HRFlowable(width="100%", thickness=1.4, color=accent, spaceAfter=5))
+
     if _has_resume_target(resume_options):
-        section_top = _draw_resume_target(ctx, resume_options, section_top, width)
+        add_section(story, "Targeted resume")
+        target = " | ".join(
+            part for part in [
+                _text(resume_options.get("target_role", "")),
+                _text(resume_options.get("company_name", "")),
+            ] if part
+        )
+        if target:
+            story.append(Paragraph(clean(target), styles["role"]))
+        if resume_options.get("summary"):
+            story.append(Paragraph(clean(resume_options["summary"]), styles["body"]))
+        add_bullets(story, _custom_lines(resume_options.get("details", "")))
+        keywords = _custom_keywords(resume_options.get("keywords", ""))
+        if keywords:
+            story.append(Paragraph(f"<b>Keywords:</b> {clean(', '.join(keywords))}", styles["small"]))
 
-    left_y = section_top
-    if "experience" in include_sections and portfolio.get("experience"):
-        left_y = _draw_experience(ctx, portfolio.get("experience", []), left_y)
-    if "projects" in include_sections and portfolio.get("projects"):
-        left_y = _draw_projects(ctx, portfolio.get("projects", []), left_y - 8)
-    if "certificates" in include_sections and portfolio.get("certificates"):
-        _draw_certificates(ctx, portfolio.get("certificates", []), left_y - 8)
-
-    right_y = section_top
     if "skills" in include_sections and portfolio.get("skills"):
-        right_y = _draw_skills(ctx, portfolio.get("skills", []), right_y)
-    if "education" in include_sections and portfolio.get("education"):
-        _draw_education(ctx, portfolio.get("education", []), right_y - 12)
+        add_section(story, "Skills")
+        skill_names = []
+        seen_skills = set()
+        for skill in portfolio.get("skills", []):
+            candidates = skill.tags or ([skill.title] if skill.title else [])
+            for candidate in candidates:
+                key = _text(candidate).casefold()
+                if key and key not in seen_skills:
+                    seen_skills.add(key)
+                    skill_names.append(_text(candidate))
+        story.append(Paragraph(clean("  |  ".join(skill_names)), styles["body_bold"]))
 
-    pdf.setTitle(resume_options.get("document_title") or f"{profile.full_name} CV")
-    pdf.showPage()
-    pdf.save()
+    if "experience" in include_sections and portfolio.get("experience"):
+        add_section(story, "Experience")
+        for job in _experience_jobs(portfolio.get("experience", [])):
+            meta = " | ".join(part for part in [job["period"], job["location"]] if _text(part))
+            heading_block = [
+                Paragraph(clean(job["role"]), styles["role"]),
+                Paragraph(clean(job["company"]), styles["organisation"]),
+            ]
+            if meta:
+                heading_block.append(Paragraph(clean(meta), styles["meta"]))
+            story.append(KeepTogether(heading_block))
+            add_bullets(story, job["bullets"])
+            story.append(HRFlowable(width="100%", thickness=.45, color=line, spaceAfter=3))
+
+    if "projects" in include_sections and portfolio.get("projects"):
+        add_section(story, "Projects")
+        for project in portfolio.get("projects", []):
+            project_block = [Paragraph(clean(project.title), styles["role"])]
+            if project.desc:
+                project_block.append(Paragraph(clean(project.desc), styles["body"]))
+            if project.tags:
+                project_block.append(
+                    Paragraph(f"<b>Technologies:</b> {clean(', '.join(project.tags))}", styles["small"])
+                )
+            story.append(KeepTogether(project_block))
+            story.append(HRFlowable(width="100%", thickness=.45, color=line, spaceAfter=3))
+
+    if "education" in include_sections and portfolio.get("education"):
+        add_section(story, "Education")
+        for education_item in portfolio.get("education", []):
+            education_header = [
+                Paragraph(clean(education_item.degree), styles["role"]),
+                Paragraph(clean(education_item.university), styles["organisation"]),
+            ]
+            if education_item.year:
+                education_header.append(Paragraph(clean(education_item.year), styles["meta"]))
+            story.append(KeepTogether(education_header))
+            extras = _education_extras(education_item)
+            if extras:
+                story.append(Paragraph(clean(" | ".join(extras)), styles["body_bold"]))
+            if education_item.description:
+                story.append(Paragraph(clean(education_item.description), styles["body"]))
+            for stage_name, modules in (education_item.stages or {}).items():
+                stage_flowables = [Paragraph(clean(stage_name), styles["body_bold"])]
+                for module in modules:
+                    module_label = ": ".join(
+                        part for part in [
+                            _text(module.get("code", "")),
+                            _text(module.get("title", "")),
+                        ] if part
+                    )
+                    stage_flowables.append(Paragraph(f"- {clean(module_label)}", styles["small"]))
+                story.append(KeepTogether(stage_flowables))
+                story.append(Spacer(1, 3))
+            story.append(HRFlowable(width="100%", thickness=.45, color=line, spaceAfter=3))
+
+    if "certificates" in include_sections and portfolio.get("certificates"):
+        certificates = list(portfolio.get("certificates", []))
+        for certificate_index, certificate in enumerate(certificates):
+            details = " | ".join(
+                part for part in [
+                    _text(certificate.title),
+                    _text(getattr(certificate, "issuer", "")),
+                    _text(getattr(certificate, "date", "")),
+                ] if part
+            )
+            certificate_block = [Paragraph(clean(details), styles["body_bold"])]
+            description = _text(getattr(certificate, "desc", ""))
+            if description:
+                certificate_block.append(Paragraph(clean(description), styles["small"]))
+            if certificate_index == 0:
+                certificate_block[:0] = [
+                    Paragraph("CERTIFICATES AND OTHER", styles["final_section"]),
+                    HRFlowable(width="100%", thickness=1, color=heading, spaceAfter=4),
+                ]
+            story.append(KeepTogether(certificate_block))
+
+    def draw_footer(canvas, doc):
+        canvas.saveState()
+        canvas.setStrokeColor(line)
+        canvas.setLineWidth(.5)
+        canvas.line(doc.leftMargin, 8 * mm, A4[0] - doc.rightMargin, 8 * mm)
+        canvas.setFillColor(muted)
+        canvas.setFont("Helvetica", 7)
+        canvas.drawString(doc.leftMargin, 4.7 * mm, f"{_caps(profile.full_name)} - CV")
+        canvas.drawRightString(A4[0] - doc.rightMargin, 4.7 * mm, f"Page {doc.page}")
+        canvas.restoreState()
+
+    document.build(story, onFirstPage=draw_footer, onLaterPages=draw_footer)
     return buffer.getvalue()
 
 

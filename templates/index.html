@@ -134,7 +134,7 @@
                 <p class="text-lg md:text-xl text-warm-600 dark:text-gray-300 mb-8 max-w-2xl leading-relaxed">
                     {{ profile.about }}
                 </p>
-                <div class="flex flex-wrap gap-4">
+                <div class="hero-actions flex flex-wrap">
                     <button id="cv-btn"
                         hx-get="/fragment/cv"
                         hx-target="#modalContent"
@@ -151,7 +151,7 @@
                         <i class="fas fa-paper-plane" aria-hidden="true"></i> Get in Touch
                     </a>
                 </div>
-                <div class="mt-10 flex flex-wrap gap-3" aria-label="Portfolio summary">
+                <div class="hero-summary flex flex-wrap" aria-label="Portfolio summary">
                     <span class="inline-flex items-center gap-2 rounded-xl border border-warm-200 bg-white/70 px-4 py-2 text-sm font-bold text-warm-700 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
                         <i class="fas fa-briefcase text-brand-accent" aria-hidden="true"></i>
                         {{ portfolio.experience | length }} role{{ 's' if portfolio.experience | length != 1 else '' }}

@@ -669,6 +669,26 @@ select:focus-visible,
     color: #bdc9d8;
 }
 
+.hero-actions {
+    gap: .85rem 1rem;
+}
+
+.hero-summary {
+    gap: .6rem;
+    margin-top: 1.75rem;
+}
+
+.hero-summary > span {
+    min-height: 2.4rem;
+    padding: .5rem .8rem;
+}
+
+@media (max-width: 640px) {
+    .hero-summary {
+        margin-top: 1.35rem;
+    }
+}
+
 #scroll-progress {
     background: var(--color-brand-accent);
     height: 3px;

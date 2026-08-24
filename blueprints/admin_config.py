@@ -271,9 +271,7 @@ DOCUMENT_SECTION_CONFIG = [
     {
         "key": "projects",
         "label": "Projects",
-        "description": "Selected portfolio projects and their tags. The PDF prints up to 3.",
-        "max_items": 3,
-        "overflow_warning": "Project sections are capped at 3 items so the one-page PDF does not overflow.",
+        "description": "Selected portfolio projects, descriptions, and technology tags.",
     },
     {
         "key": "skills",
