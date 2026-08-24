@@ -1273,8 +1273,66 @@ textarea.admin-input {
 .kanban-board {
     display: grid;
     gap: .75rem;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    padding-bottom: .75rem;
+    grid-auto-columns: minmax(15rem, 18rem);
+    grid-auto-flow: column;
+    height: clamp(28rem, calc(100dvh - 19rem), 44rem);
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    padding: 0 0 .65rem;
+    scroll-behavior: smooth;
+    scroll-snap-type: x proximity;
+    scrollbar-color: #bdb6aa transparent;
+    scrollbar-width: thin;
+}
+
+.tracker-shell--kanban .tracker-header {
+    margin-bottom: 1rem;
+}
+
+.tracker-shell--kanban .tracker-view-tabs {
+    margin-bottom: .75rem;
+}
+
+.kanban-toolbar {
+    align-items: center;
+    color: var(--tracker-muted);
+    display: flex;
+    font-size: .72rem;
+    justify-content: space-between;
+    margin-bottom: .55rem;
+    min-height: 2rem;
+}
+
+.kanban-toolbar strong {
+    color: var(--tracker-ink);
+}
+
+.kanban-scroll-controls {
+    display: flex;
+    gap: .35rem;
+}
+
+.kanban-scroll-controls button {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--tracker-border);
+    border-radius: 5px;
+    color: var(--tracker-ink);
+    display: inline-flex;
+    height: 2rem;
+    justify-content: center;
+    width: 2rem;
+}
+
+.kanban-scroll-controls button:hover:not(:disabled) {
+    border-color: var(--admin-border-strong);
+    background: var(--admin-surface-soft);
+}
+
+.kanban-scroll-controls button:disabled {
+    color: #b6b0a6;
+    cursor: not-allowed;
 }
 
 .kanban-feedback {
@@ -1299,8 +1357,10 @@ textarea.admin-input {
     border: 1px solid var(--tracker-border);
     border-radius: 7px;
     display: grid;
-    grid-template-rows: auto minmax(8rem, 1fr);
-    min-height: 23rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
+    overflow: hidden;
+    scroll-snap-align: start;
 }
 
 .kanban-column > header {
@@ -1308,7 +1368,7 @@ textarea.admin-input {
     border-bottom: 1px solid var(--tracker-border);
     display: flex;
     justify-content: space-between;
-    padding: .75rem;
+    padding: .6rem .7rem;
 }
 
 .kanban-column > header h2 {
@@ -1329,9 +1389,15 @@ textarea.admin-input {
 
 .kanban-items {
     display: grid;
-    gap: .55rem;
+    gap: .4rem;
     grid-auto-rows: max-content;
-    padding: .6rem;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: .45rem;
+    scrollbar-color: #c9c3b9 transparent;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
 }
 
 .kanban-column.is-drag-over {
@@ -1345,37 +1411,69 @@ textarea.admin-input {
     border-radius: 6px;
     cursor: grab;
     display: grid;
-    gap: .35rem;
-    padding: .75rem;
+    gap: .25rem;
+    padding: .55rem .6rem;
 }
 
 .kanban-card.is-dragging {
     opacity: .45;
 }
 
-.kanban-card > a,
-.kanban-card > time {
+.kanban-card-meta {
+    align-items: baseline;
+    display: flex;
+    gap: .5rem;
+    justify-content: space-between;
+    min-width: 0;
+}
+
+.kanban-card-meta > a,
+.kanban-card-meta > time {
     color: var(--tracker-muted);
-    font-size: .66rem;
+    font-size: .62rem;
     font-weight: 700;
 }
 
-.kanban-card > a:hover {
+.kanban-card-meta > a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kanban-card-meta > time {
+    flex: none;
+}
+
+.kanban-card-meta > a:hover {
     color: var(--tracker-ink);
     text-decoration: underline;
 }
 
 .kanban-card h3 {
     color: var(--tracker-ink);
-    font-size: .82rem;
+    font-size: .78rem;
     font-weight: 800;
     line-height: 1.3;
 }
 
+.kanban-stage-control {
+    align-items: center;
+    color: var(--tracker-muted);
+    display: grid;
+    gap: .35rem;
+    grid-template-columns: .8rem minmax(0, 1fr);
+    margin-top: .1rem;
+}
+
+.kanban-stage-control > i {
+    font-size: .58rem;
+    text-align: center;
+}
+
 .kanban-card select {
-    font-size: .68rem;
-    margin-top: .3rem;
-    padding: .4rem .5rem;
+    font-size: .64rem;
+    min-height: 1.8rem;
+    padding: .25rem 1.5rem .25rem .4rem;
 }
 
 .job-calendar {
@@ -1852,10 +1950,6 @@ textarea.admin-input {
         grid-template-columns: 1fr;
     }
 
-    .kanban-board {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .tracker-analysis-grid,
     .company-profile-grid {
         grid-template-columns: 1fr;
@@ -1937,15 +2031,13 @@ textarea.admin-input {
     }
 
     .kanban-board {
-        display: grid;
-        grid-auto-flow: row;
-        grid-template-columns: minmax(0, 1fr);
-        overflow-x: visible;
-        scroll-snap-type: none;
+        grid-auto-columns: minmax(16rem, 84vw);
+        height: clamp(25rem, calc(100dvh - 21rem), 38rem);
+        scroll-snap-type: x mandatory;
     }
 
     .kanban-column {
-        min-height: 12rem;
+        min-height: 0;
     }
 
     .tracker-primary {

@@ -203,6 +203,47 @@
         });
     }
 
+    const kanbanBoard = document.querySelector('[data-kanban-board]');
+    const kanbanScrollButtons = document.querySelectorAll('[data-kanban-scroll]');
+
+    function updateKanbanScrollControls() {
+        if (!kanbanBoard) return;
+        const maximumScroll = kanbanBoard.scrollWidth - kanbanBoard.clientWidth;
+        kanbanScrollButtons.forEach((button) => {
+            const atStart = kanbanBoard.scrollLeft <= 1;
+            const atEnd = kanbanBoard.scrollLeft >= maximumScroll - 1;
+            button.disabled = button.dataset.kanbanScroll === 'previous' ? atStart : atEnd;
+        });
+    }
+
+    if (kanbanBoard) {
+        kanbanScrollButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const direction = button.dataset.kanbanScroll === 'previous' ? -1 : 1;
+                kanbanBoard.scrollBy({
+                    left: direction * Math.max(240, kanbanBoard.clientWidth * 0.75),
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        kanbanBoard.addEventListener('scroll', updateKanbanScrollControls, { passive: true });
+        kanbanBoard.addEventListener('keydown', (event) => {
+            if (event.target !== kanbanBoard || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+            event.preventDefault();
+            const direction = event.key === 'ArrowLeft' ? -1 : 1;
+            kanbanBoard.scrollBy({ left: direction * 280, behavior: 'smooth' });
+        });
+        kanbanBoard.addEventListener('dragover', (event) => {
+            const bounds = kanbanBoard.getBoundingClientRect();
+            const edgeSize = 64;
+            if (event.clientX < bounds.left + edgeSize) kanbanBoard.scrollLeft -= 16;
+            if (event.clientX > bounds.right - edgeSize) kanbanBoard.scrollLeft += 16;
+        });
+        window.addEventListener('resize', updateKanbanScrollControls);
+        updateKanbanScrollControls();
+    }
+
     document.querySelectorAll('.kanban-card').forEach((card) => {
         card.addEventListener('dragstart', (event) => {
             card.classList.add('is-dragging');
