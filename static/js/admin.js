@@ -341,13 +341,25 @@
         });
     }
 
-    function activateQuickTab(name) {
-        document.querySelectorAll('[data-quick-tab]').forEach((tab) => {
-            tab.setAttribute('aria-selected', String(tab.dataset.quickTab === name));
-        });
-        document.querySelectorAll('[data-quick-panel]').forEach((panel) => {
-            panel.classList.toggle('hidden', panel.dataset.quickPanel !== name);
-        });
+    let quickDialogOpener = null;
+
+    function openQuickDialog(opener) {
+        const dialog = document.getElementById(opener.dataset.quickDialogOpen);
+        if (!dialog) return;
+
+        quickDialogOpener = opener;
+        if (typeof dialog.showModal === 'function') dialog.showModal();
+        else dialog.setAttribute('open', 'open');
+        window.requestAnimationFrame(() => dialog.querySelector('[autofocus], input:not([type="hidden"]), select, textarea')?.focus());
+    }
+
+    function closeQuickDialog(dialog) {
+        if (!dialog) return;
+        if (typeof dialog.close === 'function') dialog.close();
+        else {
+            dialog.removeAttribute('open');
+            quickDialogOpener?.focus();
+        }
     }
 
     function updateStyleChoice(targetName, value) {
@@ -544,9 +556,15 @@
                 return;
             }
 
-            const quickTab = event.target.closest('[data-quick-tab]');
-            if (quickTab) {
-                activateQuickTab(quickTab.dataset.quickTab);
+            const quickDialogButton = event.target.closest('[data-quick-dialog-open]');
+            if (quickDialogButton) {
+                openQuickDialog(quickDialogButton);
+                return;
+            }
+
+            const quickDialogClose = event.target.closest('[data-quick-dialog-close]');
+            if (quickDialogClose) {
+                closeQuickDialog(quickDialogClose.closest('dialog'));
                 return;
             }
 
@@ -597,6 +615,12 @@
         });
         document.querySelectorAll('[data-style-input]').forEach((input) => {
             updateStyleChoice(input.id, input.value);
+        });
+        document.querySelectorAll('.dashboard-quick-dialog').forEach((dialog) => {
+            dialog.addEventListener('click', (event) => {
+                if (event.target === dialog) closeQuickDialog(dialog);
+            });
+            dialog.addEventListener('close', () => quickDialogOpener?.focus());
         });
 
         document.querySelectorAll('[data-admin-form]').forEach((form) => {

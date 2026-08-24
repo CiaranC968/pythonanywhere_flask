@@ -113,47 +113,85 @@
             <header class="dashboard-section-heading">
                 <div>
                     <h2 id="quick-add-heading">Quick add</h2>
-                    <p>Create a common entry without leaving the overview.</p>
+                    <p>Create a portfolio entry from the overview.</p>
                 </div>
             </header>
-            <div class="dashboard-quick-tabs" role="tablist" aria-label="Quick add type">
-                <button type="button" data-quick-tab="quick-exp" aria-selected="true" class="quick-tab">Experience</button>
-                <button type="button" data-quick-tab="quick-skill" aria-selected="false" class="quick-tab">Skill</button>
+            <div class="dashboard-quick-actions">
+                <button type="button" class="dashboard-quick-action" data-quick-dialog-open="quick-experience-dialog">
+                    <span class="dashboard-tool-icon"><i class="fas fa-briefcase" aria-hidden="true"></i></span>
+                    <span><strong>Experience</strong><small>Add a company and role</small></span>
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="dashboard-quick-action" data-quick-dialog-open="quick-skill-dialog">
+                    <span class="dashboard-tool-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+                    <span><strong>Skill group</strong><small>Add skills and technologies</small></span>
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                </button>
             </div>
+        </section>
+    </aside>
+</div>
 
-            <form data-quick-panel="quick-exp" method="post" action="{{ url_for('admin.quick_add') }}" class="dashboard-quick-form">
+<dialog id="quick-experience-dialog" class="tracker-dialog dashboard-quick-dialog" aria-labelledby="quick-experience-title">
+    <form method="post" action="{{ url_for('admin.quick_add') }}" class="tracker-dialog-form">
+        <header class="dialog-header">
+            <h2 id="quick-experience-title">Add experience</h2>
+            <button type="button" class="icon-button" data-quick-dialog-close aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+        </header>
+        <div class="dialog-body">
+            <div class="tracker-form-grid">
                 <input type="hidden" name="section" value="experience">
                 <label class="tracker-field"><span>Company</span><input required name="company" class="admin-input" autocomplete="organization"></label>
                 <label class="tracker-field"><span>Role</span><input required name="role" class="admin-input" autocomplete="organization-title"></label>
-                <details class="dashboard-disclosure">
-                    <summary>More details <i class="fas fa-chevron-down" aria-hidden="true"></i></summary>
-                    <div class="dashboard-disclosure-body">
+            </div>
+            <details class="dialog-disclosure">
+                <summary><span><i class="fas fa-sliders" aria-hidden="true"></i> More details</span><i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i></summary>
+                <div class="dialog-disclosure-body">
+                    <div class="tracker-form-grid">
                         <label class="tracker-field"><span>Period</span><input name="period" class="admin-input" placeholder="2024 - Present"></label>
                         <label class="tracker-field"><span>Location</span><input name="location" class="admin-input"></label>
                         <label class="tracker-field"><span>Work type</span><input name="type" class="admin-input" placeholder="Hybrid"></label>
                         <label class="tracker-field"><span>Tech stack</span><input name="tech_stack" class="admin-input" placeholder="Flask, React, SQL"></label>
-                        <label class="tracker-field"><span>Summary</span><textarea name="brief" rows="2" class="admin-input"></textarea></label>
-                        <label class="tracker-field"><span>Bullet points</span><textarea name="details" rows="3" class="admin-input" placeholder="One point per line"></textarea></label>
+                        <label class="tracker-field tracker-field-wide"><span>Summary</span><textarea name="brief" rows="2" class="admin-input"></textarea></label>
+                        <label class="tracker-field tracker-field-wide"><span>Bullet points</span><textarea name="details" rows="3" class="admin-input" placeholder="One point per line"></textarea></label>
                     </div>
-                </details>
-                <button type="submit" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add experience</button>
-            </form>
+                </div>
+            </details>
+        </div>
+        <footer class="dialog-actions">
+            <button type="button" class="tracker-secondary" data-quick-dialog-close>Cancel</button>
+            <button type="submit" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add experience</button>
+        </footer>
+    </form>
+</dialog>
 
-            <form data-quick-panel="quick-skill" method="post" action="{{ url_for('admin.quick_add') }}" class="dashboard-quick-form hidden">
+<dialog id="quick-skill-dialog" class="tracker-dialog dashboard-quick-dialog dashboard-quick-dialog-small" aria-labelledby="quick-skill-title">
+    <form method="post" action="{{ url_for('admin.quick_add') }}" class="tracker-dialog-form">
+        <header class="dialog-header">
+            <h2 id="quick-skill-title">Add skill group</h2>
+            <button type="button" class="icon-button" data-quick-dialog-close aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+        </header>
+        <div class="dialog-body">
+            <div class="tracker-form-grid">
                 <input type="hidden" name="section" value="skills">
                 <label class="tracker-field"><span>Skill group</span><input required name="title" class="admin-input"></label>
                 <label class="tracker-field"><span>Tags</span><input name="tags" class="admin-input" placeholder="Python, JavaScript, HTML"></label>
-                <details class="dashboard-disclosure">
-                    <summary>More details <i class="fas fa-chevron-down" aria-hidden="true"></i></summary>
-                    <div class="dashboard-disclosure-body">
+            </div>
+            <details class="dialog-disclosure">
+                <summary><span><i class="fas fa-sliders" aria-hidden="true"></i> More details</span><i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i></summary>
+                <div class="dialog-disclosure-body">
+                    <div class="tracker-form-grid">
                         <label class="tracker-field"><span>Progress</span><input type="number" name="progress_val" value="85" min="0" max="100" class="admin-input"></label>
                         <label class="tracker-field"><span>Colour</span><select name="theme" class="admin-input"><option value="yellow">Yellow</option><option value="blue">Blue</option><option value="indigo">Indigo</option><option value="green">Green</option><option value="red">Red</option></select></label>
-                        <label class="tracker-field"><span>Description</span><textarea name="desc" rows="3" class="admin-input"></textarea></label>
+                        <label class="tracker-field tracker-field-wide"><span>Description</span><textarea name="desc" rows="3" class="admin-input"></textarea></label>
                     </div>
-                </details>
-                <button type="submit" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add skill</button>
-            </form>
-        </section>
-    </aside>
-</div>
+                </div>
+            </details>
+        </div>
+        <footer class="dialog-actions">
+            <button type="button" class="tracker-secondary" data-quick-dialog-close>Cancel</button>
+            <button type="submit" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add skill group</button>
+        </footer>
+    </form>
+</dialog>
 {% endblock %}
