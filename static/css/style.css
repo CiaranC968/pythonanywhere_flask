@@ -23,8 +23,8 @@
 :root {
     /* Brand Colors - aligned with Tailwind config */
     --color-brand-dark: #111827;
-    --color-brand-accent: #facc15;
-    --color-brand-hover: #f59e0b;
+    --color-brand-accent: #d5a13a;
+    --color-brand-hover: #bd8428;
 
     /* Light Mode - Softer, easier on eyes */
     --color-bg-primary: #f5f4f1;
@@ -49,7 +49,7 @@
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
-    --shadow-accent: 0 4px 14px 0 rgb(250 204 21 / 0.25);
+    --shadow-accent: 0 4px 14px 0 rgb(213 161 58 / 0.2);
 
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -641,8 +641,36 @@ select:focus-visible,
     color: rgb(255 255 255 / 5%);
 }
 
+.hero-availability {
+    background: #e8f3ec;
+    border: 1px solid #c8dfd0;
+    color: #276044;
+}
+
+.hero-availability-dot {
+    background: #3f8f63;
+}
+
+.hero-role {
+    color: #475569;
+}
+
+.hero-role-mark {
+    color: var(--color-brand-accent);
+}
+
+.dark .hero-availability {
+    background: rgb(38 94 65 / 24%);
+    border-color: rgb(88 156 116 / 42%);
+    color: #8ccaa5;
+}
+
+.dark .hero-role {
+    color: #bdc9d8;
+}
+
 #scroll-progress {
-    background: linear-gradient(90deg, #facc15, #f59e0b, #ef4444);
+    background: var(--color-brand-accent);
     height: 3px;
     left: 0;
     pointer-events: none;
@@ -679,7 +707,7 @@ select:focus-visible,
 }
 
 .nav-link[aria-current="page"]::before {
-    background: #facc15;
+    background: var(--color-brand-accent);
     border-radius: 999px;
     content: "";
     height: 1.25rem;

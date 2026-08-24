@@ -123,13 +123,13 @@
         <section id="about" class="relative min-h-dvh flex items-center px-6 lg:px-12 bg-warm-50 dark:bg-gray-800 border-b border-warm-200 dark:border-gray-700 scroll-mt-16 overflow-hidden">
             <i class="section-watermark {{ profile.hero_icon }} text-warm-400 dark:text-gray-600" aria-hidden="true"></i>
             <div class="w-full max-w-7xl mx-auto py-12 md:py-0 relative z-10">
-                <div class="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold mb-6 border border-amber-200 dark:border-amber-800">
-                    <span class="flex h-2 w-2 rounded-full bg-amber-500 motion-safe:animate-pulse" aria-hidden="true"></span>
+                <div class="hero-availability inline-flex items-center gap-2 py-1 px-3 rounded-full text-xs font-bold mb-6">
+                    <span class="hero-availability-dot flex h-2 w-2 rounded-full motion-safe:animate-pulse" aria-hidden="true"></span>
                     <span>{{ profile.tagline }}</span>
                 </div>
-                <h1 class="text-5xl sm:text-7xl lg:text-8xl font-black mb-6 tracking-tighter dark:text-white leading-[1.1]">
+                <h1 class="text-5xl sm:text-7xl lg:text-8xl font-black mb-6 dark:text-white leading-[1.1]">
                     {{ profile.full_name }}<br>
-                    <span class="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-red-600">{{ profile.title }}.</span>
+                    <span class="hero-role">{{ profile.title }}<span class="hero-role-mark">.</span></span>
                 </h1>
                 <p class="text-lg md:text-xl text-warm-600 dark:text-gray-300 mb-8 max-w-2xl leading-relaxed">
                     {{ profile.about }}

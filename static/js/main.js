@@ -205,7 +205,7 @@ const ThemeManager = {
 
         // 4. Update Meta Theme Color
         document.querySelector('meta[name="theme-color"]')?.setAttribute(
-            'content', isDark ? '#111827' : '#facc15'
+            'content', isDark ? '#111827' : '#d5a13a'
         );
 
         Utils.announce(isDark ? 'Dark mode enabled' : 'Light mode enabled');

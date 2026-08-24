@@ -1372,10 +1372,13 @@ textarea.admin-input {
     border-radius: 8px;
     box-shadow: 0 24px 60px rgb(17 24 39 / 22%);
     color: var(--tracker-ink);
+    inset: 0;
+    margin: auto;
     max-height: min(90dvh, 58rem);
     max-width: 48rem;
     overflow: hidden;
     padding: 0;
+    position: fixed;
     width: calc(100% - 2rem);
 }
 
