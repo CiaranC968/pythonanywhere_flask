@@ -147,6 +147,24 @@ JOB_WORK_ARRANGEMENTS = (
 )
 JOB_WORK_ARRANGEMENT_VALUES = {value for value, _label in JOB_WORK_ARRANGEMENTS}
 JOB_COOLING_OFF_DAYS = 30
+RESUME_PRESET_TARGET = "resume_preset"
+RESUME_PRESET_FIELDS = (
+    "label",
+    "header_subtitle",
+    "target_role",
+    "resume_keywords",
+    "resume_summary",
+    "company_details",
+    "resume_conclusion",
+)
+DASHBOARD_SECTION_ICONS = {
+    "profile": "fa-user",
+    "experience": "fa-briefcase",
+    "education": "fa-graduation-cap",
+    "skills": "fa-code",
+    "projects": "fa-folder-open",
+    "certificates": "fa-award",
+}
 
 from blueprints.admin_config import (
     IMAGE_FIELDS,
@@ -243,12 +261,16 @@ def dashboard():
         counts["job_applications"] = 0
         counts["stale_job_applications"] = 0
 
+    content_count = sum(counts.get(section, 0) for section in SECTIONS)
+
     admin_password_missing = not current_app.config.get("ADMIN_PASSWORD_HASH") and not current_app.config.get(
         "ADMIN_PASSWORD")
     return render_template(
         "admin/dashboard.html",
         sections=SECTIONS,
+        section_icons=DASHBOARD_SECTION_ICONS,
         counts=counts,
+        content_count=content_count,
         admin_password_missing=admin_password_missing,
         database_error=database_error,
     )
@@ -421,8 +443,54 @@ def resume_builder():
     return render_template(
         "admin/resume_builder.html",
         profile=get_profile(),
-        resume_presets=(RESUME_ROLE_PRESETS[0], RESUME_ROLE_PRESETS[-1]),
+        resume_presets=_resume_role_presets(),
     )
+
+
+@admin_bp.route("/resume-builder/presets/<int:preset_index>/edit", methods=["POST"])
+@admin_required
+def edit_resume_preset(preset_index: int):
+    if preset_index not in range(len(_default_resume_presets())):
+        abort(404)
+
+    values = _resume_preset_form_values()
+    if not values:
+        flash("Add a template name, job role, introduction, main points, and conclusion.", "error")
+        return redirect(url_for("admin.resume_builder", _anchor=f"template-editor-{preset_index}"))
+
+    sort_order = (preset_index + 1) * 10
+    preset = ResumeTemplate.query.filter_by(
+        target=RESUME_PRESET_TARGET,
+        sort_order=sort_order,
+    ).first()
+    if preset is None:
+        preset = ResumeTemplate(target=RESUME_PRESET_TARGET, sort_order=sort_order)
+        db.session.add(preset)
+
+    preset.label = values["label"]
+    preset.text = json.dumps(values, ensure_ascii=True)
+    preset.is_visible = True
+    if _commit_or_flash():
+        flash(f"{values['label']} template saved.", "success")
+    return redirect(url_for("admin.resume_builder", _anchor=f"template-editor-{preset_index}"))
+
+
+@admin_bp.route("/resume-builder/presets/<int:preset_index>/reset", methods=["POST"])
+@admin_required
+def reset_resume_preset(preset_index: int):
+    if preset_index not in range(len(_default_resume_presets())):
+        abort(404)
+
+    sort_order = (preset_index + 1) * 10
+    preset = ResumeTemplate.query.filter_by(
+        target=RESUME_PRESET_TARGET,
+        sort_order=sort_order,
+    ).first()
+    if preset is not None:
+        preset.is_visible = False
+        if _commit_or_flash():
+            flash("Template reset to its default wording.", "success")
+    return redirect(url_for("admin.resume_builder", _anchor=f"template-editor-{preset_index}"))
 
 
 @admin_bp.route("/resume-builder/templates", methods=["POST"])
@@ -659,9 +727,56 @@ def _resume_sentence_templates():
     return templates
 
 
+def _default_resume_presets():
+    return (RESUME_ROLE_PRESETS[0], RESUME_ROLE_PRESETS[-1])
+
+
+def _resume_role_presets():
+    presets = [
+        {**preset, "is_custom": False}
+        for preset in _default_resume_presets()
+    ]
+    try:
+        overrides = ResumeTemplate.query.filter_by(
+            target=RESUME_PRESET_TARGET,
+            is_visible=True,
+        ).order_by(ResumeTemplate.sort_order.asc(), ResumeTemplate.id.asc()).all()
+    except SQLAlchemyError as exc:
+        current_app.logger.exception("Could not load resume preset overrides: %s", exc)
+        db.session.rollback()
+        return presets
+
+    for override in overrides:
+        preset_index = (override.sort_order // 10) - 1
+        if preset_index not in range(len(presets)):
+            continue
+        try:
+            values = json.loads(override.text)
+        except (TypeError, json.JSONDecodeError):
+            current_app.logger.warning("Ignoring invalid resume preset override %s.", override.id)
+            continue
+        if not isinstance(values, dict):
+            continue
+        presets[preset_index] = {
+            field: str(values.get(field, presets[preset_index].get(field, "")))
+            for field in RESUME_PRESET_FIELDS
+        }
+        presets[preset_index].update({"is_custom": True, "template_id": override.id})
+    return presets
+
+
+def _resume_preset_form_values():
+    values = {
+        field: request.form.get(field, "").strip()
+        for field in RESUME_PRESET_FIELDS
+    }
+    required = ("label", "target_role", "resume_summary", "company_details", "resume_conclusion")
+    return values if all(values[field] for field in required) else None
+
+
 def _custom_resume_templates(include_hidden=False):
     try:
-        query = ResumeTemplate.query
+        query = ResumeTemplate.query.filter(ResumeTemplate.target != RESUME_PRESET_TARGET)
         if not include_hidden:
             query = query.filter_by(is_visible=True)
         return query.order_by(ResumeTemplate.is_visible.desc(), ResumeTemplate.sort_order.asc(),

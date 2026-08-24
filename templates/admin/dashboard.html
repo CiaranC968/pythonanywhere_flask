@@ -1,205 +1,159 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+<header class="dashboard-header">
     <div>
-        <h1 class="text-4xl font-black text-warm-900">Edit Portfolio</h1>
-        <p class="mt-2 text-warm-500">Manage the content that powers the site and generated PDF.</p>
+        <span class="tracker-eyebrow">Portfolio</span>
+        <h1 class="tracker-title">Overview</h1>
+        <p class="tracker-subtitle">Manage your site content, documents and job search from one place.</p>
     </div>
-    <div class="flex flex-wrap gap-3">
-        <a href="{{ url_for('admin.diagnostics') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Diagnostics</a>
-        <a href="{{ url_for('admin.deployment_checklist') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Deployment</a>
-        <a href="{{ url_for('cv.get_cv') }}" target="_blank" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent transition-colors">Preview PDF</a>
+    <div class="dashboard-header-actions">
+        <a href="{{ url_for('admin.diagnostics') }}" class="tracker-secondary"><i class="fas fa-stethoscope" aria-hidden="true"></i> Diagnostics</a>
+        <a href="{{ url_for('admin.deployment_checklist') }}" class="tracker-secondary"><i class="fas fa-list-check" aria-hidden="true"></i> Deployment</a>
+        <a href="{{ url_for('cv.get_cv') }}" target="_blank" class="tracker-primary"><i class="fas fa-file-pdf" aria-hidden="true"></i> Preview CV</a>
     </div>
-</div>
+</header>
 
 {% if admin_password_missing %}
-<div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">
-    Set <code class="font-mono">ADMIN_PASSWORD</code> or <code class="font-mono">ADMIN_PASSWORD_HASH</code> before using the admin editor.
+<div class="dashboard-alert dashboard-alert-warning">
+    <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+    <span>Set <code>ADMIN_PASSWORD</code> or <code>ADMIN_PASSWORD_HASH</code> before using the admin editor.</span>
 </div>
 {% endif %}
 
 {% if database_error %}
-<div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
-    Database connection failed. Open Diagnostics for details.
+<div class="dashboard-alert dashboard-alert-error">
+    <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+    <span>Database connection failed. Open Diagnostics for details.</span>
 </div>
 {% endif %}
 
-<div class="grid gap-8 lg:grid-cols-[2fr_1fr]">
-    <!-- Left Column: Main Editor Cards & Utilities -->
-    <div class="space-y-6">
-        <div>
-            <h2 class="text-2xl font-black text-warm-900 mb-4">Content</h2>
-            <div class="grid gap-4 sm:grid-cols-2">
-                {% for section, config in sections.items() %}
-                <div class="group relative rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition hover:border-brand-accent hover:shadow-lg flex flex-col justify-between min-h-[9.5rem]">
-                    <div>
-                        <div class="flex items-center justify-between gap-3">
-                            <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xl font-black text-warm-900 hover:underline leading-snug">{{ config.label }}</a>
-                            <div class="flex items-center gap-2">
-                                <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">{{ counts[section] }}</span>
-                                {% if not config.singleton %}
-                                <a href="{{ url_for('admin.new_item', section=section) }}" class="rounded-lg bg-warm-50 border border-warm-200/50 hover:bg-brand-accent p-1.5 text-xs text-warm-700 hover:text-brand-dark transition-all" title="Add item">
-                                    <i class="fas fa-plus"></i>
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <p class="mt-2 text-sm text-warm-500">{{ config.description }}</p>
-                    </div>
-                    <div class="mt-4">
-                        <a href="{{ url_for('admin.list_items', section=section) }}" class="text-xs font-black text-brand-hover hover:underline">
-                            View All <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
-                
-            </div>
-        </div>
-
-        <div>
-            <h2 class="text-2xl font-black text-warm-900 mb-4">Utilities & Builders</h2>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <a href="{{ url_for('admin.job_tracker') }}" class="block rounded-2xl border border-brand-accent bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <h3 class="text-lg font-black text-warm-900">Job Application Tracker</h3>
-                            <p class="mt-1 text-xs text-warm-500 leading-normal">Keep track of job roles, companies, status stages (applied, interview, rejected, offer), and dates.</p>
-                        </div>
-                        <span class="rounded-xl bg-brand-accent px-3.5 py-2 text-xs font-black text-brand-dark shrink-0">Track Jobs</span>
-                    </div>
-                </a>
-                <a href="{{ url_for('admin.cv_builder') }}" class="block rounded-2xl border border-warm-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <h3 class="text-lg font-black text-warm-900">Custom CV Builder</h3>
-                            <p class="mt-1 text-xs text-warm-500 leading-normal">Tick exactly which portfolio sections and items should appear in a CV PDF.</p>
-                        </div>
-                        <span class="rounded-xl border border-warm-200 px-3.5 py-2 text-xs font-black text-warm-700 hover:border-brand-accent shrink-0">Build CV</span>
-                    </div>
-                </a>
-                <a href="{{ url_for('admin.resume_builder') }}" class="block rounded-2xl border border-warm-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <h3 class="text-lg font-black text-warm-900">Resume Letter Builder</h3>
-                            <p class="mt-1 text-xs text-warm-500 leading-normal">Create a company-specific resume letter using reusable sentence templates.</p>
-                        </div>
-                        <span class="rounded-xl border border-warm-200 px-3.5 py-2 text-xs font-black text-warm-700 hover:border-brand-accent shrink-0">Build Resume</span>
-                    </div>
-                </a>
-                <a href="{{ url_for('admin.deployment_checklist') }}" class="block rounded-2xl border border-warm-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-accent hover:shadow-lg">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <h3 class="text-lg font-black text-warm-900">Deployment Checklist</h3>
-                            <p class="mt-1 text-xs text-warm-500 leading-normal">Check database, tables, PDF libraries, environment, and upload path before publishing.</p>
-                        </div>
-                        <span class="rounded-xl border border-warm-200 px-3.5 py-2 text-xs font-black text-warm-700 hover:border-brand-accent shrink-0">Check</span>
-                    </div>
-                </a>
-            </div>
-        </div>
+<section class="dashboard-stats" aria-label="Admin summary">
+    <div class="dashboard-stat">
+        <span>Content entries</span>
+        <strong>{{ content_count }}</strong>
+        <small>Across {{ sections|length }} sections</small>
     </div>
+    <div class="dashboard-stat">
+        <span>Applications</span>
+        <strong>{{ counts.job_applications }}</strong>
+        <small>Tracked jobs</small>
+    </div>
+    <div class="dashboard-stat">
+        <span>Waiting 24+ days</span>
+        <strong>{{ counts.stale_job_applications }}</strong>
+        <small>May need a follow-up</small>
+    </div>
+    <div class="dashboard-stat">
+        <span>Document builders</span>
+        <strong>2</strong>
+        <small>CV and resume letter</small>
+    </div>
+</section>
 
-    <!-- Right Column: Quick Creator Widget -->
-    <div class="space-y-6">
-        <div class="rounded-2xl border border-brand-accent bg-white p-6 shadow-sm relative">
-            <h2 class="text-xl font-black text-warm-900 flex items-center gap-2">
-                <i class="fas fa-magic text-brand-accent"></i> Quick Creator
-            </h2>
-            <p class="mt-1 text-xs text-warm-500">Quickly add new content to your site without leaving the dashboard.</p>
-            
-            <!-- Quick Creator Tabs -->
-            <div class="mt-4 flex border-b border-warm-200">
-                <button type="button" data-quick-tab="quick-exp" aria-selected="true" class="quick-tab">
-                    Experience
-                </button>
-                <button type="button" data-quick-tab="quick-skill" aria-selected="false" class="quick-tab">
-                    Skill
-                </button>
+<div class="dashboard-layout">
+    <section class="dashboard-section" aria-labelledby="content-heading">
+        <header class="dashboard-section-heading">
+            <div>
+                <h2 id="content-heading">Portfolio content</h2>
+                <p>Edit the information shown on the public site and in generated documents.</p>
             </div>
-            
-            <!-- Experience Form -->
-            <form data-quick-panel="quick-exp" method="post" action="{{ url_for('admin.quick_add') }}" class="mt-4 space-y-3">
+        </header>
+
+        <div class="dashboard-content-grid">
+            {% for section, config in sections.items() %}
+            <article class="dashboard-content-item">
+                <a href="{{ url_for('admin.list_items', section=section) }}" class="dashboard-content-link">
+                    <span class="dashboard-content-icon"><i class="fas {{ section_icons[section] }}" aria-hidden="true"></i></span>
+                    <span class="dashboard-content-copy">
+                        <strong>{{ config.label }}</strong>
+                        <small>{{ config.description }}</small>
+                    </span>
+                    <span class="dashboard-content-count">{{ counts[section] }}</span>
+                    <i class="fas fa-chevron-right dashboard-content-arrow" aria-hidden="true"></i>
+                </a>
+                {% if not config.singleton %}
+                <a href="{{ url_for('admin.new_item', section=section) }}" class="icon-button dashboard-add-button" title="Add {{ config.label|lower }}" aria-label="Add {{ config.label|lower }}">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                </a>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <aside class="dashboard-rail">
+        <section class="dashboard-section dashboard-tools" aria-labelledby="tools-heading">
+            <header class="dashboard-section-heading">
+                <div>
+                    <h2 id="tools-heading">Tools</h2>
+                    <p>Open a focused workspace.</p>
+                </div>
+            </header>
+            <nav class="dashboard-tool-list" aria-label="Admin tools">
+                <a href="{{ url_for('admin.job_tracker') }}">
+                    <span class="dashboard-tool-icon"><i class="fas fa-table-columns" aria-hidden="true"></i></span>
+                    <span><strong>Application tracker</strong><small>{{ counts.job_applications }} jobs recorded</small></span>
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a href="{{ url_for('admin.resume_builder') }}#template-library">
+                    <span class="dashboard-tool-icon"><i class="fas fa-file-lines" aria-hidden="true"></i></span>
+                    <span><strong>Resume templates</strong><small>Build and edit letter wording</small></span>
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a href="{{ url_for('admin.cv_builder') }}">
+                    <span class="dashboard-tool-icon"><i class="fas fa-file-circle-check" aria-hidden="true"></i></span>
+                    <span><strong>Custom CV</strong><small>Select content and create a PDF</small></span>
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </a>
+            </nav>
+        </section>
+
+        <section class="dashboard-section dashboard-quick-add" aria-labelledby="quick-add-heading">
+            <header class="dashboard-section-heading">
+                <div>
+                    <h2 id="quick-add-heading">Quick add</h2>
+                    <p>Create a common entry without leaving the overview.</p>
+                </div>
+            </header>
+            <div class="dashboard-quick-tabs" role="tablist" aria-label="Quick add type">
+                <button type="button" data-quick-tab="quick-exp" aria-selected="true" class="quick-tab">Experience</button>
+                <button type="button" data-quick-tab="quick-skill" aria-selected="false" class="quick-tab">Skill</button>
+            </div>
+
+            <form data-quick-panel="quick-exp" method="post" action="{{ url_for('admin.quick_add') }}" class="dashboard-quick-form">
                 <input type="hidden" name="section" value="experience">
-                <div>
-                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Company</label>
-                    <input required name="company" placeholder="e.g. Google" class="admin-input py-2 px-3 text-sm rounded-lg">
-                </div>
-                <div>
-                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Role</label>
-                    <input required name="role" placeholder="e.g. Software Engineer" class="admin-input py-2 px-3 text-sm rounded-lg">
-                </div>
-                <div class="grid gap-3 grid-cols-2">
-                    <div>
-                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Period</label>
-                        <input name="period" placeholder="e.g. 2024 - Present" class="admin-input py-2 px-3 text-sm rounded-lg">
+                <label class="tracker-field"><span>Company</span><input required name="company" class="admin-input" autocomplete="organization"></label>
+                <label class="tracker-field"><span>Role</span><input required name="role" class="admin-input" autocomplete="organization-title"></label>
+                <details class="dashboard-disclosure">
+                    <summary>More details <i class="fas fa-chevron-down" aria-hidden="true"></i></summary>
+                    <div class="dashboard-disclosure-body">
+                        <label class="tracker-field"><span>Period</span><input name="period" class="admin-input" placeholder="2024 - Present"></label>
+                        <label class="tracker-field"><span>Location</span><input name="location" class="admin-input"></label>
+                        <label class="tracker-field"><span>Work type</span><input name="type" class="admin-input" placeholder="Hybrid"></label>
+                        <label class="tracker-field"><span>Tech stack</span><input name="tech_stack" class="admin-input" placeholder="Flask, React, SQL"></label>
+                        <label class="tracker-field"><span>Summary</span><textarea name="brief" rows="2" class="admin-input"></textarea></label>
+                        <label class="tracker-field"><span>Bullet points</span><textarea name="details" rows="3" class="admin-input" placeholder="One point per line"></textarea></label>
                     </div>
-                    <div>
-                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Location</label>
-                        <input name="location" placeholder="e.g. London, UK" class="admin-input py-2 px-3 text-sm rounded-lg">
-                    </div>
-                </div>
-                <div class="grid gap-3 grid-cols-2">
-                    <div>
-                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Work Type</label>
-                        <input name="type" placeholder="e.g. Hybrid / Remote" class="admin-input py-2 px-3 text-sm rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Tech Stack</label>
-                        <input name="tech_stack" placeholder="Flask, React, SQL" class="admin-input py-2 px-3 text-sm rounded-lg">
-                    </div>
-                </div>
-                <div>
-                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Brief Summary</label>
-                    <textarea name="brief" rows="2" placeholder="Brief description of your role..." class="admin-input py-2 px-3 text-sm rounded-lg"></textarea>
-                </div>
-                <div>
-                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Bullet Points (one per line)</label>
-                    <textarea name="details" rows="3" placeholder="Bullet point 1&#10;Bullet point 2" class="admin-input py-2 px-3 text-sm rounded-lg"></textarea>
-                </div>
-                <button type="submit" class="w-full mt-2 rounded-xl bg-brand-accent py-2.5 text-xs font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
-                    Add Experience
-                </button>
+                </details>
+                <button type="submit" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add experience</button>
             </form>
-            
-            <!-- Skill Form -->
-            <form data-quick-panel="quick-skill" method="post" action="{{ url_for('admin.quick_add') }}" class="mt-4 space-y-3 hidden">
-                <input type="hidden" name="section" value="skills">
-                <div>
-                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Skill Title / Group</label>
-                    <input required name="title" placeholder="e.g. Web Development" class="admin-input py-2 px-3 text-sm rounded-lg">
-                </div>
-                <div>
-                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Tags (comma-separated)</label>
-                    <input name="tags" placeholder="Python, JavaScript, HTML" class="admin-input py-2 px-3 text-sm rounded-lg">
-                </div>
-                <div class="grid gap-3 grid-cols-2">
-                    <div>
-                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Progress (0-100)</label>
-                        <input type="number" name="progress_val" value="85" min="0" max="100" class="admin-input py-2 px-3 text-sm rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Color Theme</label>
-                        <select name="theme" class="admin-input py-2 px-3 text-sm rounded-lg">
-                            <option value="yellow" selected>Yellow / Orange</option>
-                            <option value="blue">Blue / Light Blue</option>
-                            <option value="indigo">Indigo / Violet</option>
-                            <option value="green">Green / Emerald</option>
-                            <option value="red">Red / Rose</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block mb-1 text-[10px] font-black uppercase tracking-wider text-warm-500">Description</label>
-                    <textarea name="desc" rows="3" placeholder="Brief details about these skills..." class="admin-input py-2 px-3 text-sm rounded-lg"></textarea>
-                </div>
-                <button type="submit" class="w-full mt-2 rounded-xl bg-brand-accent py-2.5 text-xs font-black text-brand-dark shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
-                    Add Skill
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
 
+            <form data-quick-panel="quick-skill" method="post" action="{{ url_for('admin.quick_add') }}" class="dashboard-quick-form hidden">
+                <input type="hidden" name="section" value="skills">
+                <label class="tracker-field"><span>Skill group</span><input required name="title" class="admin-input"></label>
+                <label class="tracker-field"><span>Tags</span><input name="tags" class="admin-input" placeholder="Python, JavaScript, HTML"></label>
+                <details class="dashboard-disclosure">
+                    <summary>More details <i class="fas fa-chevron-down" aria-hidden="true"></i></summary>
+                    <div class="dashboard-disclosure-body">
+                        <label class="tracker-field"><span>Progress</span><input type="number" name="progress_val" value="85" min="0" max="100" class="admin-input"></label>
+                        <label class="tracker-field"><span>Colour</span><select name="theme" class="admin-input"><option value="yellow">Yellow</option><option value="blue">Blue</option><option value="indigo">Indigo</option><option value="green">Green</option><option value="red">Red</option></select></label>
+                        <label class="tracker-field"><span>Description</span><textarea name="desc" rows="3" class="admin-input"></textarea></label>
+                    </div>
+                </details>
+                <button type="submit" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add skill</button>
+            </form>
+        </section>
+    </aside>
+</div>
 {% endblock %}

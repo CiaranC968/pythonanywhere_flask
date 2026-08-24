@@ -74,6 +74,14 @@
         renderPreview();
     }
 
+    function openLinkedTemplateEditor() {
+        if (!window.location.hash) return;
+        const target = document.querySelector(window.location.hash);
+        if (target instanceof HTMLDetailsElement && target.classList.contains('preset-editor')) {
+            target.open = true;
+        }
+    }
+
     document.querySelectorAll('[data-resume-template]').forEach((button) => {
         button.addEventListener('click', () => selectPreset(Number(button.dataset.resumeTemplate)));
     });
@@ -85,5 +93,7 @@
     preview.date.textContent = new Intl.DateTimeFormat('en-GB', {
         day: 'numeric', month: 'long', year: 'numeric'
     }).format(new Date());
+    window.addEventListener('hashchange', openLinkedTemplateEditor);
+    openLinkedTemplateEditor();
     selectPreset(0);
 })();
