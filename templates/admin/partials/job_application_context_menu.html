@@ -1,0 +1,32 @@
+<div
+    class="application-context-menu"
+    data-application-context-menu
+    role="menu"
+    aria-label="Application actions"
+    hidden
+>
+    <strong data-context-title>Application</strong>
+    <a href="#" data-context-company role="menuitem">
+        <i class="fas fa-building" aria-hidden="true"></i>
+        Company details
+    </a>
+    <button type="button" data-context-copy role="menuitem">
+        <i class="fas fa-copy" aria-hidden="true"></i>
+        Copy company and role
+    </button>
+    <div class="application-context-divider" role="separator"></div>
+    <span class="application-context-label">Move to</span>
+    {% for stage_value, stage_label in job_stages %}
+    <button
+        type="button"
+        data-context-stage="{{ stage_value }}"
+        role="menuitemradio"
+        aria-checked="false"
+    >
+        <span class="application-context-dot" aria-hidden="true"></span>
+        {{ stage_label }}
+        <i class="fas fa-check application-context-check" aria-hidden="true"></i>
+    </button>
+    {% endfor %}
+</div>
+<p class="application-context-feedback" data-context-feedback role="status" hidden></p>

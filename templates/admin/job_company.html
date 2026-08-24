@@ -38,7 +38,7 @@
                     <summary class="company-application-summary">
                         <div>
                             <h3>{{ app.role }}</h3>
-                            <p>{% if app.applied_date %}Applied <span class="format-date">{{ app.applied_date }}</span>{% endif %}{% if app.location %} · {{ app.location }}{% endif %}</p>
+                            <p>{% if app.applied_date %}Applied <span class="format-date">{{ app.applied_date }}</span>{% endif %}{% if app.location %} · {{ app.location }}{% endif %}{% if app.work_arrangement %} · {{ 'Office-based' if app.work_arrangement == 'Office' else app.work_arrangement }}{% endif %}</p>
                         </div>
                         <span class="company-application-summary-status">
                             <span class="status-badge status-{{ 'saved' if app.stage == 'Not Applied Yet' else app.stage|lower|replace(' ', '-') }}">{{ app.stage }}</span>
@@ -71,6 +71,29 @@
                         </li>
                         {% endfor %}
                     </ol>
+
+                    {% if app.interview_research or app.interview_questions or app.interview_answers or app.interview_talking_points or app.rejection_reason or app.rejection_notes %}
+                    <div class="company-application-notes-grid">
+                        {% if app.interview_research or app.interview_questions or app.interview_answers or app.interview_talking_points %}
+                        <section>
+                            <h4>Interview preparation</h4>
+                            <dl class="application-workspace-notes">
+                                {% if app.interview_research %}<div><dt>Research</dt><dd>{{ app.interview_research }}</dd></div>{% endif %}
+                                {% if app.interview_questions %}<div><dt>Likely questions</dt><dd>{{ app.interview_questions }}</dd></div>{% endif %}
+                                {% if app.interview_answers %}<div><dt>Answer notes</dt><dd>{{ app.interview_answers }}</dd></div>{% endif %}
+                                {% if app.interview_talking_points %}<div><dt>Talking points</dt><dd>{{ app.interview_talking_points }}</dd></div>{% endif %}
+                            </dl>
+                        </section>
+                        {% endif %}
+                        {% if app.rejection_reason or app.rejection_notes %}
+                        <section class="application-rejection">
+                            <h4>Rejection outcome</h4>
+                            {% if app.rejection_reason %}<strong>{{ app.rejection_reason }}</strong>{% endif %}
+                            <p>{{ app.rejection_notes or 'No feedback recorded.' }}</p>
+                        </section>
+                        {% endif %}
+                    </div>
+                    {% endif %}
 
                     <div class="company-application-tools">
                         <div>

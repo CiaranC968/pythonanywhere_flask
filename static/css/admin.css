@@ -295,7 +295,7 @@ textarea.admin-input {
     border-radius: 7px;
     display: inline-grid;
     gap: 3px;
-    grid-template-columns: repeat(3, minmax(0, auto));
+    grid-template-columns: repeat(4, minmax(0, auto));
     margin-bottom: 1.25rem;
     padding: 3px;
 }
@@ -511,6 +511,56 @@ textarea.admin-input {
     text-align: right;
 }
 
+.rejection-analysis {
+    grid-column: 1 / -1;
+}
+
+.rejection-reason-list {
+    display: grid;
+    gap: .15rem 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: .75rem;
+}
+
+.rejection-reason-item {
+    align-items: center;
+    border-top: 1px solid #eeeae3;
+    display: grid;
+    gap: .65rem;
+    grid-template-columns: minmax(8rem, 1fr) minmax(4rem, .65fr) 2.5rem;
+    padding: .6rem 0;
+}
+
+.rejection-reason-item > div {
+    display: grid;
+    gap: .12rem;
+    min-width: 0;
+}
+
+.rejection-reason-item strong {
+    color: var(--tracker-ink);
+    font-size: .72rem;
+    overflow-wrap: anywhere;
+}
+
+.rejection-reason-item span,
+.rejection-reason-empty {
+    color: var(--tracker-muted);
+    font-size: .65rem;
+}
+
+.rejection-reason-item progress {
+    accent-color: #a14343;
+    height: .45rem;
+    width: 100%;
+}
+
+.rejection-reason-item b {
+    color: #8f3030;
+    font-size: .68rem;
+    text-align: right;
+}
+
 .company-analysis {
     overflow: hidden;
 }
@@ -668,6 +718,13 @@ textarea.admin-input {
     margin-bottom: 1rem;
 }
 
+.tracker-global-search {
+    background: #faf9f7;
+    border: 1px solid var(--tracker-border);
+    border-radius: 7px;
+    padding: .65rem;
+}
+
 .tracker-application-panel {
     min-width: 0;
 }
@@ -711,7 +768,7 @@ textarea.admin-input {
     border-top: 1px solid var(--tracker-border);
     display: grid;
     gap: .75rem;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
     padding: .9rem;
 }
 
@@ -805,6 +862,18 @@ textarea.admin-input {
     box-shadow: 0 3px 12px rgb(31 29 26 / 7%);
 }
 
+.application-card.application-age-attention,
+.kanban-card.application-age-attention {
+    border-left-color: #c78317;
+    border-left-width: 4px;
+}
+
+.application-card.application-age-overdue,
+.kanban-card.application-age-overdue {
+    border-left-color: #b33a3a;
+    border-left-width: 4px;
+}
+
 .application-role {
     color: var(--tracker-ink);
     font-size: 1rem;
@@ -835,11 +904,147 @@ textarea.admin-input {
 
 .custom-badge,
 .status-badge,
-.reminder-badge {
+.reminder-badge,
+.application-age-badge,
+.cooling-warning-badge {
     border-radius: 4px;
     font-size: .68rem;
     font-weight: 800;
     padding: .25rem .42rem;
+}
+
+.arrangement-badge {
+    background: #e8f2ed;
+    border-color: #c5ddd1;
+    color: #245b43;
+}
+
+.application-age-badge,
+.cooling-warning-badge {
+    align-items: center;
+    display: inline-flex;
+    gap: .3rem;
+}
+
+.application-age-badge.age-attention {
+    background: #fff3d6;
+    color: #80510b;
+}
+
+.application-age-badge.age-overdue,
+.cooling-warning-badge {
+    background: #fde8e8;
+    color: #992f2f;
+}
+
+.company-cooling-warning {
+    align-items: center;
+    background: #fff5df;
+    border-left: 3px solid #c78317;
+    color: #714808;
+    display: flex;
+    font-size: .72rem;
+    font-weight: 700;
+    gap: .45rem;
+    margin-top: .8rem;
+    padding: .65rem .75rem;
+}
+
+.company-cooling-warning[hidden] {
+    display: none;
+}
+
+.answer-bank-picker {
+    align-items: end;
+    border-bottom: 1px solid var(--tracker-border);
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+}
+
+.answer-bank-insert-feedback {
+    color: #286144;
+    font-size: .68rem;
+    font-weight: 700;
+    grid-column: 1 / -1;
+    min-height: 1em;
+}
+
+.answer-bank-header {
+    align-items: center;
+    border-bottom: 1px solid var(--tracker-border);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+}
+
+.answer-bank-header h2 {
+    color: var(--tracker-ink);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.answer-bank-list {
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.answer-bank-entry {
+    background: var(--tracker-surface);
+    border: 1px solid var(--tracker-border);
+    border-radius: 7px;
+    display: grid;
+    gap: .7rem;
+    padding: 1rem;
+}
+
+.answer-bank-entry > header span {
+    color: #765800;
+    font-size: .63rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.answer-bank-entry h3 {
+    color: var(--tracker-ink);
+    font-size: .88rem;
+    font-weight: 800;
+    line-height: 1.35;
+    margin-top: .22rem;
+}
+
+.answer-bank-entry > p {
+    color: #5f5a52;
+    font-size: .76rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.answer-bank-entry > footer,
+.answer-bank-actions {
+    align-items: center;
+    display: flex;
+    gap: .4rem;
+}
+
+.answer-bank-entry > footer {
+    border-top: 1px solid #eeeae3;
+    justify-content: space-between;
+    padding-top: .7rem;
+}
+
+.answer-bank-entry > footer > div:first-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+}
+
+.tracker-dialog-small {
+    max-width: 38rem;
 }
 
 .reminder-badge {
@@ -942,12 +1147,57 @@ textarea.admin-input {
 }
 
 .application-workspace-grid h3,
-.company-application-tools h4 {
+.company-application-tools h4,
+.company-application-notes-grid h4 {
     color: var(--tracker-ink);
     font-size: .72rem;
     font-weight: 800;
     margin-bottom: .6rem;
     text-transform: uppercase;
+}
+
+.application-workspace-notes {
+    display: grid;
+    gap: .65rem;
+}
+
+.application-workspace-notes > div {
+    border-left: 2px solid #d6d0c6;
+    padding-left: .65rem;
+}
+
+.application-workspace-notes dt {
+    color: var(--tracker-muted);
+    font-size: .62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.application-workspace-notes dd,
+.application-rejection p {
+    color: #514c45;
+    font-size: .72rem;
+    line-height: 1.5;
+    margin-top: .2rem;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.application-rejection {
+    border-left: 3px solid #b42318;
+    padding-left: .75rem;
+}
+
+.application-rejection > strong {
+    color: #8f1d16;
+    display: block;
+    font-size: .75rem;
+}
+
+.rejection-reason-badge {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
 }
 
 .workspace-subheading {
@@ -1231,6 +1481,10 @@ textarea.admin-input {
     grid-column: 1 / -1;
 }
 
+.interview-preparation-fields .tracker-field-wide {
+    grid-column: auto;
+}
+
 .milestone-fieldset {
     border-bottom: 1px solid var(--tracker-border);
     border-top: 1px solid var(--tracker-border);
@@ -1272,10 +1526,9 @@ textarea.admin-input {
 
 .kanban-board {
     display: grid;
-    gap: .75rem;
-    grid-auto-columns: minmax(15rem, 18rem);
-    grid-auto-flow: column;
-    height: clamp(28rem, calc(100dvh - 19rem), 44rem);
+    gap: .45rem;
+    grid-template-columns: repeat(8, minmax(9rem, 1fr));
+    height: clamp(26rem, calc(100dvh - 23.75rem), 40rem);
     overflow-x: auto;
     overflow-y: hidden;
     overscroll-behavior-inline: contain;
@@ -1313,6 +1566,10 @@ textarea.admin-input {
     gap: .35rem;
 }
 
+.kanban-scroll-controls[hidden] {
+    display: none;
+}
+
 .kanban-scroll-controls button {
     align-items: center;
     background: #fff;
@@ -1335,25 +1592,148 @@ textarea.admin-input {
     cursor: not-allowed;
 }
 
-.kanban-feedback {
+.kanban-feedback,
+.application-context-feedback {
     background: #dcfce7;
     border: 1px solid #bbf7d0;
     border-radius: 6px;
+    bottom: 1rem;
+    box-shadow: var(--admin-shadow);
     color: #166534;
     font-size: .75rem;
     font-weight: 750;
-    margin-bottom: .75rem;
+    margin: 0;
+    max-width: min(24rem, calc(100vw - 2rem));
     padding: .65rem .8rem;
+    position: fixed;
+    right: 1rem;
+    z-index: 50;
 }
 
-.kanban-feedback.is-error {
+.kanban-feedback.is-error,
+.application-context-feedback.is-error {
     background: #fee2e2;
     border-color: #fecaca;
     color: #991b1b;
 }
 
+.application-context-menu {
+    background: #fff;
+    border: 1px solid var(--admin-border);
+    border-radius: 7px;
+    box-shadow: 0 16px 36px rgb(33 31 28 / 18%);
+    display: grid;
+    max-height: calc(100dvh - 1rem);
+    overflow-y: auto;
+    padding: .35rem;
+    position: fixed;
+    width: 14rem;
+    z-index: 80;
+}
+
+.application-context-menu[hidden] {
+    display: none;
+}
+
+.application-context-menu > strong,
+.application-context-label {
+    color: var(--tracker-muted);
+    display: block;
+    font-size: .62rem;
+    font-weight: 800;
+    overflow: hidden;
+    padding: .4rem .5rem;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.application-context-menu > a,
+.application-context-menu > button {
+    align-items: center;
+    border-radius: 4px;
+    color: var(--tracker-ink);
+    display: grid;
+    font-size: .72rem;
+    font-weight: 700;
+    gap: .5rem;
+    grid-template-columns: .85rem minmax(0, 1fr) .75rem;
+    min-height: 2rem;
+    padding: .4rem .5rem;
+    text-align: left;
+    width: 100%;
+}
+
+.application-context-menu > a {
+    grid-template-columns: .85rem minmax(0, 1fr);
+}
+
+.application-context-menu > a:hover,
+.application-context-menu > button:hover:not(:disabled),
+.application-context-menu > a:focus-visible,
+.application-context-menu > button:focus-visible {
+    background: var(--admin-surface-soft);
+}
+
+.application-context-menu > button:disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: default;
+}
+
+.application-context-divider {
+    border-top: 1px solid var(--admin-border);
+    margin: .3rem .15rem;
+}
+
+.application-context-dot {
+    background: #64748b;
+    border-radius: 50%;
+    height: .42rem;
+    justify-self: center;
+    width: .42rem;
+}
+
+[data-context-stage="Applied"] .application-context-dot {
+    background: #2563eb;
+}
+
+[data-context-stage="Assessment"] .application-context-dot {
+    background: #b7791f;
+}
+
+[data-context-stage="Interview"] .application-context-dot {
+    background: #0e7490;
+}
+
+[data-context-stage="Offer"] .application-context-dot {
+    background: #15803d;
+}
+
+[data-context-stage="Got Job"] .application-context-dot {
+    background: #047857;
+}
+
+[data-context-stage="Rejected"] .application-context-dot {
+    background: #b42318;
+}
+
+[data-context-stage="Missed Deadline"] .application-context-dot {
+    background: #9f1239;
+}
+
+.application-context-check {
+    opacity: 0;
+}
+
+[data-context-stage][aria-checked="true"] .application-context-check {
+    opacity: 1;
+}
+
 .kanban-column {
-    background: #f5f3ef;
+    --kanban-accent: #64748b;
+    --kanban-tint: #f1f5f9;
+    background: #f8f7f4;
     border: 1px solid var(--tracker-border);
     border-radius: 7px;
     display: grid;
@@ -1363,17 +1743,54 @@ textarea.admin-input {
     scroll-snap-align: start;
 }
 
+.kanban-column[data-kanban-stage="Applied"] {
+    --kanban-accent: #2563eb;
+    --kanban-tint: #eff6ff;
+}
+
+.kanban-column[data-kanban-stage="Assessment"] {
+    --kanban-accent: #b7791f;
+    --kanban-tint: #fffbeb;
+}
+
+.kanban-column[data-kanban-stage="Interview"] {
+    --kanban-accent: #0e7490;
+    --kanban-tint: #ecfeff;
+}
+
+.kanban-column[data-kanban-stage="Offer"] {
+    --kanban-accent: #15803d;
+    --kanban-tint: #f0fdf4;
+}
+
+.kanban-column[data-kanban-stage="Got Job"] {
+    --kanban-accent: #047857;
+    --kanban-tint: #ecfdf5;
+}
+
+.kanban-column[data-kanban-stage="Rejected"] {
+    --kanban-accent: #b42318;
+    --kanban-tint: #fef2f2;
+}
+
+.kanban-column[data-kanban-stage="Missed Deadline"] {
+    --kanban-accent: #9f1239;
+    --kanban-tint: #fff1f2;
+}
+
 .kanban-column > header {
     align-items: center;
+    background: var(--kanban-tint);
     border-bottom: 1px solid var(--tracker-border);
+    border-top: 3px solid var(--kanban-accent);
     display: flex;
     justify-content: space-between;
-    padding: .6rem .7rem;
+    padding: .48rem .55rem .52rem;
 }
 
 .kanban-column > header h2 {
     color: var(--tracker-ink);
-    font-size: .78rem;
+    font-size: .7rem;
     font-weight: 800;
 }
 
@@ -1382,19 +1799,19 @@ textarea.admin-input {
     border: 1px solid var(--tracker-border);
     border-radius: 4px;
     color: var(--tracker-muted);
-    font-size: .66rem;
+    font-size: .6rem;
     font-weight: 800;
-    padding: .15rem .38rem;
+    padding: .1rem .3rem;
 }
 
 .kanban-items {
     display: grid;
-    gap: .4rem;
+    gap: .32rem;
     grid-auto-rows: max-content;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: .45rem;
+    padding: .35rem;
     scrollbar-color: #c9c3b9 transparent;
     scrollbar-gutter: stable;
     scrollbar-width: thin;
@@ -1407,12 +1824,13 @@ textarea.admin-input {
 
 .kanban-card {
     background: #fff;
-    border: 1px solid #ddd7ce;
-    border-radius: 6px;
+    border: 1px solid #e2ded7;
+    border-left: 3px solid var(--kanban-accent);
+    border-radius: 5px;
     cursor: grab;
     display: grid;
-    gap: .25rem;
-    padding: .55rem .6rem;
+    gap: .18rem;
+    padding: .42rem .45rem;
 }
 
 .kanban-card.is-dragging {
@@ -1422,7 +1840,7 @@ textarea.admin-input {
 .kanban-card-meta {
     align-items: baseline;
     display: flex;
-    gap: .5rem;
+    gap: .3rem;
     justify-content: space-between;
     min-width: 0;
 }
@@ -1430,7 +1848,7 @@ textarea.admin-input {
 .kanban-card-meta > a,
 .kanban-card-meta > time {
     color: var(--tracker-muted);
-    font-size: .62rem;
+    font-size: .56rem;
     font-weight: 700;
 }
 
@@ -1451,29 +1869,68 @@ textarea.admin-input {
 
 .kanban-card h3 {
     color: var(--tracker-ink);
-    font-size: .78rem;
+    font-size: .7rem;
     font-weight: 800;
     line-height: 1.3;
+}
+
+.kanban-card-signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem;
+}
+
+.kanban-card-signals span {
+    background: #eef1ef;
+    border-radius: 3px;
+    color: #405b4c;
+    font-size: .5rem;
+    font-weight: 800;
+    padding: .12rem .24rem;
+}
+
+.kanban-card-signals .age-attention {
+    background: #fff3d6;
+    color: #80510b;
+}
+
+.kanban-card-signals .age-overdue,
+.kanban-card-signals .cooling-signal {
+    background: #fde8e8;
+    color: #992f2f;
 }
 
 .kanban-stage-control {
     align-items: center;
     color: var(--tracker-muted);
     display: grid;
-    gap: .35rem;
-    grid-template-columns: .8rem minmax(0, 1fr);
-    margin-top: .1rem;
+    background: var(--kanban-tint);
+    border-radius: 4px;
+    gap: .2rem;
+    grid-template-columns: .65rem minmax(0, auto);
+    justify-self: start;
+    margin-top: .08rem;
+    max-width: 100%;
+    padding: .1rem .2rem;
 }
 
 .kanban-stage-control > i {
-    font-size: .58rem;
+    color: var(--kanban-accent);
+    font-size: .5rem;
     text-align: center;
 }
 
 .kanban-card select {
-    font-size: .64rem;
-    min-height: 1.8rem;
-    padding: .25rem 1.5rem .25rem .4rem;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: #59554e;
+    font-size: .56rem;
+    font-weight: 750;
+    min-height: 1.15rem;
+    padding: 0 1rem 0 0;
+    width: auto;
 }
 
 .job-calendar {
@@ -1707,6 +2164,15 @@ textarea.admin-input {
 .company-application-tools {
     border-top: 1px solid #eeeae3;
     margin-top: .4rem;
+    padding-top: .8rem;
+}
+
+.company-application-notes-grid {
+    border-top: 1px solid #eeeae3;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: .8rem;
     padding-top: .8rem;
 }
 
@@ -2021,7 +2487,7 @@ textarea.admin-input {
 
     .tracker-section-tabs {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
     }
 
@@ -2032,6 +2498,8 @@ textarea.admin-input {
 
     .kanban-board {
         grid-auto-columns: minmax(16rem, 84vw);
+        grid-auto-flow: column;
+        grid-template-columns: none;
         height: clamp(25rem, calc(100dvh - 21rem), 38rem);
         scroll-snap-type: x mandatory;
     }
@@ -2090,8 +2558,23 @@ textarea.admin-input {
         display: none;
     }
 
+    .rejection-reason-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .tracker-filter-grid {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    .answer-bank-list,
+    .answer-bank-picker {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .answer-bank-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: .75rem;
     }
 
     .tracker-clear-filters {
@@ -2198,7 +2681,8 @@ textarea.admin-input {
     }
 
     .application-card,
-    .tracker-form-grid {
+    .tracker-form-grid,
+    .company-application-notes-grid {
         grid-template-columns: minmax(0, 1fr);
     }
 

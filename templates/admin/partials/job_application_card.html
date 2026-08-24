@@ -1,12 +1,17 @@
 {% set status_class = 'saved' if app.stage == 'Not Applied Yet' else app.stage|lower|replace(' ', '-') %}
+{% set age_state = application_age.state if application_age else 'none' %}
 <article
     id="application-{{ app.id }}"
-    class="application-card"
+    class="application-card{% if age_state in ['attention', 'overdue'] %} application-age-{{ age_state }}{% endif %}"
+    data-application-id="{{ app.id }}"
+    data-role="{{ app.role }}"
     data-stage="{{ app.stage }}"
-    data-search="{{ (app.company ~ ' ' ~ app.role)|lower }}"
+    data-search="{{ application_search_text if application_search_text is defined else (app.company ~ ' ' ~ app.role)|lower }}"
     data-company="{{ app.company|lower }}"
     data-source="{{ (app.source or '')|lower }}"
     data-location="{{ (app.location or '')|lower }}"
+    data-arrangement="{{ (app.work_arrangement or '')|lower }}"
+    data-age-state="{{ age_state }}"
     data-badges="{{ (app.badges or '')|lower }}"
     data-applied="{{ app.applied_date[:10] if app.applied_date else '' }}"
 >
@@ -27,6 +32,11 @@
             {% endif %}
             {% if app.reached_assessment %}<span class="custom-badge">Assessment reached</span>{% endif %}
             {% if app.reached_interview %}<span class="custom-badge">Interview reached</span>{% endif %}
+            {% if app.work_arrangement %}<span class="custom-badge arrangement-badge"><i class="fas fa-{{ 'house' if app.work_arrangement == 'Remote' else 'building' }}" aria-hidden="true"></i> {{ 'Office-based' if app.work_arrangement == 'Office' else app.work_arrangement }}</span>{% endif %}
+            {% if application_age and age_state in ['attention', 'overdue'] %}<span class="application-age-badge age-{{ age_state }}"><i class="fas fa-clock" aria-hidden="true"></i> {{ application_age.label }}</span>{% endif %}
+            {% if cooling_warning %}<span class="cooling-warning-badge"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> {{ cooling_warning.label }}</span>{% endif %}
+            {% if app.interview_research or app.interview_questions or app.interview_answers or app.interview_talking_points %}<span class="custom-badge">Preparation added</span>{% endif %}
+            {% if app.stage == 'Rejected' and app.rejection_reason %}<span class="custom-badge rejection-reason-badge">{{ app.rejection_reason }}</span>{% endif %}
             {% if reminder and reminder.state != 'none' %}
             <span class="reminder-badge reminder-{{ reminder.state }}">{{ reminder.label }}</span>
             {% endif %}
@@ -189,6 +199,24 @@
                     <button class="tracker-secondary"><i class="fas fa-upload" aria-hidden="true"></i> Upload</button>
                 </form>
             </section>
+            {% if app.interview_research or app.interview_questions or app.interview_answers or app.interview_talking_points %}
+            <section class="application-preparation">
+                <h3>Interview preparation</h3>
+                <dl class="application-workspace-notes">
+                    {% if app.interview_research %}<div><dt>Research</dt><dd>{{ app.interview_research }}</dd></div>{% endif %}
+                    {% if app.interview_questions %}<div><dt>Likely questions</dt><dd>{{ app.interview_questions }}</dd></div>{% endif %}
+                    {% if app.interview_answers %}<div><dt>Answer notes</dt><dd>{{ app.interview_answers }}</dd></div>{% endif %}
+                    {% if app.interview_talking_points %}<div><dt>Talking points</dt><dd>{{ app.interview_talking_points }}</dd></div>{% endif %}
+                </dl>
+            </section>
+            {% endif %}
+            {% if app.stage == 'Rejected' or app.rejection_reason or app.rejection_notes %}
+            <section class="application-rejection">
+                <h3>Rejection outcome</h3>
+                {% if app.rejection_reason %}<strong>{{ app.rejection_reason }}</strong>{% endif %}
+                <p class="workspace-meta">{{ app.rejection_notes or 'No feedback recorded.' }}</p>
+            </section>
+            {% endif %}
         </div>
     </details>
 </article>

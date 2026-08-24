@@ -53,22 +53,36 @@
 
             <div class="kanban-items" data-kanban-items>
                 {% for app in applications if app.stage == value %}
+                {% set application_age = application_age_states.get(app.id) %}
+                {% set cooling_warning = cooling_warnings.get(app.id) %}
                 <article
-                    class="kanban-card"
+                    class="kanban-card{% if application_age and application_age.state in ['attention', 'overdue'] %} application-age-{{ application_age.state }}{% endif %}"
                     draggable="true"
+                    tabindex="0"
                     data-application-id="{{ app.id }}"
                     data-role="{{ app.role }}"
+                    data-stage="{{ app.stage }}"
+                    data-applied="{{ app.applied_date[:10] if app.applied_date else '' }}"
                 >
                     <div class="kanban-card-meta">
                         <a href="{{ url_for('admin.job_company', company_name=app.company) }}">
                             {{ app.company }}
                         </a>
                         {% if app.applied_date %}
-                        <time class="format-date">{{ app.applied_date }}</time>
+                        <time class="format-date format-date--compact" datetime="{{ app.applied_date }}">
+                            {{ app.applied_date }}
+                        </time>
                         {% endif %}
                     </div>
                     <h3>{{ app.role }}</h3>
-                    <label class="kanban-stage-control">
+                    {% if app.work_arrangement or (application_age and application_age.state in ['attention', 'overdue']) or cooling_warning %}
+                    <div class="kanban-card-signals">
+                        {% if app.work_arrangement %}<span>{{ 'Office-based' if app.work_arrangement == 'Office' else app.work_arrangement }}</span>{% endif %}
+                        {% if application_age and application_age.state in ['attention', 'overdue'] %}<span class="age-{{ application_age.state }}" data-kanban-age-signal>{{ application_age.label }}</span>{% endif %}
+                        {% if cooling_warning %}<span class="cooling-signal" title="Applied to this company within {{ cooling_warning.days }} days of the previous application"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Repeat</span>{% endif %}
+                    </div>
+                    {% endif %}
+                    <label class="kanban-stage-control" title="Move to another stage">
                         <span class="sr-only">Status for {{ app.role }}</span>
                         <i class="fas fa-arrow-right-arrow-left" aria-hidden="true"></i>
                         <select class="admin-input" data-kanban-select>
@@ -85,6 +99,7 @@
         </section>
         {% endfor %}
     </div>
+    {% include "admin/partials/job_application_context_menu.html" %}
 </div>
 {% endblock %}
 

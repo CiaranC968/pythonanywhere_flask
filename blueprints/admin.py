@@ -31,6 +31,7 @@ from werkzeug.security import check_password_hash
 
 from extensions import db
 from blueprints.job_tracker_analytics import (
+    JOB_ACTIVE_STAGES,
     JOB_INTERVIEW_STAGES,
     JOB_STAGES,
     JOB_STAGE_VALUES,
@@ -45,6 +46,7 @@ from models import (
     JobAttachment,
     JobContact,
     JobStatusEvent,
+    InterviewAnswer,
     Profile,
     Project,
     ResumeTemplate,
@@ -84,9 +86,16 @@ JOB_TEXT_FIELDS = (
     "linkedin_url",
     "salary",
     "location",
+    "work_arrangement",
     "source",
     "follow_up_date",
     "reminder_note",
+    "rejection_reason",
+    "rejection_notes",
+    "interview_research",
+    "interview_questions",
+    "interview_answers",
+    "interview_talking_points",
 )
 JOB_FIELD_LIMITS = {
     "company": 180,
@@ -103,8 +112,10 @@ JOB_FIELD_LIMITS = {
     "linkedin_url": 500,
     "salary": 120,
     "location": 180,
+    "work_arrangement": 40,
     "source": 120,
     "follow_up_date": 80,
+    "rejection_reason": 120,
 }
 JOB_DATE_FIELDS = {
     "applied_date",
@@ -114,6 +125,28 @@ JOB_DATE_FIELDS = {
     "application_deadline",
     "follow_up_date",
 }
+JOB_REJECTION_REASONS = (
+    "Role filled or hiring paused",
+    "Experience mismatch",
+    "Skills mismatch",
+    "Assessment result",
+    "Interview result",
+    "Location or working arrangement",
+    "Salary or availability",
+    "Eligibility or right to work",
+    "Withdrew application",
+    "No reason given",
+    "Other",
+)
+JOB_WORK_ARRANGEMENTS = (
+    ("", "Not recorded"),
+    ("Remote", "Remote"),
+    ("Hybrid", "Hybrid"),
+    ("Office", "Office-based"),
+    ("Flexible", "Flexible"),
+)
+JOB_WORK_ARRANGEMENT_VALUES = {value for value, _label in JOB_WORK_ARRANGEMENTS}
+JOB_COOLING_OFF_DAYS = 30
 
 from blueprints.admin_config import (
     IMAGE_FIELDS,
@@ -273,14 +306,15 @@ def deployment_checklist():
 
     table_set = set(table_names)
     upload_root = _static_upload_root()
-    job_tracker_template = os.path.join(
-        current_app.root_path,
-        "templates",
-        "admin",
-        "partials",
-        "job_application_card.html",
+    job_tracker_templates = (
+        "templates/admin/partials/job_application_card.html",
+        "templates/admin/partials/job_application_context_menu.html",
     )
-    job_tracker_template_ok = os.path.isfile(job_tracker_template)
+    missing_job_tracker_templates = [
+        template_path
+        for template_path in job_tracker_templates
+        if not os.path.isfile(os.path.join(current_app.root_path, *template_path.split("/")))
+    ]
     checks = [
         {
             "label": "Database connection",
@@ -310,12 +344,12 @@ def deployment_checklist():
             "detail": upload_root or "No upload path found.",
         },
         {
-            "label": "Job tracker card template",
-            "ok": job_tracker_template_ok,
+            "label": "Job tracker templates",
+            "ok": not missing_job_tracker_templates,
             "detail": (
-                "The reusable job application card template is available."
-                if job_tracker_template_ok
-                else "Missing templates/admin/partials/job_application_card.html."
+                "The reusable job tracker templates are available."
+                if not missing_job_tracker_templates
+                else "Missing: " + ", ".join(missing_job_tracker_templates)
             ),
         },
         {
@@ -1009,6 +1043,10 @@ def _job_application_form_values():
         values[field] = value
     stage = request.form.get("stage", "Applied").strip()
     values["stage"] = stage if stage in JOB_STAGE_VALUES else "Applied"
+    if values["rejection_reason"] not in JOB_REJECTION_REASONS:
+        values["rejection_reason"] = ""
+    if values["work_arrangement"] not in JOB_WORK_ARRANGEMENT_VALUES:
+        values["work_arrangement"] = ""
     values["reached_interview"] = (
         request.form.get("reached_interview") == "on" or values["stage"] in JOB_INTERVIEW_STAGES
     )
@@ -1139,6 +1177,55 @@ def _job_reminder_state(application, now):
     return {"state": "scheduled", "label": f"Follow up in {days_until}d"}
 
 
+def _job_application_age_state(application, now):
+    if application.stage not in JOB_ACTIVE_STAGES:
+        return {"state": "none", "days": None, "label": ""}
+    applied_at = _parse_job_datetime(application.applied_date)
+    if not applied_at:
+        return {"state": "none", "days": None, "label": ""}
+
+    age_days = max(0, (now.date() - applied_at.date()).days)
+    if age_days >= 30:
+        return {"state": "overdue", "days": age_days, "label": f"Waiting {age_days}d"}
+    if age_days >= 14:
+        return {"state": "attention", "days": age_days, "label": f"Waiting {age_days}d"}
+    return {"state": "current", "days": age_days, "label": f"Active {age_days}d"}
+
+
+def _job_warning_context(applications, now):
+    application_age_states = {
+        application.id: _job_application_age_state(application, now)
+        for application in applications
+    }
+    company_history = {}
+    for application in applications:
+        applied_at = _parse_job_datetime(application.applied_date)
+        if not applied_at:
+            continue
+        company_history.setdefault(_company_key(application.company), []).append(
+            {
+                "id": application.id,
+                "company": application.company,
+                "date": applied_at.date().isoformat(),
+            }
+        )
+
+    cooling_warnings = {}
+    for entries in company_history.values():
+        entries.sort(key=lambda item: (item["date"], item["id"]))
+        for previous, current in zip(entries, entries[1:]):
+            wait_days = (
+                datetime.fromisoformat(current["date"]).date()
+                - datetime.fromisoformat(previous["date"]).date()
+            ).days
+            if 0 <= wait_days < JOB_COOLING_OFF_DAYS:
+                cooling_warnings[current["id"]] = {
+                    "days": wait_days,
+                    "label": f"Applied here again after {wait_days}d",
+                }
+    return application_age_states, cooling_warnings, company_history
+
+
 def _job_filter_options(applications):
     badges = {
         badge.strip()
@@ -1159,11 +1246,71 @@ def _job_filter_options(applications):
             {app.location for app in applications if app.location},
             key=lambda value: str(value).casefold(),
         ),
+        "arrangements": [
+            (value, label)
+            for value, label in JOB_WORK_ARRANGEMENTS
+            if value and any(app.work_arrangement == value for app in applications)
+        ],
         "badges": sorted(badges, key=lambda value: str(value).casefold()),
     }
 
 
+def _job_search_texts(applications):
+    contacts_by_company = {}
+    for contact in JobContact.query.order_by(JobContact.id.desc()).all():
+        contacts_by_company.setdefault(_company_key(contact.company), []).append(contact)
+
+    application_search_texts = {}
+    company_search_parts = {}
+    for application in applications:
+        contacts = contacts_by_company.get(_company_key(application.company), [])
+        values = [
+            application.company,
+            application.role,
+            application.stage,
+            application.notes,
+            application.badges,
+            application.source,
+            application.location,
+            application.work_arrangement,
+            application.salary,
+            application.reminder_note,
+            application.rejection_reason,
+            application.rejection_notes,
+            application.interview_research,
+            application.interview_questions,
+            application.interview_answers,
+            application.interview_talking_points,
+        ]
+        values.extend(
+            part
+            for status_event in application.status_events
+            for part in (status_event.from_stage, status_event.to_stage, status_event.note)
+        )
+        values.extend(
+            part
+            for contact in contacts
+            for part in (contact.name, contact.title, contact.email, contact.phone, contact.notes)
+        )
+        search_text = " ".join(str(value) for value in values if value).casefold()
+        application_search_texts[application.id] = search_text
+        company_search_parts.setdefault(application.company, []).append(search_text)
+
+    company_search_texts = {
+        company: " ".join(parts)
+        for company, parts in company_search_parts.items()
+    }
+    return application_search_texts, company_search_texts
+
+
 def _job_tracker_template_context(applications, now):
+    application_search_texts, company_search_texts = _job_search_texts(applications)
+    application_age_states, cooling_warnings, company_history = _job_warning_context(
+        applications, now
+    )
+    answer_bank = InterviewAnswer.query.order_by(
+        InterviewAnswer.category.asc(), InterviewAnswer.question.asc()
+    ).all()
     return {
         "applications": applications,
         "job_stages": JOB_STAGES,
@@ -1176,6 +1323,18 @@ def _job_tracker_template_context(applications, now):
             app.id: _job_reminder_state(app, now) for app in applications
         },
         "filter_options": _job_filter_options(applications),
+        "application_search_texts": application_search_texts,
+        "company_search_texts": company_search_texts,
+        "application_age_states": application_age_states,
+        "cooling_warnings": cooling_warnings,
+        "company_application_history": company_history,
+        "answer_bank": answer_bank,
+        "answer_bank_data": {
+            item.id: {"question": item.question, "answer": item.answer}
+            for item in answer_bank
+        },
+        "rejection_reasons": JOB_REJECTION_REASONS,
+        "work_arrangements": JOB_WORK_ARRANGEMENTS,
         "today": now.strftime("%Y-%m-%d"),
     }
 
@@ -1184,6 +1343,8 @@ def _render_job_application_card(application, message="", is_error=False):
     now = datetime.now()
     applications = JobApplication.query.order_by(JobApplication.id.desc()).all()
     metrics = _job_tracker_metrics(applications, now)
+    application_search_texts, _ = _job_search_texts([application])
+    application_age_states, cooling_warnings, _ = _job_warning_context(applications, now)
     return render_template(
         "admin/partials/job_application_card.html",
         app=application,
@@ -1191,6 +1352,9 @@ def _render_job_application_card(application, message="", is_error=False):
         tracker_metrics=metrics,
         application_timeline=_job_application_timeline(application),
         reminder=_job_reminder_state(application, now),
+        application_search_text=application_search_texts.get(application.id, ""),
+        application_age=application_age_states.get(application.id),
+        cooling_warning=cooling_warnings.get(application.id),
         stage_update_message=message,
         stage_update_error=is_error,
     )
@@ -1210,6 +1374,66 @@ def job_tracker():
         "admin/job_tracker.html",
         **_job_tracker_template_context(applications, now),
     )
+
+
+def _interview_answer_form_values():
+    return {
+        "category": request.form.get("category", "").strip()[:120] or "General",
+        "question": request.form.get("question", "").strip(),
+        "answer": request.form.get("answer", "").strip(),
+        "tags": request.form.get("tags", "").strip()[:500],
+    }
+
+
+@admin_bp.route("/job-tracker/answer-bank/add", methods=["POST"])
+@admin_required
+def add_interview_answer():
+    values = _interview_answer_form_values()
+    if not values["question"] or not values["answer"]:
+        flash("Question and answer are required.", "error")
+        return redirect(url_for("admin.job_tracker", section="answer-bank"))
+
+    timestamp = datetime.now().isoformat(timespec="minutes")
+    answer = InterviewAnswer()
+    for field, value in values.items():
+        setattr(answer, field, value)
+    answer.created_at = timestamp
+    answer.updated_at = timestamp
+    db.session.add(answer)
+    if _commit_or_flash():
+        flash("Interview answer saved.", "success")
+    return redirect(url_for("admin.job_tracker", section="answer-bank"))
+
+
+@admin_bp.route("/job-tracker/answer-bank/<int:answer_id>/edit", methods=["POST"])
+@admin_required
+def edit_interview_answer(answer_id: int):
+    answer = db.session.get(InterviewAnswer, answer_id)
+    if not answer:
+        abort(404)
+    values = _interview_answer_form_values()
+    if not values["question"] or not values["answer"]:
+        flash("Question and answer are required.", "error")
+        return redirect(url_for("admin.job_tracker", section="answer-bank"))
+
+    for field, value in values.items():
+        setattr(answer, field, value)
+    answer.updated_at = datetime.now().isoformat(timespec="minutes")
+    if _commit_or_flash():
+        flash("Interview answer updated.", "success")
+    return redirect(url_for("admin.job_tracker", section="answer-bank"))
+
+
+@admin_bp.route("/job-tracker/answer-bank/<int:answer_id>/delete", methods=["POST"])
+@admin_required
+def delete_interview_answer(answer_id: int):
+    answer = db.session.get(InterviewAnswer, answer_id)
+    if not answer:
+        abort(404)
+    db.session.delete(answer)
+    if _commit_or_flash():
+        flash("Interview answer deleted.", "success")
+    return redirect(url_for("admin.job_tracker", section="answer-bank"))
 
 
 @admin_bp.route("/job-tracker/add", methods=["POST"])
@@ -1472,12 +1696,16 @@ def delete_job_attachment(attachment_id: int):
 @admin_bp.route("/job-tracker/kanban")
 @admin_required
 def job_kanban():
+    now = datetime.now()
     applications = JobApplication.query.order_by(JobApplication.id.desc()).all()
+    application_age_states, cooling_warnings, _ = _job_warning_context(applications, now)
     return render_template(
         "admin/job_kanban.html",
         applications=applications,
         job_stages=JOB_STAGES,
         stage_counts=Counter(app.stage for app in applications),
+        application_age_states=application_age_states,
+        cooling_warnings=cooling_warnings,
     )
 
 

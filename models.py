@@ -136,10 +136,17 @@ class JobApplication(db.Model):
     linkedin_url = db.Column(db.String(500), nullable=True)
     salary = db.Column(db.String(120), nullable=True)
     location = db.Column(db.String(180), nullable=True)
+    work_arrangement = db.Column(db.String(40), nullable=False, default="")
     source = db.Column(db.String(120), nullable=False, default="")
     follow_up_date = db.Column(db.String(80), nullable=True)
     reminder_note = db.Column(db.Text, nullable=False, default="")
     reminder_done = db.Column(db.Boolean, nullable=False, default=False)
+    rejection_reason = db.Column(db.String(120), nullable=False, default="")
+    rejection_notes = db.Column(db.Text, nullable=False, default="")
+    interview_research = db.Column(db.Text, nullable=False, default="")
+    interview_questions = db.Column(db.Text, nullable=False, default="")
+    interview_answers = db.Column(db.Text, nullable=False, default="")
+    interview_talking_points = db.Column(db.Text, nullable=False, default="")
 
     status_events = db.relationship(
         "JobStatusEvent",
@@ -155,6 +162,16 @@ class JobApplication(db.Model):
         lazy=True,
         order_by="JobAttachment.uploaded_at.desc()",
     )
+
+
+class InterviewAnswer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(120), nullable=False, default="General")
+    question = db.Column(db.Text, nullable=False)
+    answer = db.Column(db.Text, nullable=False)
+    tags = db.Column(db.String(500), nullable=False, default="")
+    created_at = db.Column(db.String(80), nullable=False)
+    updated_at = db.Column(db.String(80), nullable=False)
 
 
 class JobStatusEvent(db.Model):

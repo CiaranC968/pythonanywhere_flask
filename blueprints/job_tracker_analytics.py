@@ -146,6 +146,7 @@ def _update_company_bucket(company, application, dates, response_wait, now):
             "stage": application.stage,
             "applied_date": application.applied_date,
             "location": application.location,
+            "work_arrangement": application.work_arrangement,
             "wait_days": round(displayed_wait, 1) if displayed_wait is not None else None,
             "wait_label": "Response" if response_wait is not None else "Waiting",
         }
@@ -213,6 +214,25 @@ def _weekly_activity(submitted, now):
         )
         activity.append({"label": week_start.strftime("%d %b"), "count": count})
     return activity
+
+
+def _rejection_reason_stats(submitted):
+    counts = {}
+    for application in submitted:
+        if application.stage != "Rejected":
+            continue
+        reason = application.rejection_reason.strip() or "Not recorded"
+        counts[reason] = counts.get(reason, 0) + 1
+
+    total = sum(counts.values())
+    return [
+        {
+            "reason": reason,
+            "count": count,
+            "percentage": round((count / total) * 100) if total else 0,
+        }
+        for reason, count in sorted(counts.items(), key=lambda item: (-item[1], item[0].casefold()))
+    ]
 
 
 def job_tracker_metrics(applications, now):
@@ -352,6 +372,7 @@ def job_tracker_metrics(applications, now):
         "company_stats": company_stats,
         "company_counts_by_id": company_counts_by_id,
         "source_stats": _source_stats(submitted),
+        "rejection_reason_stats": _rejection_reason_stats(submitted),
         "weekly_activity": weekly_activity,
         "weekly_max": max((week["count"] for week in weekly_activity), default=0),
     }

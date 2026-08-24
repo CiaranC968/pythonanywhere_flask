@@ -69,6 +69,14 @@
                     <input maxlength="180" name="location" value="{{ (app.location or '') if app else '' }}" class="admin-input" placeholder="London or Remote">
                 </label>
                 <label class="tracker-field">
+                    <span>Work arrangement</span>
+                    <select name="work_arrangement" class="admin-input">
+                        {% for value, label in work_arrangements %}
+                        <option value="{{ value }}" {% if app and app.work_arrangement == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="tracker-field">
                     <span>Salary</span>
                     <input maxlength="120" name="salary" value="{{ (app.salary or '') if app else '' }}" class="admin-input" placeholder="£35,000">
                 </label>
@@ -78,6 +86,7 @@
                     <small>Separate badges with commas.</small>
                 </label>
             </div>
+            <p class="company-cooling-warning" data-cooling-warning role="status" hidden></p>
 
             <fieldset class="milestone-fieldset">
                 <legend>Milestones reached</legend>
@@ -110,6 +119,66 @@
             </div>
         </div>
     </details>
+
+    <details class="dialog-disclosure" {% if app and app.stage in ['Interview', 'Offer', 'Got Job'] %}open{% endif %}>
+        <summary><span><i class="fas fa-user-tie" aria-hidden="true"></i> Interview preparation</span><i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i></summary>
+        <div class="dialog-disclosure-body">
+            {% if answer_bank %}
+            <div class="answer-bank-picker">
+                <label class="tracker-field">
+                    <span>Saved answer</span>
+                    <select class="admin-input" data-answer-bank-select>
+                        <option value="">Choose from answer bank</option>
+                        {% for item in answer_bank %}
+                        <option value="{{ item.id }}">{{ item.category }} · {{ item.question|truncate(72) }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <button type="button" class="tracker-secondary" data-insert-answer><i class="fas fa-plus" aria-hidden="true"></i> Add to preparation</button>
+                <span class="answer-bank-insert-feedback" data-answer-insert-feedback role="status"></span>
+            </div>
+            {% endif %}
+            <div class="tracker-form-grid interview-preparation-fields">
+                <label class="tracker-field tracker-field-wide">
+                    <span>Company and role research</span>
+                    <textarea name="interview_research" rows="3" class="admin-input">{{ (app.interview_research or '') if app else '' }}</textarea>
+                </label>
+                <label class="tracker-field tracker-field-wide">
+                    <span>Likely questions</span>
+                    <textarea name="interview_questions" rows="3" class="admin-input">{{ (app.interview_questions or '') if app else '' }}</textarea>
+                </label>
+                <label class="tracker-field tracker-field-wide">
+                    <span>Answer notes</span>
+                    <textarea name="interview_answers" rows="3" class="admin-input">{{ (app.interview_answers or '') if app else '' }}</textarea>
+                </label>
+                <label class="tracker-field tracker-field-wide">
+                    <span>Talking points and questions to ask</span>
+                    <textarea name="interview_talking_points" rows="3" class="admin-input">{{ (app.interview_talking_points or '') if app else '' }}</textarea>
+                </label>
+            </div>
+        </div>
+    </details>
+
+    <details class="dialog-disclosure" {% if app and (app.stage == 'Rejected' or app.rejection_reason or app.rejection_notes) %}open{% endif %}>
+        <summary><span><i class="fas fa-circle-xmark" aria-hidden="true"></i> Rejection outcome</span><i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i></summary>
+        <div class="dialog-disclosure-body">
+            <div class="tracker-form-grid">
+                <label class="tracker-field">
+                    <span>Reason</span>
+                    <select name="rejection_reason" class="admin-input">
+                        <option value="">Not recorded</option>
+                        {% for reason in rejection_reasons %}
+                        <option value="{{ reason }}" {% if app and app.rejection_reason == reason %}selected{% endif %}>{{ reason }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="tracker-field tracker-field-wide">
+                    <span>Feedback and outcome notes</span>
+                    <textarea name="rejection_notes" rows="3" class="admin-input">{{ (app.rejection_notes or '') if app else '' }}</textarea>
+                </label>
+            </div>
+        </div>
+    </details>
 {% endmacro %}
 
 {% block content %}
@@ -130,6 +199,15 @@
         <a href="{{ url_for('admin.job_kanban') }}"><i class="fas fa-table-columns" aria-hidden="true"></i> Kanban</a>
         <a href="{{ url_for('admin.job_calendar') }}"><i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar</a>
     </nav>
+
+    <div class="tracker-toolbar tracker-global-search">
+        <label class="tracker-search">
+            <span class="sr-only">Search applications, companies, contacts, notes and preparation</span>
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <input id="job-search" type="search" class="admin-input" placeholder="Search applications, notes and contacts" autocomplete="off">
+        </label>
+        <span id="tracker-result-count" class="tracker-result-count" aria-live="polite">{{ applications|length }} applications</span>
+    </div>
 
     <section class="metrics-grid" aria-label="Application funnel">
         <div class="metric"><span class="metric-label">Applications</span><strong class="metric-value">{{ tracker_metrics.submitted }}</strong><span class="metric-note">submitted</span></div>
@@ -180,6 +258,20 @@
             <i class="fas fa-building" aria-hidden="true"></i>
             Companies
             <span>{{ tracker_metrics.companies }}</span>
+        </button>
+        <button
+            type="button"
+            id="tracker-tab-answer-bank"
+            class="tracker-section-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tracker-panel-answer-bank"
+            data-tracker-section="answer-bank"
+            tabindex="-1"
+        >
+            <i class="fas fa-comments" aria-hidden="true"></i>
+            Answer bank
+            <span>{{ answer_bank|length }}</span>
         </button>
     </nav>
 
@@ -253,7 +345,60 @@
                 {% endfor %}
             </div>
         </article>
+        <article class="analysis-panel rejection-analysis">
+            <header class="insight-header">
+                <div><span class="tracker-eyebrow">Outcomes</span><h2>Why applications were rejected</h2></div>
+                <span class="analysis-rate">{{ tracker_metrics.rejections }} rejected</span>
+            </header>
+            <div class="rejection-reason-list">
+                {% for item in tracker_metrics.rejection_reason_stats %}
+                <div class="rejection-reason-item">
+                    <div><strong>{{ item.reason }}</strong><span>{{ item.count }} application{% if item.count != 1 %}s{% endif %}</span></div>
+                    <progress value="{{ item.percentage }}" max="100" aria-label="{{ item.reason }}: {{ item.percentage }}%"></progress>
+                    <b>{{ item.percentage }}%</b>
+                </div>
+                {% else %}
+                <p class="rejection-reason-empty">Add a reason when recording a rejection to build an outcome breakdown.</p>
+                {% endfor %}
+            </div>
+        </article>
     </section>
+    </div>
+
+    <div
+        id="tracker-panel-answer-bank"
+        class="tracker-section-panel"
+        role="tabpanel"
+        aria-labelledby="tracker-tab-answer-bank"
+        data-tracker-panel="answer-bank"
+        hidden
+    >
+        <section class="answer-bank" aria-labelledby="answer-bank-title">
+            <header class="answer-bank-header">
+                <div><span class="tracker-eyebrow">Interview preparation</span><h2 id="answer-bank-title">Saved questions and answers</h2></div>
+                <button type="button" class="tracker-primary" data-dialog-open="add-answer-dialog"><i class="fas fa-plus" aria-hidden="true"></i> Add answer</button>
+            </header>
+            <div class="answer-bank-list">
+                {% for item in answer_bank %}
+                <article class="answer-bank-entry" data-answer-search="{{ (item.category ~ ' ' ~ item.question ~ ' ' ~ item.answer ~ ' ' ~ item.tags)|lower }}">
+                    <header><span>{{ item.category }}</span><h3>{{ item.question }}</h3></header>
+                    <p>{{ item.answer }}</p>
+                    <footer>
+                        <div>{% for tag in item.tags.split(',') if tag.strip() %}<span class="custom-badge">{{ tag.strip() }}</span>{% endfor %}</div>
+                        <div class="answer-bank-actions">
+                            <button type="button" class="icon-button" data-copy-answer="{{ item.id }}" title="Copy answer" aria-label="Copy answer"><i class="fas fa-copy" aria-hidden="true"></i></button>
+                            <button type="button" class="icon-button" data-dialog-open="edit-answer-{{ item.id }}" title="Edit answer" aria-label="Edit answer"><i class="fas fa-pen" aria-hidden="true"></i></button>
+                            <form method="post" action="{{ url_for('admin.delete_interview_answer', answer_id=item.id) }}" data-confirm="Delete this saved answer?">
+                                <button class="icon-button icon-button-danger" title="Delete answer" aria-label="Delete answer"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                            </form>
+                        </div>
+                    </footer>
+                </article>
+                {% else %}
+                <div class="empty-state"><i class="fas fa-comments" aria-hidden="true"></i><p>No saved interview answers yet.</p></div>
+                {% endfor %}
+            </div>
+        </section>
     </div>
 
     <div
@@ -272,7 +417,12 @@
         {% if tracker_metrics.company_stats %}
         <div class="company-directory">
             {% for company in tracker_metrics.company_stats %}
-            <details class="company-row" data-company="{{ company.company|lower }}" data-company-search="{{ company.search_text }}">
+            <details
+                class="company-row"
+                data-company="{{ company.company|lower }}"
+                data-company-search="{{ company.search_text }}"
+                data-global-search="{{ company_search_texts.get(company.company, company.search_text) }}"
+            >
                 <summary>
                     <span class="company-identity">
                         <strong>{{ company.company }}</strong>
@@ -305,7 +455,7 @@
                     {% for job in company.jobs %}
                     {% set job_status_class = 'saved' if job.stage == 'Not Applied Yet' else job.stage|lower|replace(' ', '-') %}
                     <div class="company-job-row">
-                        <span class="company-job-role"><strong>{{ job.role }}</strong>{% if job.location %}<small>{{ job.location }}</small>{% endif %}</span>
+                        <span class="company-job-role"><strong>{{ job.role }}</strong>{% if job.location or job.work_arrangement %}<small>{{ job.location or '' }}{% if job.location and job.work_arrangement %} · {% endif %}{{ 'Office-based' if job.work_arrangement == 'Office' else (job.work_arrangement or '') }}</small>{% endif %}</span>
                         <span>{% if job.applied_date %}<span class="format-date">{{ job.applied_date }}</span>{% else %}—{% endif %}</span>
                         <span>{% if job.wait_days is not none %}<small>{{ job.wait_label }}</small>{{ job.wait_days }} days{% else %}—{% endif %}</span>
                         <span><span class="status-badge status-{{ job_status_class }}">{{ job.stage }}</span></span>
@@ -315,6 +465,7 @@
             </details>
             {% endfor %}
         </div>
+        <p id="company-search-empty" class="company-analysis-empty hidden">No companies match this search.</p>
         {% else %}
         <p class="company-analysis-empty">Company performance will appear after the first application.</p>
         {% endif %}
@@ -328,21 +479,13 @@
         aria-labelledby="tracker-tab-applications"
         data-tracker-panel="applications"
     >
-    <div class="tracker-toolbar">
-        <label class="tracker-search">
-            <span class="sr-only">Search applications by company or job role</span>
-            <i class="fas fa-search" aria-hidden="true"></i>
-            <input id="job-search" type="search" class="admin-input" placeholder="Search company or job role" autocomplete="off">
-        </label>
-        <span id="tracker-result-count" class="tracker-result-count" aria-live="polite">{{ applications|length }} applications</span>
-    </div>
-
     <details class="tracker-filter-panel">
         <summary><span><i class="fas fa-filter" aria-hidden="true"></i> Advanced filters</span><i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i></summary>
         <div class="tracker-filter-grid">
             <label><span>Company</span><select id="filter-company" class="admin-input"><option value="">All companies</option>{% for company in filter_options.companies %}<option value="{{ company|lower }}">{{ company }}</option>{% endfor %}</select></label>
             <label><span>Source</span><select id="filter-source" class="admin-input"><option value="">All sources</option>{% for source in filter_options.sources %}<option value="{{ source|lower }}">{{ source }}</option>{% endfor %}</select></label>
             <label><span>Location</span><select id="filter-location" class="admin-input"><option value="">All locations</option>{% for location in filter_options.locations %}<option value="{{ location|lower }}">{{ location }}</option>{% endfor %}</select></label>
+            <label><span>Work arrangement</span><select id="filter-arrangement" class="admin-input"><option value="">All arrangements</option>{% for value, label in filter_options.arrangements %}<option value="{{ value|lower }}">{{ label }}</option>{% endfor %}</select></label>
             <label><span>Badge</span><select id="filter-badge" class="admin-input"><option value="">All badges</option>{% for badge in filter_options.badges %}<option value="{{ badge|lower }}">{{ badge }}</option>{% endfor %}</select></label>
             <label><span>Applied after</span><input id="filter-date-from" type="date" class="admin-input"></label>
             <label><span>Applied before</span><input id="filter-date-to" type="date" class="admin-input"></label>
@@ -361,6 +504,9 @@
         {% for app in applications %}
         {% set application_timeline = application_timelines.get(app.id, []) %}
         {% set reminder = reminder_states.get(app.id) %}
+        {% set application_search_text = application_search_texts.get(app.id, '') %}
+        {% set application_age = application_age_states.get(app.id) %}
+        {% set cooling_warning = cooling_warnings.get(app.id) %}
         {% include "admin/partials/job_application_card.html" %}
         {% endfor %}
     </div>
@@ -372,8 +518,10 @@
     </div>
 </div>
 
+{% include "admin/partials/job_application_context_menu.html" %}
+
 <dialog id="add-job-dialog" class="tracker-dialog">
-    <form method="post" action="{{ url_for('admin.add_job_application') }}" class="tracker-dialog-form">
+    <form method="post" action="{{ url_for('admin.add_job_application') }}" class="tracker-dialog-form" data-application-form>
         <header class="dialog-header"><h2>Add application</h2><button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button></header>
         <div class="dialog-body">{{ application_fields() }}</div>
         <footer class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Add application</button></footer>
@@ -382,13 +530,48 @@
 
 {% for app in applications %}
 <dialog id="edit-job-{{ app.id }}" class="tracker-dialog">
-    <form method="post" action="{{ url_for('admin.edit_job_application', app_id=app.id) }}" class="tracker-dialog-form">
+    <form method="post" action="{{ url_for('admin.edit_job_application', app_id=app.id) }}" class="tracker-dialog-form" data-application-form data-application-id="{{ app.id }}">
         <header class="dialog-header"><h2>Edit application</h2><button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button></header>
         <div class="dialog-body">{{ application_fields(app) }}</div>
         <footer class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Save changes</button></footer>
     </form>
 </dialog>
 {% endfor %}
+
+<dialog id="add-answer-dialog" class="tracker-dialog tracker-dialog-small">
+    <form method="post" action="{{ url_for('admin.add_interview_answer') }}" class="tracker-dialog-form">
+        <header class="dialog-header"><h2>Add interview answer</h2><button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button></header>
+        <div class="dialog-body">
+            <div class="tracker-form-grid">
+                <label class="tracker-field"><span>Category</span><input maxlength="120" name="category" value="General" class="admin-input"></label>
+                <label class="tracker-field tracker-field-wide"><span>Question</span><textarea required name="question" rows="2" class="admin-input"></textarea></label>
+                <label class="tracker-field tracker-field-wide"><span>Answer</span><textarea required name="answer" rows="7" class="admin-input"></textarea></label>
+                <label class="tracker-field tracker-field-wide"><span>Tags</span><input maxlength="500" name="tags" class="admin-input" placeholder="Python, teamwork, leadership"></label>
+            </div>
+        </div>
+        <footer class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Save answer</button></footer>
+    </form>
+</dialog>
+
+{% for item in answer_bank %}
+<dialog id="edit-answer-{{ item.id }}" class="tracker-dialog tracker-dialog-small">
+    <form method="post" action="{{ url_for('admin.edit_interview_answer', answer_id=item.id) }}" class="tracker-dialog-form">
+        <header class="dialog-header"><h2>Edit interview answer</h2><button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button></header>
+        <div class="dialog-body">
+            <div class="tracker-form-grid">
+                <label class="tracker-field"><span>Category</span><input maxlength="120" name="category" value="{{ item.category }}" class="admin-input"></label>
+                <label class="tracker-field tracker-field-wide"><span>Question</span><textarea required name="question" rows="2" class="admin-input">{{ item.question }}</textarea></label>
+                <label class="tracker-field tracker-field-wide"><span>Answer</span><textarea required name="answer" rows="7" class="admin-input">{{ item.answer }}</textarea></label>
+                <label class="tracker-field tracker-field-wide"><span>Tags</span><input maxlength="500" name="tags" value="{{ item.tags }}" class="admin-input"></label>
+            </div>
+        </div>
+        <footer class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Save changes</button></footer>
+    </form>
+</dialog>
+{% endfor %}
+
+<script id="interview-answer-bank-data" type="application/json">{{ answer_bank_data|tojson }}</script>
+<script id="company-application-history" type="application/json">{{ company_application_history|tojson }}</script>
 {% endblock %}
 
 {% block scripts %}

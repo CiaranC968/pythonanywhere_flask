@@ -2,13 +2,27 @@
     const searchInput = document.getElementById('job-search');
     const resultCount = document.getElementById('tracker-result-count');
     const emptyState = document.getElementById('tracker-empty');
+    const companyEmptyState = document.getElementById('company-search-empty');
     const companyRows = [...document.querySelectorAll('[data-company-search]')];
+    const answerEntries = [...document.querySelectorAll('[data-answer-search]')];
     const sectionTabs = [...document.querySelectorAll('[data-tracker-section]')];
     const sectionPanels = [...document.querySelectorAll('[data-tracker-panel]')];
+    const parseEmbeddedJson = (id) => {
+        const element = document.getElementById(id);
+        if (!element) return {};
+        try {
+            return JSON.parse(element.textContent);
+        } catch (_error) {
+            return {};
+        }
+    };
+    const answerBank = parseEmbeddedJson('interview-answer-bank-data');
+    const companyApplicationHistory = parseEmbeddedJson('company-application-history');
     const advancedFilters = {
         company: document.getElementById('filter-company'),
         source: document.getElementById('filter-source'),
         location: document.getElementById('filter-location'),
+        arrangement: document.getElementById('filter-arrangement'),
         badge: document.getElementById('filter-badge'),
         dateFrom: document.getElementById('filter-date-from'),
         dateTo: document.getElementById('filter-date-to')
@@ -29,6 +43,7 @@
         sectionPanels.forEach((panel) => {
             panel.hidden = panel.dataset.trackerPanel !== section;
         });
+        filterApplications();
         if (moveFocus) tab.focus();
     }
 
@@ -47,54 +62,158 @@
     });
 
     function filterApplications() {
-        const query = searchInput?.value.trim().toLowerCase() || '';
-        let visible = 0;
+        const queryTerms = (searchInput?.value.trim().toLowerCase() || '').split(/\s+/).filter(Boolean);
+        const matchesQuery = (searchText = '') => queryTerms.every((term) => searchText.includes(term));
+        let visibleApplications = 0;
+        let visibleCompanies = 0;
+        let visibleAnswers = 0;
 
         document.querySelectorAll('.application-card').forEach((card) => {
-            const matchesSearch = !query || card.dataset.search.includes(query);
+            const matchesSearch = matchesQuery(card.dataset.search);
             const matchesStatus = activeFilter === 'all' || card.dataset.stage === activeFilter;
             const matchesCompany = !advancedFilters.company?.value || card.dataset.company === advancedFilters.company.value;
             const matchesSource = !advancedFilters.source?.value || card.dataset.source === advancedFilters.source.value;
             const matchesLocation = !advancedFilters.location?.value || card.dataset.location === advancedFilters.location.value;
+            const matchesArrangement = !advancedFilters.arrangement?.value || card.dataset.arrangement === advancedFilters.arrangement.value;
             const matchesBadge = !advancedFilters.badge?.value || card.dataset.badges.split(',').map((badge) => badge.trim()).includes(advancedFilters.badge.value);
             const matchesStart = !advancedFilters.dateFrom?.value || Boolean(card.dataset.applied && card.dataset.applied >= advancedFilters.dateFrom.value);
             const matchesEnd = !advancedFilters.dateTo?.value || Boolean(card.dataset.applied && card.dataset.applied <= advancedFilters.dateTo.value);
-            card.hidden = !(matchesSearch && matchesStatus && matchesCompany && matchesSource && matchesLocation && matchesBadge && matchesStart && matchesEnd);
-            if (!card.hidden) visible += 1;
+            card.hidden = !(matchesSearch && matchesStatus && matchesCompany && matchesSource && matchesLocation && matchesArrangement && matchesBadge && matchesStart && matchesEnd);
+            if (!card.hidden) visibleApplications += 1;
         });
 
         companyRows.forEach((row) => {
-            const matchesSearch = !query || row.dataset.companySearch.includes(query);
+            const matchesSearch = matchesQuery(row.dataset.globalSearch || row.dataset.companySearch);
             const matchesCompany = !advancedFilters.company?.value || row.dataset.company === advancedFilters.company.value;
             row.hidden = !(matchesSearch && matchesCompany);
+            if (!row.hidden) visibleCompanies += 1;
+        });
+
+        answerEntries.forEach((entry) => {
+            entry.hidden = !matchesQuery(entry.dataset.answerSearch);
+            if (!entry.hidden) visibleAnswers += 1;
         });
 
         if (resultCount) {
-            resultCount.textContent = `${visible} ${visible === 1 ? 'application' : 'applications'}`;
+            const activeSection = document.querySelector('[data-tracker-section][aria-selected="true"]')?.dataset.trackerSection;
+            if (activeSection === 'companies') {
+                resultCount.textContent = `${visibleCompanies} ${visibleCompanies === 1 ? 'company' : 'companies'}`;
+            } else if (activeSection === 'answer-bank') {
+                resultCount.textContent = `${visibleAnswers} saved ${visibleAnswers === 1 ? 'answer' : 'answers'}`;
+            } else {
+                resultCount.textContent = `${visibleApplications} ${visibleApplications === 1 ? 'application' : 'applications'}`;
+            }
         }
-        emptyState?.classList.toggle('hidden', visible !== 0);
+        emptyState?.classList.toggle('hidden', visibleApplications !== 0);
+        companyEmptyState?.classList.toggle('hidden', visibleCompanies !== 0);
     }
 
     function formatDates(root = document) {
         root.querySelectorAll('.format-date').forEach((element) => {
-            const raw = element.textContent.trim();
+            const raw = element.getAttribute('datetime') || element.textContent.trim();
             const date = new Date(raw.length === 10 ? `${raw}T00:00:00` : raw);
             if (Number.isNaN(date.getTime())) return;
 
             const includesTime = raw.includes('T') || raw.includes(' ');
+            const compact = element.classList.contains('format-date--compact');
             element.textContent = new Intl.DateTimeFormat('en-GB', {
                 day: '2-digit',
                 month: 'short',
-                year: 'numeric',
+                ...(!compact ? { year: 'numeric' } : {}),
                 ...(includesTime ? { hour: '2-digit', minute: '2-digit' } : {})
             }).format(date);
         });
     }
 
     searchInput?.addEventListener('input', filterApplications);
+    const requestedSection = new URLSearchParams(window.location.search).get('section');
+    if (requestedSection) {
+        activateTrackerSection(sectionTabs.find((tab) => tab.dataset.trackerSection === requestedSection));
+    }
+    document.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && searchInput) {
+            event.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        }
+    });
     Object.values(advancedFilters).forEach((filter) => filter?.addEventListener('change', filterApplications));
 
+    function appendPreparationText(field, value) {
+        if (!field || !value) return;
+        field.value = field.value.trim() ? `${field.value.trim()}\n\n${value}` : value;
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function updateCoolingWarning(form) {
+        const output = form.querySelector('[data-cooling-warning]');
+        const companyInput = form.querySelector('[name="company"]');
+        const appliedInput = form.querySelector('[name="applied_date"]');
+        if (!output || !companyInput || !appliedInput?.value) return;
+
+        const companyKey = companyInput.value.trim().toLowerCase().replace(/\s+/g, ' ');
+        const currentId = Number(form.dataset.applicationId || 0);
+        const currentDate = new Date(`${appliedInput.value}T00:00:00`);
+        const previousDates = (companyApplicationHistory[companyKey] || [])
+            .filter((item) => item.id !== currentId && item.date <= appliedInput.value)
+            .sort((left, right) => right.date.localeCompare(left.date));
+        const previous = previousDates[0];
+        if (!previous || Number.isNaN(currentDate.getTime())) {
+            output.hidden = true;
+            output.textContent = '';
+            return;
+        }
+
+        const previousDate = new Date(`${previous.date}T00:00:00`);
+        const days = Math.round((currentDate - previousDate) / 86400000);
+        if (days < 0 || days >= 30) {
+            output.hidden = true;
+            output.textContent = '';
+            return;
+        }
+        output.innerHTML = `<i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Last application to this company was ${days === 0 ? 'on the same day' : `${days} days earlier`}.`;
+        output.hidden = false;
+    }
+
+    document.querySelectorAll('[data-application-form]').forEach((form) => {
+        const companyInput = form.querySelector('[name="company"]');
+        const appliedInput = form.querySelector('[name="applied_date"]');
+        companyInput?.addEventListener('input', () => updateCoolingWarning(form));
+        appliedInput?.addEventListener('change', () => updateCoolingWarning(form));
+        updateCoolingWarning(form);
+    });
+
     document.addEventListener('click', (event) => {
+        const insertAnswerButton = event.target.closest('[data-insert-answer]');
+        if (insertAnswerButton) {
+            const picker = insertAnswerButton.closest('.answer-bank-picker');
+            const selectedId = picker?.querySelector('[data-answer-bank-select]')?.value;
+            const savedAnswer = answerBank[selectedId];
+            const form = insertAnswerButton.closest('form');
+            const feedback = picker?.querySelector('[data-answer-insert-feedback]');
+            if (!savedAnswer || !form) {
+                if (feedback) feedback.textContent = 'Choose a saved answer first.';
+                return;
+            }
+            appendPreparationText(form.querySelector('[name="interview_questions"]'), savedAnswer.question);
+            appendPreparationText(form.querySelector('[name="interview_answers"]'), savedAnswer.answer);
+            if (feedback) feedback.textContent = 'Added to interview preparation.';
+            return;
+        }
+
+        const copyAnswerButton = event.target.closest('[data-copy-answer]');
+        if (copyAnswerButton) {
+            const savedAnswer = answerBank[copyAnswerButton.dataset.copyAnswer];
+            if (!savedAnswer) return;
+            navigator.clipboard.writeText(`${savedAnswer.question}\n\n${savedAnswer.answer}`)
+                .then(() => {
+                    copyAnswerButton.title = 'Copied';
+                    window.setTimeout(() => { copyAnswerButton.title = 'Copy answer'; }, 1500);
+                })
+                .catch(() => { copyAnswerButton.title = 'Could not copy'; });
+            return;
+        }
+
         const tab = event.target.closest('[data-filter]');
         if (tab) {
             activeFilter = tab.dataset.filter;
@@ -163,6 +282,27 @@
         }
     });
 
+    function updateKanbanAgeWarning(card, stage) {
+        const activeStages = new Set(['Applied', 'Assessment', 'Interview', 'Offer']);
+        const appliedAt = card.dataset.applied ? new Date(`${card.dataset.applied}T00:00:00`) : null;
+        const ageDays = appliedAt && !Number.isNaN(appliedAt.getTime())
+            ? Math.max(0, Math.floor((Date.now() - appliedAt.getTime()) / 86400000))
+            : 0;
+        card.classList.remove('application-age-attention', 'application-age-overdue');
+        const ageSignal = card.querySelector('[data-kanban-age-signal]');
+        if (!activeStages.has(stage) || ageDays < 14) {
+            if (ageSignal) ageSignal.hidden = true;
+            return;
+        }
+        const state = ageDays >= 30 ? 'overdue' : 'attention';
+        card.classList.add(`application-age-${state}`);
+        if (ageSignal) {
+            ageSignal.hidden = false;
+            ageSignal.className = `age-${state}`;
+            ageSignal.textContent = `Waiting ${ageDays}d`;
+        }
+    }
+
     async function moveKanbanCard(card, destination) {
         const previousColumn = card.closest('[data-kanban-stage]');
         const stage = destination.dataset.kanbanStage;
@@ -177,22 +317,32 @@
             });
             if (!response.ok) throw new Error('Could not update application status.');
             card.querySelector('[data-kanban-select]').value = stage;
+            card.dataset.stage = stage;
+            updateKanbanAgeWarning(card, stage);
             updateKanbanCounts();
             showKanbanFeedback(`${card.dataset.role} moved to ${stage}.`, false);
         } catch (_error) {
             previousColumn.querySelector('[data-kanban-items]').appendChild(card);
             card.querySelector('[data-kanban-select]').value = previousColumn.dataset.kanbanStage;
+            card.dataset.stage = previousColumn.dataset.kanbanStage;
+            updateKanbanAgeWarning(card, previousColumn.dataset.kanbanStage);
             updateKanbanCounts();
             showKanbanFeedback(`Could not move ${card.dataset.role}. Please try again.`, true);
         }
     }
 
+    let kanbanFeedbackTimer;
+
     function showKanbanFeedback(message, isError) {
         const feedback = document.getElementById('kanban-announcer');
         if (!feedback) return;
+        window.clearTimeout(kanbanFeedbackTimer);
         feedback.textContent = message;
         feedback.classList.toggle('is-error', isError);
         feedback.hidden = false;
+        kanbanFeedbackTimer = window.setTimeout(() => {
+            feedback.hidden = true;
+        }, 3000);
     }
 
     function updateKanbanCounts() {
@@ -209,6 +359,8 @@
     function updateKanbanScrollControls() {
         if (!kanbanBoard) return;
         const maximumScroll = kanbanBoard.scrollWidth - kanbanBoard.clientWidth;
+        const controls = kanbanScrollButtons[0]?.parentElement;
+        if (controls) controls.hidden = maximumScroll <= 1;
         kanbanScrollButtons.forEach((button) => {
             const atStart = kanbanBoard.scrollLeft <= 1;
             const atEnd = kanbanBoard.scrollLeft >= maximumScroll - 1;
@@ -272,6 +424,180 @@
             if (card) moveKanbanCard(card, column);
         });
     });
+
+    const applicationContextMenu = document.querySelector('[data-application-context-menu]');
+    const applicationContextFeedback = document.querySelector('[data-context-feedback]');
+    let contextApplicationCard = null;
+    let contextMenuTrigger = null;
+    let contextFeedbackTimer;
+
+    function applicationCardDetails(card) {
+        const companyLink = card.querySelector('a[href*="/job-tracker/company/"]');
+        const company = companyLink?.textContent.trim() || '';
+        const role = card.dataset.role || card.querySelector('.application-role, h3')?.textContent.trim() || '';
+        const stage = card.dataset.stage || card.querySelector('[data-kanban-select], .quick-status select')?.value || '';
+        return { company, companyUrl: companyLink?.href || '#', role, stage };
+    }
+
+    function closeApplicationContextMenu(restoreFocus = false) {
+        if (!applicationContextMenu || applicationContextMenu.hidden) return;
+        applicationContextMenu.hidden = true;
+        contextApplicationCard = null;
+        if (restoreFocus) contextMenuTrigger?.focus();
+        contextMenuTrigger = null;
+    }
+
+    function openApplicationContextMenu(card, x, y, trigger) {
+        if (!applicationContextMenu) return;
+        const details = applicationCardDetails(card);
+        contextApplicationCard = card;
+        contextMenuTrigger = trigger;
+
+        applicationContextMenu.querySelector('[data-context-title]').textContent = details.role;
+        applicationContextMenu.querySelector('[data-context-company]').href = details.companyUrl;
+        applicationContextMenu.querySelectorAll('[data-context-stage]').forEach((button) => {
+            const isCurrent = button.dataset.contextStage === details.stage;
+            button.setAttribute('aria-checked', String(isCurrent));
+            button.disabled = isCurrent;
+        });
+
+        applicationContextMenu.hidden = false;
+        applicationContextMenu.style.left = '0';
+        applicationContextMenu.style.top = '0';
+        const bounds = applicationContextMenu.getBoundingClientRect();
+        const left = Math.max(8, Math.min(x, window.innerWidth - bounds.width - 8));
+        const top = Math.max(8, Math.min(y, window.innerHeight - bounds.height - 8));
+        applicationContextMenu.style.left = `${left}px`;
+        applicationContextMenu.style.top = `${top}px`;
+        applicationContextMenu.querySelector('[role^="menuitem"]:not(:disabled)')?.focus();
+    }
+
+    function showApplicationContextFeedback(message, isError = false) {
+        if (!applicationContextFeedback) return;
+        window.clearTimeout(contextFeedbackTimer);
+        applicationContextFeedback.textContent = message;
+        applicationContextFeedback.classList.toggle('is-error', isError);
+        applicationContextFeedback.hidden = false;
+        contextFeedbackTimer = window.setTimeout(() => {
+            applicationContextFeedback.hidden = true;
+        }, 3000);
+    }
+
+    function adjustStatusFilterCount(stage, amount) {
+        const output = document.querySelector(`[data-filter="${CSS.escape(stage)}"] span`);
+        if (!output) return;
+        output.textContent = String(Math.max(0, Number(output.textContent || 0) + amount));
+    }
+
+    async function updateListApplicationStage(card, stage) {
+        const previousStage = card.dataset.stage;
+        const response = await fetch(`/admin/job-tracker/${card.dataset.applicationId}/update-stage-ajax`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'HX-Request': 'true'
+            },
+            body: new URLSearchParams({ stage })
+        });
+        if (!response.ok) throw new Error('Could not update application status.');
+
+        const template = document.createElement('template');
+        template.innerHTML = (await response.text()).trim();
+        const replacement = template.content.firstElementChild;
+        if (!replacement?.classList.contains('application-card')) {
+            throw new Error('The updated application card was not returned.');
+        }
+
+        card.replaceWith(replacement);
+        window.htmx?.process(replacement);
+        formatDates(replacement);
+        filterApplications();
+        adjustStatusFilterCount(previousStage, -1);
+        adjustStatusFilterCount(stage, 1);
+    }
+
+    async function moveApplicationFromContextMenu(card, stage) {
+        const destination = document.querySelector(`[data-kanban-stage="${CSS.escape(stage)}"]`);
+        if (card.classList.contains('kanban-card') && destination) {
+            await moveKanbanCard(card, destination);
+            return;
+        }
+        await updateListApplicationStage(card, stage);
+        showApplicationContextFeedback(`${card.dataset.role} moved to ${stage}.`);
+    }
+
+    document.addEventListener('contextmenu', (event) => {
+        if (event.target.closest('input, textarea, select')) return;
+        const card = event.target.closest('.kanban-card, .application-card');
+        if (!card || !applicationContextMenu) return;
+        event.preventDefault();
+        openApplicationContextMenu(card, event.clientX, event.clientY, event.target);
+    });
+
+    applicationContextMenu?.addEventListener('click', async (event) => {
+        const stageButton = event.target.closest('[data-context-stage]');
+        const copyButton = event.target.closest('[data-context-copy]');
+        const card = contextApplicationCard;
+        if (!card) return;
+
+        if (stageButton) {
+            const stage = stageButton.dataset.contextStage;
+            closeApplicationContextMenu();
+            try {
+                await moveApplicationFromContextMenu(card, stage);
+            } catch (_error) {
+                showApplicationContextFeedback(`Could not move ${card.dataset.role}. Please try again.`, true);
+            }
+            return;
+        }
+
+        if (copyButton) {
+            const details = applicationCardDetails(card);
+            closeApplicationContextMenu();
+            try {
+                await navigator.clipboard.writeText(`${details.company} - ${details.role}`);
+                showApplicationContextFeedback('Company and role copied.');
+            } catch (_error) {
+                showApplicationContextFeedback('Could not copy the application details.', true);
+            }
+        }
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+        if (!applicationContextMenu?.hidden && !applicationContextMenu.contains(event.target)) {
+            closeApplicationContextMenu();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const card = event.target.closest?.('.kanban-card, .application-card');
+        if ((event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) && card) {
+            event.preventDefault();
+            const bounds = card.getBoundingClientRect();
+            openApplicationContextMenu(card, bounds.left + 12, bounds.top + 12, event.target);
+            return;
+        }
+        if (!applicationContextMenu || applicationContextMenu.hidden) return;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeApplicationContextMenu(true);
+            return;
+        }
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const items = [...applicationContextMenu.querySelectorAll('[role^="menuitem"]:not(:disabled)')];
+        const currentIndex = items.indexOf(document.activeElement);
+        let nextIndex = currentIndex;
+        if (event.key === 'ArrowDown') nextIndex = (currentIndex + 1) % items.length;
+        if (event.key === 'ArrowUp') nextIndex = (currentIndex - 1 + items.length) % items.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = items.length - 1;
+        items[nextIndex]?.focus();
+    });
+
+    window.addEventListener('blur', () => closeApplicationContextMenu());
+    window.addEventListener('resize', () => closeApplicationContextMenu());
+    document.addEventListener('scroll', () => closeApplicationContextMenu(), true);
 
     formatDates();
 })();
