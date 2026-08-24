@@ -273,6 +273,14 @@ def deployment_checklist():
 
     table_set = set(table_names)
     upload_root = _static_upload_root()
+    job_tracker_template = os.path.join(
+        current_app.root_path,
+        "templates",
+        "admin",
+        "partials",
+        "job_application_card.html",
+    )
+    job_tracker_template_ok = os.path.isfile(job_tracker_template)
     checks = [
         {
             "label": "Database connection",
@@ -300,6 +308,15 @@ def deployment_checklist():
             "label": "Static upload path",
             "ok": bool(upload_root and os.path.isdir(upload_root)),
             "detail": upload_root or "No upload path found.",
+        },
+        {
+            "label": "Job tracker card template",
+            "ok": job_tracker_template_ok,
+            "detail": (
+                "The reusable job application card template is available."
+                if job_tracker_template_ok
+                else "Missing templates/admin/partials/job_application_card.html."
+            ),
         },
         {
             "label": "ReportLab PDF library",

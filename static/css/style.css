@@ -691,7 +691,20 @@ select:focus-visible,
 }
 
 #projects-track .card-item {
+    min-width: 0;
     width: 100%;
+}
+
+.projects-carousel {
+    isolation: isolate;
+}
+
+.carousel-viewport {
+    min-width: 0;
+}
+
+#projects-track {
+    align-items: stretch;
 }
 
 #prev-btn {
@@ -702,16 +715,12 @@ select:focus-visible,
     right: .5rem;
 }
 
-@media (min-width: 768px) {
-    #projects-track .card-item {
-        width: calc((100% - 32px) / 2);
-    }
-}
-
-@media (min-width: 1024px) {
-    #projects-track .card-item {
-        width: calc((100% - 64px) / 3);
-    }
+#prev-btn:disabled,
+#next-btn:disabled {
+    cursor: default;
+    opacity: .35;
+    pointer-events: none;
+    transform: translateY(-50%) scale(.92);
 }
 
 @media (min-width: 1280px) {

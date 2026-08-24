@@ -1,0 +1,194 @@
+{% set status_class = 'saved' if app.stage == 'Not Applied Yet' else app.stage|lower|replace(' ', '-') %}
+<article
+    id="application-{{ app.id }}"
+    class="application-card"
+    data-stage="{{ app.stage }}"
+    data-search="{{ (app.company ~ ' ' ~ app.role)|lower }}"
+    data-company="{{ app.company|lower }}"
+    data-source="{{ (app.source or '')|lower }}"
+    data-location="{{ (app.location or '')|lower }}"
+    data-badges="{{ (app.badges or '')|lower }}"
+    data-applied="{{ app.applied_date[:10] if app.applied_date else '' }}"
+>
+    <div>
+        <h2 class="application-role">{{ app.role }}</h2>
+        <p class="application-company">
+            <a href="{{ url_for('admin.job_company', company_name=app.company) }}">{{ app.company }}</a>
+            {% if app.location %} · {{ app.location }}{% endif %}
+            {% if app.salary %} · {{ app.salary }}{% endif %}
+        </p>
+        <div class="badge-row">
+            <span class="status-badge status-{{ status_class }}">
+                {{ 'Saved' if app.stage == 'Not Applied Yet' else app.stage }}
+            </span>
+            {% set company_application_count = tracker_metrics.company_counts_by_id.get(app.id, 1) %}
+            {% if company_application_count > 1 %}
+            <span class="custom-badge">Applied here {{ company_application_count }} times</span>
+            {% endif %}
+            {% if app.reached_assessment %}<span class="custom-badge">Assessment reached</span>{% endif %}
+            {% if app.reached_interview %}<span class="custom-badge">Interview reached</span>{% endif %}
+            {% if reminder and reminder.state != 'none' %}
+            <span class="reminder-badge reminder-{{ reminder.state }}">{{ reminder.label }}</span>
+            {% endif %}
+            {% if app.source %}<span class="custom-badge">{{ app.source }}</span>{% endif %}
+            {% for badge in (app.badges or '').split(',') %}
+                {% if badge.strip() %}<span class="custom-badge">{{ badge.strip() }}</span>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="application-dates">
+        {% if app.applied_date %}
+        <span>Applied <strong class="format-date">{{ app.applied_date }}</strong></span>
+        {% endif %}
+        {% if app.assessment_date %}
+        <span>Assessment <strong class="format-date">{{ app.assessment_date }}</strong></span>
+        {% endif %}
+        {% if app.interview_date %}
+        <span>Interview <strong class="format-date">{{ app.interview_date }}</strong></span>
+        {% endif %}
+        {% if app.application_deadline and app.stage == 'Not Applied Yet' %}
+        <span>Deadline <strong class="format-date">{{ app.application_deadline }}</strong></span>
+        {% endif %}
+    </div>
+
+    <div>
+        <p class="application-notes">{{ app.notes or 'No notes added.' }}</p>
+        {% if app.job_url %}
+        <a
+            href="{{ app.job_url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="tracker-eyebrow application-link"
+        >
+            Open job advert <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="application-actions">
+        <form
+            method="post"
+            action="{{ url_for('admin.update_job_stage_ajax', app_id=app.id) }}"
+            class="quick-status"
+            hx-post="{{ url_for('admin.update_job_stage_ajax', app_id=app.id) }}"
+            hx-target="#application-{{ app.id }}"
+            hx-swap="outerHTML"
+            hx-disabled-elt="find select, find button"
+        >
+            <select name="stage" class="admin-input" aria-label="Update status for {{ app.role }}">
+                {% for value, label in job_stages %}
+                <option value="{{ value }}" {% if app.stage == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button class="icon-button" title="Save status" aria-label="Save status">
+                <i class="fas fa-check" aria-hidden="true"></i>
+            </button>
+        </form>
+        <button
+            type="button"
+            class="icon-button"
+            title="Edit application"
+            aria-label="Edit {{ app.role }}"
+            data-dialog-open="edit-job-{{ app.id }}"
+        >
+            <i class="fas fa-pen" aria-hidden="true"></i>
+        </button>
+        <form
+            method="post"
+            action="{{ url_for('admin.delete_job_application', app_id=app.id) }}"
+            data-confirm="Delete this application?"
+        >
+            <button class="icon-button icon-button-danger" title="Delete application" aria-label="Delete {{ app.role }}">
+                <i class="fas fa-trash" aria-hidden="true"></i>
+            </button>
+        </form>
+        {% if stage_update_message %}
+        <span class="quick-update-feedback {% if stage_update_error %}is-error{% endif %}" role="status">
+            {{ stage_update_message }}
+        </span>
+        {% endif %}
+    </div>
+
+    <details class="application-workspace">
+        <summary>
+            <span><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Timeline and files</span>
+            <span>
+                {{ application_timeline|length }} events · {{ app.attachments|length }} files
+                <i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i>
+            </span>
+        </summary>
+        <div class="application-workspace-grid">
+            <section>
+                <h3>Timeline</h3>
+                <ol class="job-timeline">
+                    {% for event in application_timeline %}
+                    <li class="timeline-{{ event.type }}">
+                        <span class="timeline-marker" aria-hidden="true"></span>
+                        <div>
+                            <time class="format-date">{{ event.date }}</time>
+                            <strong>{{ event.label }}</strong>
+                            {% if event.note %}<p>{{ event.note }}</p>{% endif %}
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="timeline-empty">No timeline events recorded.</li>
+                    {% endfor %}
+                </ol>
+            </section>
+            <section>
+                <h3>Follow-up</h3>
+                {% if app.follow_up_date %}
+                <p class="workspace-meta">
+                    <span class="format-date">{{ app.follow_up_date }}</span>
+                    {% if app.reminder_note %} · {{ app.reminder_note }}{% endif %}
+                </p>
+                <form method="post" action="{{ url_for('admin.update_job_reminder', app_id=app.id) }}" class="workspace-inline-form">
+                    <input type="hidden" name="reminder_done" value="{{ 'false' if app.reminder_done else 'true' }}">
+                    <button class="tracker-secondary">
+                        <i class="fas fa-{{ 'rotate-left' if app.reminder_done else 'check' }}" aria-hidden="true"></i>
+                        {{ 'Reopen follow-up' if app.reminder_done else 'Mark complete' }}
+                    </button>
+                </form>
+                {% else %}
+                <p class="workspace-meta">No follow-up scheduled.</p>
+                {% endif %}
+
+                <h3 class="workspace-subheading">Attachments</h3>
+                <ul class="attachment-list">
+                    {% for attachment in app.attachments %}
+                    <li>
+                        <a href="{{ url_for('admin.download_job_attachment', attachment_id=attachment.id) }}">
+                            <i class="fas fa-paperclip" aria-hidden="true"></i> {{ attachment.original_name }}
+                        </a>
+                        <form
+                            method="post"
+                            action="{{ url_for('admin.delete_job_attachment', attachment_id=attachment.id) }}"
+                            data-confirm="Delete this attachment?"
+                        >
+                            <button class="icon-button icon-button-danger" aria-label="Delete {{ attachment.original_name }}">
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li class="workspace-meta">No files attached.</li>
+                    {% endfor %}
+                </ul>
+                <form
+                    method="post"
+                    action="{{ url_for('admin.add_job_attachment', app_id=app.id) }}"
+                    enctype="multipart/form-data"
+                    class="attachment-form"
+                >
+                    <label>
+                        <span class="sr-only">Choose attachment for {{ app.role }}</span>
+                        <input required type="file" name="attachment" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg">
+                    </label>
+                    <input maxlength="255" name="note" class="admin-input" placeholder="File note">
+                    <button class="tracker-secondary"><i class="fas fa-upload" aria-hidden="true"></i> Upload</button>
+                </form>
+            </section>
+        </div>
+    </details>
+</article>

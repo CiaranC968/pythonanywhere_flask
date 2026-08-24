@@ -469,24 +469,44 @@ const ProjectCarousel = {
 
         const cards = [...track.querySelectorAll('.card-item')];
         const carousel = track.closest('.projects-carousel');
+        const viewport = carousel?.querySelector('.carousel-viewport');
         const previous = carousel?.querySelector('[data-carousel-direction="-1"]');
         const next = carousel?.querySelector('[data-carousel-direction="1"]');
         const dots = carousel?.nextElementSibling;
         let index = 0;
         let resizeTimer;
 
-        const visibleCards = () => window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
+        const visibleCards = () => {
+            const availableWidth = viewport?.clientWidth || window.innerWidth;
+            if (availableWidth >= 1100) return 3;
+            if (availableWidth >= 640) return 2;
+            return 1;
+        };
         const positionCount = () => Math.max(cards.length - visibleCards() + 1, 1);
 
         const render = () => {
             const positions = positionCount();
             index = Math.min(index, positions - 1);
-            const cardWidth = cards[0]?.offsetWidth || 0;
-            track.style.transform = `translateX(-${index * (cardWidth + 32)}px)`;
-
-            [previous, next].forEach((button) => {
-                if (button) button.hidden = positions <= 1;
+            const viewportStyles = viewport ? window.getComputedStyle(viewport) : null;
+            const horizontalPadding = viewportStyles
+                ? parseFloat(viewportStyles.paddingLeft) + parseFloat(viewportStyles.paddingRight)
+                : 0;
+            const gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
+            const availableWidth = Math.max((viewport?.clientWidth || track.clientWidth) - horizontalPadding, 0);
+            const cardWidth = (availableWidth - gap * (visibleCards() - 1)) / visibleCards();
+            cards.forEach((card) => {
+                card.style.width = `${Math.max(cardWidth, 0)}px`;
             });
+            track.style.transform = `translateX(-${index * (cardWidth + gap)}px)`;
+
+            if (previous) {
+                previous.hidden = positions <= 1;
+                previous.disabled = index === 0;
+            }
+            if (next) {
+                next.hidden = positions <= 1;
+                next.disabled = index === positions - 1;
+            }
             if (!dots) return;
 
             dots.hidden = positions <= 1;
@@ -510,14 +530,19 @@ const ProjectCarousel = {
             const button = event.target.closest('[data-carousel-direction]');
             if (!button) return;
             const positions = positionCount();
-            index = (index + Number(button.dataset.carouselDirection) + positions) % positions;
+            index = Math.max(0, Math.min(index + Number(button.dataset.carouselDirection), positions - 1));
             render();
         });
 
-        window.addEventListener('resize', () => {
+        const scheduleRender = () => {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(render, 100);
-        });
+        };
+        window.addEventListener('resize', scheduleRender);
+        if ('ResizeObserver' in window && viewport) {
+            const resizeObserver = new ResizeObserver(scheduleRender);
+            resizeObserver.observe(viewport);
+        }
         requestAnimationFrame(render);
     }
 };
