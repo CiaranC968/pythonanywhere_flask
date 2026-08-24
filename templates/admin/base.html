@@ -20,7 +20,7 @@
             {% if session.get('admin_authenticated') %}
             <nav class="admin-nav" aria-label="Admin navigation">
                 <a href="{{ url_for('admin.dashboard') }}" {% if request.endpoint == 'admin.dashboard' %}aria-current="page"{% endif %}>Overview</a>
-                <a href="{{ url_for('admin.job_tracker') }}" {% if request.endpoint == 'admin.job_tracker' %}aria-current="page"{% endif %}>Applications</a>
+                <a href="{{ url_for('admin.job_tracker') }}" {% if request.endpoint and request.endpoint in ['admin.job_tracker', 'admin.job_kanban', 'admin.job_calendar', 'admin.job_company'] %}aria-current="page"{% endif %}>Applications</a>
                 <a href="{{ url_for('admin.resume_builder') }}" {% if request.endpoint == 'admin.resume_builder' %}aria-current="page"{% endif %}>Resume builder</a>
                 <a href="{{ url_for('admin.cv_builder') }}" {% if request.endpoint == 'admin.cv_builder' %}aria-current="page"{% endif %}>CV builder</a>
             </nav>
@@ -46,6 +46,7 @@
 
         {% block content %}{% endblock %}
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" defer></script>
     <script src="/static/js/admin.js" defer></script>
     {% block scripts %}{% endblock %}
 </body>

@@ -127,6 +127,10 @@ def ensure_schema():
             "linkedin_url": "VARCHAR(500) NULL",
             "salary": "VARCHAR(120) NULL",
             "location": "VARCHAR(180) NULL",
+            "source": "VARCHAR(120) NOT NULL DEFAULT ''",
+            "follow_up_date": "VARCHAR(80) NULL",
+            "reminder_note": "TEXT NULL",
+            "reminder_done": f"{boolean} NOT NULL DEFAULT 0",
         },
     }
 
@@ -178,6 +182,10 @@ def _backfill_schema_defaults(quote):
         "certificate": {
             "desc": "",
             "skills": "[]",
+        },
+        "job_application": {
+            "source": "",
+            "reminder_note": "",
         },
     }
 

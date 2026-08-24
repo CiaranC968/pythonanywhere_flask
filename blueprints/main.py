@@ -1,7 +1,10 @@
 from datetime import datetime
 
 from flask import Blueprint, render_template
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
+from extensions import db
 from models import Certificate, Education, Experience, Project, Skill
 
 
@@ -15,25 +18,26 @@ def index():
 @main_bp.route('/health')
 def health():
     try:
-        checks = {
-            'projects': Project.query.filter_by(is_visible=True).count() > 0,
-            'experience': Experience.query.filter_by(is_visible=True).count() > 0,
-            'education': Education.query.filter_by(is_visible=True).count() > 0,
-            'skills': Skill.query.filter_by(is_visible=True).count() > 0,
-            'certificates': Certificate.query.filter_by(is_visible=True).count() > 0,
+        db.session.execute(text("SELECT 1"))
+        content_counts = {
+            'projects': Project.query.filter_by(is_visible=True).count(),
+            'experience': Experience.query.filter_by(is_visible=True).count(),
+            'education': Education.query.filter_by(is_visible=True).count(),
+            'skills': Skill.query.filter_by(is_visible=True).count(),
+            'certificates': Certificate.query.filter_by(is_visible=True).count(),
         }
-    except Exception as exc:
+    except SQLAlchemyError:
         return {
             'status': 'degraded',
             'timestamp': datetime.now().isoformat(),
-            'error': str(exc),
-            'checks': {}
+            'error': 'Database health check failed.',
+            'checks': {'database': False},
+            'content_counts': {},
         }, 503
 
-    all_healthy = all(checks.values())
-
     return {
-        'status': 'healthy' if all_healthy else 'degraded',
+        'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'checks': checks
-    }, 200 if all_healthy else 503
+        'checks': {'database': True},
+        'content_counts': content_counts,
+    }

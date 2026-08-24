@@ -1,0 +1,84 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="tracker-shell">
+    <header class="tracker-header">
+        <div>
+            <span class="tracker-eyebrow">Job search</span>
+            <h1 class="tracker-title">Application calendar</h1>
+            <p class="tracker-subtitle">
+                Interviews, assessments, follow-ups, and application deadlines in one place.
+            </p>
+        </div>
+        <a href="{{ url_for('admin.job_tracker') }}" class="tracker-secondary">
+            <i class="fas fa-list" aria-hidden="true"></i> List view
+        </a>
+    </header>
+
+    <nav class="tracker-view-tabs" aria-label="Application views">
+        <a href="{{ url_for('admin.job_tracker') }}">
+            <i class="fas fa-list" aria-hidden="true"></i> List
+        </a>
+        <a href="{{ url_for('admin.job_kanban') }}">
+            <i class="fas fa-table-columns" aria-hidden="true"></i> Kanban
+        </a>
+        <a href="{{ url_for('admin.job_calendar') }}" aria-current="page">
+            <i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar
+        </a>
+    </nav>
+
+    <section class="job-calendar" aria-labelledby="calendar-month">
+        <header class="calendar-header">
+            <a
+                href="{{ url_for('admin.job_calendar', month=calendar.previous) }}"
+                class="icon-button"
+                aria-label="Previous month"
+            >
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </a>
+            <h2 id="calendar-month">{{ calendar.label }}</h2>
+            <a
+                href="{{ url_for('admin.job_calendar', month=calendar.next) }}"
+                class="icon-button"
+                aria-label="Next month"
+            >
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
+        </header>
+
+        <div class="calendar-weekdays" aria-hidden="true">
+            <span>Mon</span>
+            <span>Tue</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Sat</span>
+            <span>Sun</span>
+        </div>
+
+        <div class="calendar-grid">
+            {% for week in calendar.weeks %}
+                {% for day in week %}
+                <section
+                    class="calendar-day {% if not day.in_month %}calendar-day-muted{% endif %} {% if day.iso == today %}calendar-day-today{% endif %}"
+                    aria-label="{{ day.date.strftime('%A %d %B %Y') }}"
+                >
+                    <time datetime="{{ day.iso }}">{{ day.date.day }}</time>
+                    <div class="calendar-events">
+                        {% for event in day.events %}
+                        <a
+                            href="{{ url_for('admin.job_tracker', _anchor='application-' ~ event.application.id) }}"
+                            class="calendar-event event-{{ event.type }}"
+                        >
+                            <strong>{{ event.label }}</strong>
+                            <span>{{ event.application.company }} · {{ event.application.role }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

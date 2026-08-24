@@ -4,8 +4,8 @@ from datetime import datetime
 from types import SimpleNamespace
 from urllib.parse import quote, quote_plus
 
-from flask import Flask, render_template, request
-from sqlalchemy import inspect, text
+from flask import Flask, render_template, request, send_from_directory
+from sqlalchemy.exc import SQLAlchemyError
 
 # Import Blueprints
 from blueprints.admin import admin_bp
@@ -73,6 +73,13 @@ def _normalise_database_url(database_url):
     return database_url
 
 
+def _integer_environment_value(name, default):
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
 def fallback_profile():
     return SimpleNamespace(
         full_name="Portfolio",
@@ -110,7 +117,7 @@ def create_app():
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ENGINE_OPTIONS={
             "pool_pre_ping": True,
-            "pool_recycle": int(os.environ.get("SQLALCHEMY_POOL_RECYCLE", "280")),
+            "pool_recycle": _integer_environment_value("SQLALCHEMY_POOL_RECYCLE", 280),
         },
         ADMIN_PASSWORD=os.environ.get("ADMIN_PASSWORD", ""),
         ADMIN_PASSWORD_HASH=os.environ.get("ADMIN_PASSWORD_HASH", ""),
@@ -125,7 +132,7 @@ def create_app():
             db.create_all()
             ensure_schema()
             seed_database_from_json(application)
-        except Exception as exc:
+        except SQLAlchemyError as exc:
             application.logger.exception("Database startup failed: %s", exc)
 
     # --- Register Blueprints ---
@@ -153,19 +160,21 @@ def create_app():
     # --- Context Processors ---
     @application.context_processor
     def inject_globals():
-        try:
-            profile = get_profile()
-            portfolio = get_portfolio()
-        except Exception:
-            application.logger.exception("Could not load database-backed page context.")
-            profile = fallback_profile()
-            portfolio = {
-                "projects": [],
-                "experience": [],
-                "education": [],
-                "skills": [],
-                "certificates": [],
-            }
+        profile = fallback_profile()
+        portfolio = {}
+        if request.endpoint == "main.index":
+            try:
+                profile = get_profile()
+                portfolio = get_portfolio()
+            except SQLAlchemyError:
+                application.logger.exception("Could not load homepage context.")
+                portfolio = {
+                    "projects": [],
+                    "experience": [],
+                    "education": [],
+                    "skills": [],
+                    "certificates": [],
+                }
 
         return {
             "profile": profile,
@@ -178,13 +187,11 @@ def create_app():
     # --- Favicon Routes ---
     @application.route('/favicon.ico')
     def favicon():
-        from flask import send_from_directory
         return send_from_directory(os.path.join(application.root_path, 'static'),
                                    'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     @application.route('/favicon/favicon.svg')
     def favicon_svg():
-        from flask import send_from_directory
         return send_from_directory(os.path.join(application.root_path, 'static', 'favicon'),
                                    'favicon.svg', mimetype='image/svg+xml')
 

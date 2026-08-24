@@ -8,82 +8,108 @@
 
 {% macro application_fields(app=None) %}
     {% set current_stage = app.stage if app else 'Applied' %}
-    <div class="tracker-form-grid">
-        <label class="tracker-field">
-            <span>Company</span>
-            <input required name="company" value="{{ app.company if app else '' }}" class="admin-input" autocomplete="organization">
-        </label>
-        <label class="tracker-field">
-            <span>Job role</span>
-            <input required name="role" value="{{ app.role if app else '' }}" class="admin-input" autocomplete="off">
-        </label>
-        <label class="tracker-field">
-            <span>Status</span>
-            <select name="stage" class="admin-input">{{ status_options(current_stage) }}</select>
-        </label>
-        <label class="tracker-field">
-            <span>Status updated on</span>
-            <input type="date" name="stage_updated_at" value="{{ app.stage_updated_at[:10] if app and app.stage_updated_at else today }}" class="admin-input">
-        </label>
-        <label class="tracker-field">
-            <span>Applied on</span>
-            <input type="date" name="applied_date" value="{{ app.applied_date[:10] if app and app.applied_date else today }}" class="admin-input">
-        </label>
-        <label class="tracker-field">
-            <span>Assessment date</span>
-            <input type="datetime-local" name="assessment_date" value="{{ app.assessment_date|replace(' ', 'T') if app and app.assessment_date else '' }}" class="admin-input">
-        </label>
-        <label class="tracker-field">
-            <span>Interview date</span>
-            <input type="datetime-local" name="interview_date" value="{{ app.interview_date|replace(' ', 'T') if app and app.interview_date else '' }}" class="admin-input">
-        </label>
-        <label class="tracker-field">
-            <span>Application deadline</span>
-            <input type="datetime-local" name="application_deadline" value="{{ app.application_deadline|replace(' ', 'T') if app and app.application_deadline else '' }}" class="admin-input">
-        </label>
-        <label class="tracker-field">
-            <span>Location</span>
-            <input name="location" value="{{ (app.location or '') if app else '' }}" class="admin-input" placeholder="London or Remote">
-        </label>
-        <label class="tracker-field">
-            <span>Salary</span>
-            <input name="salary" value="{{ (app.salary or '') if app else '' }}" class="admin-input" placeholder="£35,000">
-        </label>
-        <label class="tracker-field tracker-field-wide">
-            <span>Badges</span>
-            <input name="badges" value="{{ (app.badges or '') if app else '' }}" class="admin-input" placeholder="Remote, Priority, Referral">
-            <small>Separate badges with commas.</small>
-        </label>
-    </div>
+    <section class="dialog-section">
+        <div class="dialog-section-heading"><h3>Application</h3><span>Required details</span></div>
+        <div class="tracker-form-grid">
+            <label class="tracker-field">
+                <span>Company</span>
+                <input required maxlength="180" name="company" value="{{ app.company if app else '' }}" class="admin-input" autocomplete="organization" {% if not app %}autofocus{% endif %}>
+            </label>
+            <label class="tracker-field">
+                <span>Job role</span>
+                <input required maxlength="180" name="role" value="{{ app.role if app else '' }}" class="admin-input" autocomplete="off">
+            </label>
+            <label class="tracker-field">
+                <span>Status</span>
+                <select name="stage" class="admin-input">{{ status_options(current_stage) }}</select>
+            </label>
+            <label class="tracker-field">
+                <span>Applied on</span>
+                <input type="date" name="applied_date" value="{{ app.applied_date[:10] if app and app.applied_date else today }}" class="admin-input">
+            </label>
+        </div>
+    </section>
 
-    <fieldset class="milestone-fieldset">
-        <legend>Milestones reached</legend>
-        <label><input type="checkbox" name="reached_assessment" {% if app and app.reached_assessment %}checked{% endif %}> Got assessment</label>
-        <label><input type="checkbox" name="reached_interview" {% if app and app.reached_interview %}checked{% endif %}> Got interview</label>
-    </fieldset>
+    <details class="dialog-disclosure" {% if app %}open{% endif %}>
+        <summary><span><i class="fas fa-sliders" aria-hidden="true"></i> Dates, progress and extra details</span><i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i></summary>
+        <div class="dialog-disclosure-body">
+            <div class="tracker-form-grid">
+                {% if app %}
+                <label class="tracker-field">
+                    <span>Status updated on</span>
+                    <input type="date" name="stage_updated_at" value="{{ app.stage_updated_at[:10] if app.stage_updated_at else today }}" class="admin-input">
+                </label>
+                {% endif %}
+                <label class="tracker-field">
+                    <span>Application source</span>
+                    <input maxlength="120" name="source" value="{{ (app.source or '') if app else '' }}" class="admin-input" placeholder="LinkedIn, referral, company site">
+                </label>
+                <label class="tracker-field">
+                    <span>Follow-up date</span>
+                    <input type="date" name="follow_up_date" value="{{ app.follow_up_date[:10] if app and app.follow_up_date else '' }}" class="admin-input">
+                </label>
+                <label class="tracker-field tracker-field-wide">
+                    <span>Follow-up note</span>
+                    <input name="reminder_note" value="{{ (app.reminder_note or '') if app else '' }}" class="admin-input" placeholder="Email the recruiter or prepare interview questions">
+                </label>
+                <label class="tracker-field">
+                    <span>Assessment date</span>
+                    <input type="datetime-local" name="assessment_date" value="{{ app.assessment_date|replace(' ', 'T') if app and app.assessment_date else '' }}" class="admin-input">
+                </label>
+                <label class="tracker-field">
+                    <span>Interview date</span>
+                    <input type="datetime-local" name="interview_date" value="{{ app.interview_date|replace(' ', 'T') if app and app.interview_date else '' }}" class="admin-input">
+                </label>
+                <label class="tracker-field">
+                    <span>Application deadline</span>
+                    <input type="datetime-local" name="application_deadline" value="{{ app.application_deadline|replace(' ', 'T') if app and app.application_deadline else '' }}" class="admin-input">
+                </label>
+                <label class="tracker-field">
+                    <span>Location</span>
+                    <input maxlength="180" name="location" value="{{ (app.location or '') if app else '' }}" class="admin-input" placeholder="London or Remote">
+                </label>
+                <label class="tracker-field">
+                    <span>Salary</span>
+                    <input maxlength="120" name="salary" value="{{ (app.salary or '') if app else '' }}" class="admin-input" placeholder="£35,000">
+                </label>
+                <label class="tracker-field tracker-field-wide">
+                    <span>Badges</span>
+                    <input maxlength="500" name="badges" value="{{ (app.badges or '') if app else '' }}" class="admin-input" placeholder="Remote, Priority, Referral">
+                    <small>Separate badges with commas.</small>
+                </label>
+            </div>
 
-    <div class="tracker-form-grid">
-        <label class="tracker-field tracker-field-wide">
-            <span>Job advert URL</span>
-            <input type="url" name="job_url" value="{{ (app.job_url or '') if app else '' }}" class="admin-input" placeholder="https://">
-        </label>
-        <label class="tracker-field">
-            <span>Company website</span>
-            <input type="url" name="company_url" value="{{ (app.company_url or '') if app else '' }}" class="admin-input" placeholder="https://">
-        </label>
-        <label class="tracker-field">
-            <span>LinkedIn</span>
-            <input type="url" name="linkedin_url" value="{{ (app.linkedin_url or '') if app else '' }}" class="admin-input" placeholder="https://">
-        </label>
-        <label class="tracker-field tracker-field-wide">
-            <span>Company address</span>
-            <input name="company_address" value="{{ (app.company_address or '') if app else '' }}" class="admin-input" placeholder="Office address or map URL">
-        </label>
-        <label class="tracker-field tracker-field-wide">
-            <span>Notes</span>
-            <textarea name="notes" rows="5" class="admin-input" placeholder="Contacts, preparation notes, feedback, next steps...">{{ (app.notes or '') if app else '' }}</textarea>
-        </label>
-    </div>
+            <fieldset class="milestone-fieldset">
+                <legend>Milestones reached</legend>
+                <label><input type="checkbox" name="reached_assessment" {% if app and app.reached_assessment %}checked{% endif %}> Got assessment</label>
+                <label><input type="checkbox" name="reached_interview" {% if app and app.reached_interview %}checked{% endif %}> Got interview</label>
+                <label><input type="checkbox" name="reminder_done" {% if app and app.reminder_done %}checked{% endif %}> Follow-up complete</label>
+            </fieldset>
+
+            <div class="tracker-form-grid">
+                <label class="tracker-field tracker-field-wide">
+                    <span>Job advert URL</span>
+                    <input type="url" maxlength="500" name="job_url" value="{{ (app.job_url or '') if app else '' }}" class="admin-input" placeholder="https://">
+                </label>
+                <label class="tracker-field">
+                    <span>Company website</span>
+                    <input type="url" maxlength="500" name="company_url" value="{{ (app.company_url or '') if app else '' }}" class="admin-input" placeholder="https://">
+                </label>
+                <label class="tracker-field">
+                    <span>LinkedIn</span>
+                    <input type="url" maxlength="500" name="linkedin_url" value="{{ (app.linkedin_url or '') if app else '' }}" class="admin-input" placeholder="https://">
+                </label>
+                <label class="tracker-field tracker-field-wide">
+                    <span>Company address</span>
+                    <input maxlength="500" name="company_address" value="{{ (app.company_address or '') if app else '' }}" class="admin-input" placeholder="Office address or map URL">
+                </label>
+                <label class="tracker-field tracker-field-wide">
+                    <span>Notes</span>
+                    <textarea name="notes" rows="4" class="admin-input" placeholder="Contacts, preparation notes, feedback, next steps...">{{ (app.notes or '') if app else '' }}</textarea>
+                </label>
+            </div>
+        </div>
+    </details>
 {% endmacro %}
 
 {% block content %}
@@ -99,6 +125,12 @@
         </button>
     </header>
 
+    <nav class="tracker-view-tabs" aria-label="Application views">
+        <a href="{{ url_for('admin.job_tracker') }}" aria-current="page"><i class="fas fa-list" aria-hidden="true"></i> List</a>
+        <a href="{{ url_for('admin.job_kanban') }}"><i class="fas fa-table-columns" aria-hidden="true"></i> Kanban</a>
+        <a href="{{ url_for('admin.job_calendar') }}"><i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar</a>
+    </nav>
+
     <section class="metrics-grid" aria-label="Application funnel">
         <div class="metric"><span class="metric-label">Applications</span><strong class="metric-value">{{ tracker_metrics.submitted }}</strong><span class="metric-note">submitted</span></div>
         <div class="metric"><span class="metric-label">Companies</span><strong class="metric-value">{{ tracker_metrics.companies }}</strong><span class="metric-note">{{ tracker_metrics.repeat_companies }} applied to more than once</span></div>
@@ -108,6 +140,57 @@
         <div class="metric"><span class="metric-label">Rejection rate</span><strong class="metric-value">{{ tracker_metrics.rejection_rate }}%</strong><span class="metric-note">{{ tracker_metrics.rejections }} rejected</span></div>
     </section>
 
+    <nav class="tracker-section-tabs" aria-label="Job tracker sections" role="tablist">
+        <button
+            type="button"
+            id="tracker-tab-applications"
+            class="tracker-section-tab active"
+            role="tab"
+            aria-selected="true"
+            aria-controls="tracker-panel-applications"
+            data-tracker-section="applications"
+        >
+            <i class="fas fa-briefcase" aria-hidden="true"></i>
+            Applications
+            <span>{{ applications|length }}</span>
+        </button>
+        <button
+            type="button"
+            id="tracker-tab-insights"
+            class="tracker-section-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tracker-panel-insights"
+            data-tracker-section="insights"
+            tabindex="-1"
+        >
+            <i class="fas fa-chart-line" aria-hidden="true"></i>
+            Insights
+        </button>
+        <button
+            type="button"
+            id="tracker-tab-companies"
+            class="tracker-section-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tracker-panel-companies"
+            data-tracker-section="companies"
+            tabindex="-1"
+        >
+            <i class="fas fa-building" aria-hidden="true"></i>
+            Companies
+            <span>{{ tracker_metrics.companies }}</span>
+        </button>
+    </nav>
+
+    <div
+        id="tracker-panel-insights"
+        class="tracker-section-panel"
+        role="tabpanel"
+        aria-labelledby="tracker-tab-insights"
+        data-tracker-panel="insights"
+        hidden
+    >
     <section class="tracker-insights" aria-label="Job search analytics">
         <article class="insight-panel">
             <header class="insight-header">
@@ -118,6 +201,7 @@
                 <div><dt>Active applications</dt><dd>{{ tracker_metrics.active }}</dd></div>
                 <div><dt>Applied in last 30 days</dt><dd>{{ tracker_metrics.recent_applications }}</dd></div>
                 <div><dt>Waiting over 14 days</dt><dd>{{ tracker_metrics.waiting_over_14_days }}</dd></div>
+                <div><dt>Follow-ups due</dt><dd>{{ tracker_metrics.reminders_due }}</dd></div>
                 <div><dt>Repeat applications</dt><dd>{{ tracker_metrics.repeat_applications }}</dd></div>
                 <div><dt>Jobs secured</dt><dd>{{ tracker_metrics.jobs }}</dd></div>
             </dl>
@@ -140,88 +224,144 @@
         </article>
     </section>
 
+    <section class="tracker-analysis-grid" aria-label="Application performance">
+        <article class="analysis-panel">
+            <header class="insight-header">
+                <div><span class="tracker-eyebrow">Activity</span><h2>Applications by week</h2></div>
+                <span class="analysis-rate">{{ tracker_metrics.response_rate }}% response rate</span>
+            </header>
+            <div class="weekly-chart" aria-label="Applications submitted during the last eight weeks">
+                {% for week in tracker_metrics.weekly_activity %}
+                <div class="weekly-bar">
+                    <strong>{{ week.count }}</strong>
+                    <progress value="{{ week.count }}" max="{{ tracker_metrics.weekly_max or 1 }}" aria-label="{{ week.count }} applications week of {{ week.label }}"></progress>
+                    <span>{{ week.label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </article>
+        <article class="analysis-panel">
+            <header class="insight-header">
+                <div><span class="tracker-eyebrow">Sources</span><h2>Where interviews come from</h2></div>
+                <span class="analysis-rate">{{ tracker_metrics.assessment_to_interview_rate }}% assessment conversion</span>
+            </header>
+            <div class="source-performance">
+                {% for source in tracker_metrics.source_stats %}
+                <div><strong>{{ source.source }}</strong><span>{{ source.applications }} applied</span><span>{{ source.interviews }} interviews</span><b>{{ source.interview_rate }}%</b></div>
+                {% else %}
+                <p>No source data recorded yet.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+    </div>
+
+    <div
+        id="tracker-panel-companies"
+        class="tracker-section-panel"
+        role="tabpanel"
+        aria-labelledby="tracker-tab-companies"
+        data-tracker-panel="companies"
+        hidden
+    >
     <section class="company-analysis" aria-labelledby="company-analysis-title">
         <header class="company-analysis-header">
             <div><span class="tracker-eyebrow">Companies</span><h2 id="company-analysis-title">Application history</h2></div>
             <span>{{ tracker_metrics.companies }} total</span>
         </header>
         {% if tracker_metrics.company_stats %}
-        <div class="company-table-wrap">
-            <table class="company-table">
-                <thead><tr><th>Company</th><th>Applied</th><th>Assessments</th><th>Interviews</th><th>Rejected</th><th>Interview rate</th><th>Latest status</th></tr></thead>
-                <tbody>
-                    {% for company in tracker_metrics.company_stats %}
-                    <tr>
-                        <th scope="row">{{ company.company }}</th>
-                        <td><strong>{{ company.applications }}</strong>{% if company.applications > 1 %}<span class="table-note">repeat company</span>{% endif %}</td>
-                        <td>{{ company.assessments }}</td>
-                        <td>{{ company.interviews }}</td>
-                        <td>{{ company.rejections }}</td>
-                        <td>{{ company.interview_rate }}%</td>
-                        <td><span class="status-badge status-{{ 'saved' if company.latest_stage == 'Not Applied Yet' else company.latest_stage|lower|replace(' ', '-') }}">{{ company.latest_stage }}</span></td>
-                    </tr>
+        <div class="company-directory">
+            {% for company in tracker_metrics.company_stats %}
+            <details class="company-row" data-company="{{ company.company|lower }}" data-company-search="{{ company.search_text }}">
+                <summary>
+                    <span class="company-identity">
+                        <strong>{{ company.company }}</strong>
+                        <small>{{ company.applications }} {{ 'application' if company.applications == 1 else 'applications' }}</small>
+                    </span>
+                    <span class="company-summary-stat company-summary-response">
+                        <small>Average response</small>
+                        <strong>{% if company.average_wait is not none %}{{ company.average_wait }} days{% else %}Not recorded{% endif %}</strong>
+                    </span>
+                    <span class="company-summary-stat company-summary-interviews">
+                        <small>Interviews</small>
+                        <strong>{{ company.interviews }} <span>{{ company.interview_rate }}%</span></strong>
+                    </span>
+                    <span class="company-summary-stat company-summary-rejections">
+                        <small>Rejected</small>
+                        <strong>{{ company.rejections }} <span>{{ company.rejection_rate }}%</span></strong>
+                    </span>
+                    <span class="company-summary-stat company-summary-waiting">
+                        <small>Still waiting</small>
+                        <strong>{{ company.waiting }}</strong>
+                    </span>
+                    <i class="fas fa-chevron-down company-chevron" aria-hidden="true"></i>
+                </summary>
+                <div class="company-jobs">
+                    <div class="company-jobs-toolbar">
+                        <span>Roles at {{ company.company }}</span>
+                        <a href="{{ url_for('admin.job_company', company_name=company.company) }}">Open company profile <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                    </div>
+                    <div class="company-job-head"><span>Role</span><span>Applied</span><span>Wait</span><span>Status</span></div>
+                    {% for job in company.jobs %}
+                    {% set job_status_class = 'saved' if job.stage == 'Not Applied Yet' else job.stage|lower|replace(' ', '-') %}
+                    <div class="company-job-row">
+                        <span class="company-job-role"><strong>{{ job.role }}</strong>{% if job.location %}<small>{{ job.location }}</small>{% endif %}</span>
+                        <span>{% if job.applied_date %}<span class="format-date">{{ job.applied_date }}</span>{% else %}—{% endif %}</span>
+                        <span>{% if job.wait_days is not none %}<small>{{ job.wait_label }}</small>{{ job.wait_days }} days{% else %}—{% endif %}</span>
+                        <span><span class="status-badge status-{{ job_status_class }}">{{ job.stage }}</span></span>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            </details>
+            {% endfor %}
         </div>
         {% else %}
         <p class="company-analysis-empty">Company performance will appear after the first application.</p>
         {% endif %}
     </section>
+    </div>
 
+    <div
+        id="tracker-panel-applications"
+        class="tracker-section-panel tracker-application-panel"
+        role="tabpanel"
+        aria-labelledby="tracker-tab-applications"
+        data-tracker-panel="applications"
+    >
     <div class="tracker-toolbar">
         <label class="tracker-search">
             <span class="sr-only">Search applications by company or job role</span>
             <i class="fas fa-search" aria-hidden="true"></i>
             <input id="job-search" type="search" class="admin-input" placeholder="Search company or job role" autocomplete="off">
         </label>
-        <span id="tracker-result-count" class="tracker-result-count">{{ applications|length }} applications</span>
+        <span id="tracker-result-count" class="tracker-result-count" aria-live="polite">{{ applications|length }} applications</span>
     </div>
 
-    <nav class="status-tabs" aria-label="Filter applications by status">
-        <button type="button" class="status-tab active" data-filter="all">All <span>{{ applications|length }}</span></button>
+    <details class="tracker-filter-panel">
+        <summary><span><i class="fas fa-filter" aria-hidden="true"></i> Advanced filters</span><i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i></summary>
+        <div class="tracker-filter-grid">
+            <label><span>Company</span><select id="filter-company" class="admin-input"><option value="">All companies</option>{% for company in filter_options.companies %}<option value="{{ company|lower }}">{{ company }}</option>{% endfor %}</select></label>
+            <label><span>Source</span><select id="filter-source" class="admin-input"><option value="">All sources</option>{% for source in filter_options.sources %}<option value="{{ source|lower }}">{{ source }}</option>{% endfor %}</select></label>
+            <label><span>Location</span><select id="filter-location" class="admin-input"><option value="">All locations</option>{% for location in filter_options.locations %}<option value="{{ location|lower }}">{{ location }}</option>{% endfor %}</select></label>
+            <label><span>Badge</span><select id="filter-badge" class="admin-input"><option value="">All badges</option>{% for badge in filter_options.badges %}<option value="{{ badge|lower }}">{{ badge }}</option>{% endfor %}</select></label>
+            <label><span>Applied after</span><input id="filter-date-from" type="date" class="admin-input"></label>
+            <label><span>Applied before</span><input id="filter-date-to" type="date" class="admin-input"></label>
+            <button type="button" class="tracker-secondary tracker-clear-filters" data-clear-filters><i class="fas fa-rotate-left" aria-hidden="true"></i> Clear filters</button>
+        </div>
+    </details>
+
+    <nav class="status-tabs" aria-label="Filter applications by status" role="tablist">
+        <button type="button" class="status-tab active" data-filter="all" role="tab" aria-selected="true">All <span>{{ applications|length }}</span></button>
         {% for value, label in job_stages %}
-        <button type="button" class="status-tab" data-filter="{{ value }}">{{ label }} <span>{{ stage_counts.get(value, 0) }}</span></button>
+        <button type="button" class="status-tab" data-filter="{{ value }}" role="tab" aria-selected="false">{{ label }} <span>{{ stage_counts.get(value, 0) }}</span></button>
         {% endfor %}
     </nav>
 
     <div id="applications-list" class="applications-list">
         {% for app in applications %}
-        {% set status_class = 'saved' if app.stage == 'Not Applied Yet' else app.stage|lower|replace(' ', '-') %}
-        <article class="application-card" data-stage="{{ app.stage }}" data-search="{{ (app.company ~ ' ' ~ app.role)|lower }}">
-            <div>
-                <h2 class="application-role">{{ app.role }}</h2>
-                <p class="application-company">{{ app.company }}{% if app.location %} · {{ app.location }}{% endif %}{% if app.salary %} · {{ app.salary }}{% endif %}</p>
-                <div class="badge-row">
-                    <span class="status-badge status-{{ status_class }}">{{ 'Saved' if app.stage == 'Not Applied Yet' else app.stage }}</span>
-                    {% set company_application_count = tracker_metrics.company_counts_by_id.get(app.id, 1) %}
-                    {% if company_application_count > 1 %}<span class="custom-badge">Applied here {{ company_application_count }} times</span>{% endif %}
-                    {% if app.reached_assessment %}<span class="custom-badge">Assessment reached</span>{% endif %}
-                    {% if app.reached_interview %}<span class="custom-badge">Interview reached</span>{% endif %}
-                    {% for badge in (app.badges or '').split(',') %}{% if badge.strip() %}<span class="custom-badge">{{ badge.strip() }}</span>{% endif %}{% endfor %}
-                </div>
-            </div>
-            <div class="application-dates">
-                {% if app.applied_date %}<span>Applied <strong class="format-date">{{ app.applied_date }}</strong></span>{% endif %}
-                {% if app.assessment_date %}<span>Assessment <strong class="format-date">{{ app.assessment_date }}</strong></span>{% endif %}
-                {% if app.interview_date %}<span>Interview <strong class="format-date">{{ app.interview_date }}</strong></span>{% endif %}
-                {% if app.application_deadline and app.stage == 'Not Applied Yet' %}<span>Deadline <strong class="format-date">{{ app.application_deadline }}</strong></span>{% endif %}
-            </div>
-            <div>
-                <p class="application-notes">{{ app.notes or 'No notes added.' }}</p>
-                {% if app.job_url %}<a href="{{ app.job_url }}" target="_blank" rel="noopener noreferrer" class="tracker-eyebrow application-link">Open job advert <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>{% endif %}
-            </div>
-            <div class="application-actions">
-                <form method="post" action="{{ url_for('admin.update_job_stage_ajax', app_id=app.id) }}" class="quick-status">
-                    <select name="stage" class="admin-input" aria-label="Update status for {{ app.role }}">{{ status_options(app.stage) }}</select>
-                    <button class="icon-button" title="Save status" aria-label="Save status"><i class="fas fa-check" aria-hidden="true"></i></button>
-                </form>
-                <button type="button" class="icon-button" title="Edit application" aria-label="Edit {{ app.role }}" data-dialog-open="edit-job-{{ app.id }}"><i class="fas fa-pen" aria-hidden="true"></i></button>
-                <form method="post" action="{{ url_for('admin.delete_job_application', app_id=app.id) }}" data-confirm="Delete this application?">
-                    <button class="icon-button icon-button-danger" title="Delete application" aria-label="Delete {{ app.role }}"><i class="fas fa-trash" aria-hidden="true"></i></button>
-                </form>
-            </div>
-        </article>
+        {% set application_timeline = application_timelines.get(app.id, []) %}
+        {% set reminder = reminder_states.get(app.id) %}
+        {% include "admin/partials/job_application_card.html" %}
         {% endfor %}
     </div>
 
@@ -229,26 +369,23 @@
         <i class="fas fa-briefcase" aria-hidden="true"></i>
         <p>No applications match this view.</p>
     </div>
+    </div>
 </div>
 
 <dialog id="add-job-dialog" class="tracker-dialog">
-    <form method="post" action="{{ url_for('admin.add_job_application') }}">
+    <form method="post" action="{{ url_for('admin.add_job_application') }}" class="tracker-dialog-form">
         <header class="dialog-header"><h2>Add application</h2><button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button></header>
-        <div class="dialog-body">
-            {{ application_fields() }}
-            <div class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Add application</button></div>
-        </div>
+        <div class="dialog-body">{{ application_fields() }}</div>
+        <footer class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Add application</button></footer>
     </form>
 </dialog>
 
 {% for app in applications %}
 <dialog id="edit-job-{{ app.id }}" class="tracker-dialog">
-    <form method="post" action="{{ url_for('admin.edit_job_application', app_id=app.id) }}">
+    <form method="post" action="{{ url_for('admin.edit_job_application', app_id=app.id) }}" class="tracker-dialog-form">
         <header class="dialog-header"><h2>Edit application</h2><button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button></header>
-        <div class="dialog-body">
-            {{ application_fields(app) }}
-            <div class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Save changes</button></div>
-        </div>
+        <div class="dialog-body">{{ application_fields(app) }}</div>
+        <footer class="dialog-actions"><button type="button" class="tracker-secondary" data-dialog-close>Cancel</button><button class="tracker-primary">Save changes</button></footer>
     </form>
 </dialog>
 {% endfor %}

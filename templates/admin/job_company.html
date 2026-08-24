@@ -1,0 +1,145 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="tracker-shell company-profile">
+    <a href="{{ url_for('admin.job_tracker') }}" class="admin-back-link">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> Applications
+    </a>
+    <header class="tracker-header company-profile-header">
+        <div>
+            <span class="tracker-eyebrow">Company profile</span>
+            <h1 class="tracker-title">{{ company }}</h1>
+            <p class="tracker-subtitle">Every role, contact, outcome, document, and follow-up recorded for this company.</p>
+        </div>
+    </header>
+
+    <section class="metrics-grid company-metrics" aria-label="Company application metrics">
+        <div class="metric"><span class="metric-label">Applications</span><strong class="metric-value">{{ company_metrics.submitted }}</strong></div>
+        <div class="metric"><span class="metric-label">Assessments</span><strong class="metric-value">{{ company_metrics.assessments }}</strong><span class="metric-note">{{ company_metrics.assessment_rate }}%</span></div>
+        <div class="metric"><span class="metric-label">Interviews</span><strong class="metric-value">{{ company_metrics.interviews }}</strong><span class="metric-note">{{ company_metrics.interview_rate }}%</span></div>
+        <div class="metric"><span class="metric-label">Offers</span><strong class="metric-value">{{ company_metrics.offers }}</strong></div>
+        <div class="metric"><span class="metric-label">Rejected</span><strong class="metric-value">{{ company_metrics.rejections }}</strong><span class="metric-note">{{ company_metrics.rejection_rate }}%</span></div>
+        <div class="metric">
+            <span class="metric-label">Average response</span>
+            <strong class="metric-value">{% if company_metrics.company_stats and company_metrics.company_stats[0].average_wait is not none %}{{ company_metrics.company_stats[0].average_wait }}d{% else %}—{% endif %}</strong>
+        </div>
+    </section>
+
+    <div class="company-profile-grid">
+        <section class="company-profile-main">
+            <header class="section-heading">
+                <div><span class="tracker-eyebrow">Roles</span><h2>Application history</h2></div>
+                <span>{{ applications|length }} total</span>
+            </header>
+            <div class="company-application-list">
+                {% for app in applications %}
+                {% set reminder = reminder_states.get(app.id) %}
+                <details id="application-{{ app.id }}" class="company-application" {% if loop.first %}open{% endif %}>
+                    <summary class="company-application-summary">
+                        <div>
+                            <h3>{{ app.role }}</h3>
+                            <p>{% if app.applied_date %}Applied <span class="format-date">{{ app.applied_date }}</span>{% endif %}{% if app.location %} · {{ app.location }}{% endif %}</p>
+                        </div>
+                        <span class="company-application-summary-status">
+                            <span class="status-badge status-{{ 'saved' if app.stage == 'Not Applied Yet' else app.stage|lower|replace(' ', '-') }}">{{ app.stage }}</span>
+                            <i class="fas fa-chevron-down disclosure-chevron" aria-hidden="true"></i>
+                        </span>
+                    </summary>
+
+                    {% if reminder and reminder.state != 'none' %}
+                    <div class="company-reminder-row">
+                        <span class="reminder-badge reminder-{{ reminder.state }}">{{ reminder.label }}</span>
+                        {% if app.follow_up_date %}
+                        <form method="post" action="{{ url_for('admin.update_job_reminder', app_id=app.id) }}">
+                            <input type="hidden" name="company" value="{{ company }}">
+                            <input type="hidden" name="reminder_done" value="{{ 'false' if app.reminder_done else 'true' }}">
+                            <button class="tracker-secondary">{{ 'Reopen' if app.reminder_done else 'Complete' }}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <ol class="job-timeline company-timeline">
+                        {% for event in timelines.get(app.id, []) %}
+                        <li class="timeline-{{ event.type }}">
+                            <span class="timeline-marker" aria-hidden="true"></span>
+                            <div>
+                                <time class="format-date">{{ event.date }}</time>
+                                <strong>{{ event.label }}</strong>
+                                {% if event.note %}<p>{{ event.note }}</p>{% endif %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ol>
+
+                    <div class="company-application-tools">
+                        <div>
+                            <h4>Files</h4>
+                            <ul class="attachment-list">
+                                {% for attachment in app.attachments %}
+                                <li>
+                                    <a href="{{ url_for('admin.download_job_attachment', attachment_id=attachment.id) }}"><i class="fas fa-paperclip" aria-hidden="true"></i> {{ attachment.original_name }}</a>
+                                    <form method="post" action="{{ url_for('admin.delete_job_attachment', attachment_id=attachment.id) }}" data-confirm="Delete this attachment?">
+                                        <input type="hidden" name="company" value="{{ company }}">
+                                        <button class="icon-button icon-button-danger" aria-label="Delete {{ attachment.original_name }}"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                                    </form>
+                                </li>
+                                {% else %}
+                                <li class="workspace-meta">No files attached.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <form method="post" action="{{ url_for('admin.add_job_attachment', app_id=app.id) }}" enctype="multipart/form-data" class="attachment-form">
+                            <input type="hidden" name="company" value="{{ company }}">
+                            <label><span class="sr-only">Choose attachment for {{ app.role }}</span><input required type="file" name="attachment" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"></label>
+                            <input maxlength="255" name="note" class="admin-input" placeholder="File note">
+                            <button class="tracker-secondary"><i class="fas fa-upload" aria-hidden="true"></i> Upload</button>
+                        </form>
+                    </div>
+                </details>
+                {% endfor %}
+            </div>
+        </section>
+
+        <aside class="company-contacts">
+            <header class="section-heading">
+                <div><span class="tracker-eyebrow">People</span><h2>Contacts</h2></div>
+                <span>{{ contacts|length }}</span>
+            </header>
+            <div class="contact-list">
+                {% for contact in contacts %}
+                <article>
+                    <header>
+                        <div><h3>{{ contact.name }}</h3><p>{{ contact.title or 'Contact' }}</p></div>
+                        <form method="post" action="{{ url_for('admin.delete_job_contact', contact_id=contact.id) }}" data-confirm="Delete this contact?">
+                            <button class="icon-button icon-button-danger" aria-label="Delete {{ contact.name }}"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                        </form>
+                    </header>
+                    {% if contact.email %}<a href="mailto:{{ contact.email }}">{{ contact.email }}</a>{% endif %}
+                    {% if contact.phone %}<a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>{% endif %}
+                    {% if contact.linkedin_url %}<a href="{{ contact.linkedin_url }}" target="_blank" rel="noopener noreferrer">LinkedIn</a>{% endif %}
+                    {% if contact.notes %}<p>{{ contact.notes }}</p>{% endif %}
+                </article>
+                {% else %}
+                <p class="workspace-meta">No contacts recorded.</p>
+                {% endfor %}
+            </div>
+            <form method="post" action="{{ url_for('admin.add_job_contact') }}" class="contact-form">
+                <input type="hidden" name="company" value="{{ company }}">
+                <h3>Add contact</h3>
+                <label><span>Name</span><input required maxlength="180" name="name" class="admin-input"></label>
+                <label><span>Role or title</span><input maxlength="180" name="title" class="admin-input"></label>
+                <label><span>Email</span><input type="email" maxlength="255" name="email" class="admin-input"></label>
+                <label><span>Phone</span><input type="tel" maxlength="80" name="phone" class="admin-input"></label>
+                <label><span>LinkedIn</span><input type="url" maxlength="500" name="linkedin_url" class="admin-input"></label>
+                <label><span>Notes</span><textarea name="notes" rows="3" class="admin-input"></textarea></label>
+                <button class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add contact</button>
+            </form>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/job_tracker.js" defer></script>
+{% endblock %}

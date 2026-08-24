@@ -5,24 +5,27 @@ import os
 import re
 import unicodedata
 
-from flask import Blueprint, abort, make_response
+from flask import Blueprint, abort, make_response, request
 
 from portfolio_data import get_portfolio, get_profile
 
 cv_bp = Blueprint("cv", __name__)
-DEFAULT_PDF_SECTIONS = ("experience", "skills", "education", "certificates")
+PDF_SECTIONS = ("experience", "projects", "skills", "education", "certificates")
+DEFAULT_PDF_SECTIONS = tuple(section for section in PDF_SECTIONS if section != "projects")
 
 
 @cv_bp.route("/get-cv")
 def get_cv():
-    from flask import request
-    
     theme_color = request.args.get("theme", "burgundy").strip()
     sections_param = request.args.get("sections")
     header_subtitle = request.args.get("subtitle", "").strip()
 
     if sections_param:
-        include_sections = [s.strip() for s in sections_param.split(",") if s.strip()]
+        include_sections = [
+            section
+            for value in sections_param.split(",")
+            if (section := value.strip()) in PDF_SECTIONS
+        ]
     else:
         include_sections = list(DEFAULT_PDF_SECTIONS)
 
@@ -31,17 +34,18 @@ def get_cv():
         "header_subtitle": header_subtitle,
     }
 
+    profile = get_profile()
+    portfolio = get_portfolio()
     try:
         pdf_bytes = build_cv_pdf(
-            profile=get_profile(),
-            portfolio=get_portfolio(),
+            profile=profile,
+            portfolio=portfolio,
             include_sections=include_sections,
             resume_options=resume_options,
         )
     except ImportError:
         abort(500, description="Install reportlab from requirements.txt to generate PDFs.")
 
-    profile = get_profile()
     filename = f"{_safe_filename(profile.full_name)}_CV.pdf"
     response = make_response(pdf_bytes)
     response.headers["Content-Type"] = "application/pdf"

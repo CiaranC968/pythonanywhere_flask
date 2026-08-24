@@ -136,3 +136,54 @@ class JobApplication(db.Model):
     linkedin_url = db.Column(db.String(500), nullable=True)
     salary = db.Column(db.String(120), nullable=True)
     location = db.Column(db.String(180), nullable=True)
+    source = db.Column(db.String(120), nullable=False, default="")
+    follow_up_date = db.Column(db.String(80), nullable=True)
+    reminder_note = db.Column(db.Text, nullable=False, default="")
+    reminder_done = db.Column(db.Boolean, nullable=False, default=False)
+
+    status_events = db.relationship(
+        "JobStatusEvent",
+        backref="application",
+        cascade="all, delete-orphan",
+        lazy=True,
+        order_by="JobStatusEvent.changed_at.asc()",
+    )
+    attachments = db.relationship(
+        "JobAttachment",
+        backref="application",
+        cascade="all, delete-orphan",
+        lazy=True,
+        order_by="JobAttachment.uploaded_at.desc()",
+    )
+
+
+class JobStatusEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(db.Integer, db.ForeignKey("job_application.id"), nullable=False, index=True)
+    from_stage = db.Column(db.String(80), nullable=False, default="")
+    to_stage = db.Column(db.String(80), nullable=False)
+    changed_at = db.Column(db.String(80), nullable=False)
+    note = db.Column(db.Text, nullable=False, default="")
+
+
+class JobContact(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(db.Integer, db.ForeignKey("job_application.id"), nullable=True, index=True)
+    company = db.Column(db.String(180), nullable=False)
+    name = db.Column(db.String(180), nullable=False)
+    title = db.Column(db.String(180), nullable=False, default="")
+    email = db.Column(db.String(255), nullable=False, default="")
+    phone = db.Column(db.String(80), nullable=False, default="")
+    linkedin_url = db.Column(db.String(500), nullable=False, default="")
+    notes = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.String(80), nullable=False)
+
+
+class JobAttachment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(db.Integer, db.ForeignKey("job_application.id"), nullable=False, index=True)
+    original_name = db.Column(db.String(255), nullable=False)
+    stored_name = db.Column(db.String(255), nullable=False)
+    file_type = db.Column(db.String(80), nullable=False, default="")
+    note = db.Column(db.String(255), nullable=False, default="")
+    uploaded_at = db.Column(db.String(80), nullable=False)

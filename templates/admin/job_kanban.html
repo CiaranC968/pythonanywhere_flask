@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="tracker-shell">
+    <header class="tracker-header">
+        <div>
+            <span class="tracker-eyebrow">Job search</span>
+            <h1 class="tracker-title">Application pipeline</h1>
+            <p class="tracker-subtitle">Applications grouped by current stage.</p>
+        </div>
+        <a href="{{ url_for('admin.job_tracker') }}" class="tracker-secondary">
+            <i class="fas fa-list" aria-hidden="true"></i> List view
+        </a>
+    </header>
+
+    <nav class="tracker-view-tabs" aria-label="Application views">
+        <a href="{{ url_for('admin.job_tracker') }}">
+            <i class="fas fa-list" aria-hidden="true"></i> List
+        </a>
+        <a href="{{ url_for('admin.job_kanban') }}" aria-current="page">
+            <i class="fas fa-table-columns" aria-hidden="true"></i> Kanban
+        </a>
+        <a href="{{ url_for('admin.job_calendar') }}">
+            <i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar
+        </a>
+    </nav>
+
+    <p id="kanban-announcer" class="kanban-feedback" aria-live="polite" hidden></p>
+
+    <div class="kanban-board" data-kanban-board>
+        {% for value, label in job_stages %}
+        <section
+            class="kanban-column"
+            data-kanban-stage="{{ value }}"
+            aria-labelledby="kanban-{{ loop.index }}"
+        >
+            <header>
+                <h2 id="kanban-{{ loop.index }}">{{ label }}</h2>
+                <span data-kanban-count>{{ stage_counts.get(value, 0) }}</span>
+            </header>
+
+            <div class="kanban-items" data-kanban-items>
+                {% for app in applications if app.stage == value %}
+                <article
+                    class="kanban-card"
+                    draggable="true"
+                    data-application-id="{{ app.id }}"
+                    data-role="{{ app.role }}"
+                >
+                    <a href="{{ url_for('admin.job_company', company_name=app.company) }}">
+                        {{ app.company }}
+                    </a>
+                    <h3>{{ app.role }}</h3>
+                    {% if app.applied_date %}
+                    <time class="format-date">{{ app.applied_date }}</time>
+                    {% endif %}
+                    <label>
+                        <span class="sr-only">Status for {{ app.role }}</span>
+                        <select class="admin-input" data-kanban-select>
+                            {% for stage_value, stage_label in job_stages %}
+                            <option value="{{ stage_value }}" {% if stage_value == app.stage %}selected{% endif %}>
+                                {{ stage_label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/job_tracker.js" defer></script>
+{% endblock %}

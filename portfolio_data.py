@@ -4,6 +4,8 @@ import re
 from datetime import date
 from types import SimpleNamespace
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from extensions import db
 from models import Certificate, Education, Experience, Profile, Project, Skill
 from utils import load_json_file
@@ -122,7 +124,7 @@ def visible_items(model):
             .order_by(model.sort_order.asc(), model.id.asc())
             .all()
         )
-    except Exception:
+    except SQLAlchemyError:
         _rollback_session()
         section = MODEL_SECTIONS.get(model, model.__name__)
         logger.exception("Database query failed for %s; using JSON fallback.", section)
@@ -161,7 +163,7 @@ def get_section_item(section, item_id, visible_only=True):
         item = query.filter_by(id=item_id).first()
         if item:
             return item
-    except Exception:
+    except SQLAlchemyError:
         _rollback_session()
         logger.exception("Database lookup failed for %s/%s; using JSON fallback.", section, item_id)
 
@@ -196,7 +198,7 @@ def _filter_model_fields(model, record):
 def _rollback_session():
     try:
         db.session.rollback()
-    except Exception:
+    except SQLAlchemyError:
         logger.exception("Could not roll back the database session.")
 
 
