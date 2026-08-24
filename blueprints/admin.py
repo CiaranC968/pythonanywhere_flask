@@ -409,7 +409,7 @@ def cv_builder():
 @admin_bp.route("/cv-builder/pdf", methods=["POST"])
 @admin_required
 def cv_builder_pdf():
-    from blueprints.cv import build_cv_pdf, _safe_filename
+    from blueprints.cv import CVLayoutError, build_cv_pdf, _safe_filename
 
     dependency_error = _pdf_dependency_error("admin.cv_builder")
     if dependency_error:
@@ -425,12 +425,16 @@ def cv_builder_pdf():
         flash("Choose at least one section and one item before generating the PDF.", "error")
         return redirect(url_for("admin.cv_builder"))
 
-    pdf_bytes = build_cv_pdf(
-        profile=get_profile(),
-        portfolio=selected_portfolio,
-        include_sections=include_sections,
-        resume_options=resume_options,
-    )
+    try:
+        pdf_bytes = build_cv_pdf(
+            profile=get_profile(),
+            portfolio=selected_portfolio,
+            include_sections=include_sections,
+            resume_options=resume_options,
+        )
+    except CVLayoutError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("admin.cv_builder"))
 
     profile = get_profile()
     filename = _document_filename(profile.full_name, "cv", resume_options, _safe_filename)

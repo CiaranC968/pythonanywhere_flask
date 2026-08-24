@@ -272,6 +272,8 @@ DOCUMENT_SECTION_CONFIG = [
         "key": "projects",
         "label": "Projects",
         "description": "Selected portfolio projects, descriptions, and technology tags.",
+        "max_items": 2,
+        "overflow_warning": "Choose up to 2 projects so every selected detail remains readable on one A4 page.",
     },
     {
         "key": "skills",
