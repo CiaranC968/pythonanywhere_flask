@@ -341,25 +341,56 @@
         });
     }
 
-    let quickDialogOpener = null;
+    let adminDialogOpener = null;
 
-    function openQuickDialog(opener) {
-        const dialog = document.getElementById(opener.dataset.quickDialogOpen);
-        if (!dialog) return;
-
-        quickDialogOpener = opener;
-        if (typeof dialog.showModal === 'function') dialog.showModal();
-        else dialog.setAttribute('open', 'open');
-        window.requestAnimationFrame(() => dialog.querySelector('[autofocus], input:not([type="hidden"]), select, textarea')?.focus());
+    function activateTemplateEditor(index) {
+        const selectedIndex = String(index);
+        document.querySelectorAll('[data-template-editor-tab]').forEach((tab) => {
+            tab.setAttribute('aria-selected', String(tab.dataset.templateEditorTab === selectedIndex));
+        });
+        document.querySelectorAll('[data-template-editor-panel]').forEach((panel) => {
+            panel.hidden = panel.dataset.templateEditorPanel !== selectedIndex;
+        });
     }
 
-    function closeQuickDialog(dialog) {
+    function showAdminDialog(dialog, opener, templateIndex) {
+        if (!dialog) return;
+
+        if (templateIndex !== undefined) activateTemplateEditor(templateIndex);
+        adminDialogOpener = opener;
+        if (!dialog.open) {
+            if (typeof dialog.showModal === 'function') dialog.showModal();
+            else dialog.setAttribute('open', 'open');
+        }
+        window.requestAnimationFrame(() => {
+            const focusRoot = dialog.querySelector('[data-template-editor-panel]:not([hidden])') || dialog;
+            focusRoot.querySelector('[autofocus], input:not([type="hidden"]), select, textarea')?.focus();
+        });
+    }
+
+    function openAdminDialog(opener) {
+        showAdminDialog(
+            document.getElementById(opener.dataset.adminDialogOpen),
+            opener,
+            opener.dataset.templateIndex
+        );
+    }
+
+    function closeAdminDialog(dialog) {
         if (!dialog) return;
         if (typeof dialog.close === 'function') dialog.close();
         else {
             dialog.removeAttribute('open');
-            quickDialogOpener?.focus();
+            adminDialogOpener?.focus();
         }
+    }
+
+    function openLinkedTemplateEditor() {
+        const match = window.location.hash.match(/^#template-editor-(\d+)$/);
+        if (!match) return;
+        const opener = document.querySelector(`[data-admin-dialog-open="template-library-dialog"][data-template-index="${match[1]}"]`)
+            || document.querySelector('[data-admin-dialog-open="template-library-dialog"]');
+        showAdminDialog(document.getElementById('template-library-dialog'), opener, match[1]);
     }
 
     function updateStyleChoice(targetName, value) {
@@ -556,15 +587,21 @@
                 return;
             }
 
-            const quickDialogButton = event.target.closest('[data-quick-dialog-open]');
-            if (quickDialogButton) {
-                openQuickDialog(quickDialogButton);
+            const adminDialogButton = event.target.closest('[data-admin-dialog-open]');
+            if (adminDialogButton) {
+                openAdminDialog(adminDialogButton);
                 return;
             }
 
-            const quickDialogClose = event.target.closest('[data-quick-dialog-close]');
-            if (quickDialogClose) {
-                closeQuickDialog(quickDialogClose.closest('dialog'));
+            const adminDialogClose = event.target.closest('[data-admin-dialog-close]');
+            if (adminDialogClose) {
+                closeAdminDialog(adminDialogClose.closest('dialog'));
+                return;
+            }
+
+            const templateEditorTab = event.target.closest('[data-template-editor-tab]');
+            if (templateEditorTab) {
+                activateTemplateEditor(templateEditorTab.dataset.templateEditorTab);
                 return;
             }
 
@@ -602,6 +639,18 @@
             if (item) syncDocumentLimit(item.dataset.documentItem);
         });
 
+        document.addEventListener('keydown', (event) => {
+            const activeTab = event.target.closest('[data-template-editor-tab]');
+            if (!activeTab || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+
+            const tabs = [...document.querySelectorAll('[data-template-editor-tab]')];
+            const direction = event.key === 'ArrowRight' ? 1 : -1;
+            const nextTab = tabs[(tabs.indexOf(activeTab) + direction + tabs.length) % tabs.length];
+            event.preventDefault();
+            activateTemplateEditor(nextTab.dataset.templateEditorTab);
+            nextTab.focus();
+        });
+
         document.addEventListener('submit', (event) => {
             const form = event.target.closest('[data-confirm]');
             if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
@@ -616,12 +665,14 @@
         document.querySelectorAll('[data-style-input]').forEach((input) => {
             updateStyleChoice(input.id, input.value);
         });
-        document.querySelectorAll('.dashboard-quick-dialog').forEach((dialog) => {
+        document.querySelectorAll('.admin-dialog').forEach((dialog) => {
             dialog.addEventListener('click', (event) => {
-                if (event.target === dialog) closeQuickDialog(dialog);
+                if (event.target === dialog) closeAdminDialog(dialog);
             });
-            dialog.addEventListener('close', () => quickDialogOpener?.focus());
+            dialog.addEventListener('close', () => adminDialogOpener?.focus());
         });
+        window.addEventListener('hashchange', openLinkedTemplateEditor);
+        openLinkedTemplateEditor();
 
         document.querySelectorAll('[data-admin-form]').forEach((form) => {
             form.addEventListener('submit', () => {

@@ -96,7 +96,7 @@
                     <span><strong>Application tracker</strong><small>{{ counts.job_applications }} jobs recorded</small></span>
                     <i class="fas fa-chevron-right" aria-hidden="true"></i>
                 </a>
-                <a href="{{ url_for('admin.resume_builder') }}#template-library">
+                <a href="{{ url_for('admin.resume_builder') }}#template-editor-0">
                     <span class="dashboard-tool-icon"><i class="fas fa-file-lines" aria-hidden="true"></i></span>
                     <span><strong>Resume templates</strong><small>Build and edit letter wording</small></span>
                     <i class="fas fa-chevron-right" aria-hidden="true"></i>
@@ -117,12 +117,12 @@
                 </div>
             </header>
             <div class="dashboard-quick-actions">
-                <button type="button" class="dashboard-quick-action" data-quick-dialog-open="quick-experience-dialog">
+                <button type="button" class="dashboard-quick-action" data-admin-dialog-open="quick-experience-dialog">
                     <span class="dashboard-tool-icon"><i class="fas fa-briefcase" aria-hidden="true"></i></span>
                     <span><strong>Experience</strong><small>Add a company and role</small></span>
                     <i class="fas fa-plus" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="dashboard-quick-action" data-quick-dialog-open="quick-skill-dialog">
+                <button type="button" class="dashboard-quick-action" data-admin-dialog-open="quick-skill-dialog">
                     <span class="dashboard-tool-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
                     <span><strong>Skill group</strong><small>Add skills and technologies</small></span>
                     <i class="fas fa-plus" aria-hidden="true"></i>
@@ -132,11 +132,11 @@
     </aside>
 </div>
 
-<dialog id="quick-experience-dialog" class="tracker-dialog dashboard-quick-dialog" aria-labelledby="quick-experience-title">
+<dialog id="quick-experience-dialog" class="tracker-dialog admin-dialog dashboard-quick-dialog" aria-labelledby="quick-experience-title">
     <form method="post" action="{{ url_for('admin.quick_add') }}" class="tracker-dialog-form">
         <header class="dialog-header">
             <h2 id="quick-experience-title">Add experience</h2>
-            <button type="button" class="icon-button" data-quick-dialog-close aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+            <button type="button" class="icon-button" data-admin-dialog-close aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
         </header>
         <div class="dialog-body">
             <div class="tracker-form-grid">
@@ -159,17 +159,17 @@
             </details>
         </div>
         <footer class="dialog-actions">
-            <button type="button" class="tracker-secondary" data-quick-dialog-close>Cancel</button>
+            <button type="button" class="tracker-secondary" data-admin-dialog-close>Cancel</button>
             <button type="submit" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add experience</button>
         </footer>
     </form>
 </dialog>
 
-<dialog id="quick-skill-dialog" class="tracker-dialog dashboard-quick-dialog dashboard-quick-dialog-small" aria-labelledby="quick-skill-title">
+<dialog id="quick-skill-dialog" class="tracker-dialog admin-dialog dashboard-quick-dialog dashboard-quick-dialog-small" aria-labelledby="quick-skill-title">
     <form method="post" action="{{ url_for('admin.quick_add') }}" class="tracker-dialog-form">
         <header class="dialog-header">
             <h2 id="quick-skill-title">Add skill group</h2>
-            <button type="button" class="icon-button" data-quick-dialog-close aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+            <button type="button" class="icon-button" data-admin-dialog-close aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
         </header>
         <div class="dialog-body">
             <div class="tracker-form-grid">
@@ -189,7 +189,7 @@
             </details>
         </div>
         <footer class="dialog-actions">
-            <button type="button" class="tracker-secondary" data-quick-dialog-close>Cancel</button>
+            <button type="button" class="tracker-secondary" data-admin-dialog-close>Cancel</button>
             <button type="submit" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add skill group</button>
         </footer>
     </form>

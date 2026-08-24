@@ -8,7 +8,7 @@
         <p class="tracker-subtitle">Choose one of two templates, add the job details, and include only the extra points that matter.</p>
     </div>
     <div class="dashboard-header-actions">
-        <a href="#template-library" class="tracker-secondary"><i class="fas fa-pen" aria-hidden="true"></i> Edit templates</a>
+        <button type="button" class="tracker-secondary" data-admin-dialog-open="template-library-dialog" data-template-index="0"><i class="fas fa-pen" aria-hidden="true"></i> Edit templates</button>
         <a href="{{ url_for('admin.cv_builder') }}" class="tracker-secondary">Open CV builder</a>
     </div>
 </header>
@@ -34,9 +34,9 @@
                             <span>Template {{ loop.index }}{% if preset.is_custom %} · Edited{% endif %}</span>
                             <strong>{{ preset.label }}</strong>
                         </button>
-                        <a href="#template-editor-{{ loop.index0 }}" class="icon-button template-edit-link" title="Edit {{ preset.label }}" aria-label="Edit {{ preset.label }}">
+                        <button type="button" class="icon-button template-edit-link" data-admin-dialog-open="template-library-dialog" data-template-index="{{ loop.index0 }}" title="Edit {{ preset.label }}" aria-label="Edit {{ preset.label }}">
                             <i class="fas fa-pen" aria-hidden="true"></i>
-                        </a>
+                        </button>
                     </div>
                     {% endfor %}
                 </div>
@@ -103,29 +103,31 @@
     </footer>
 </form>
 
-<section id="template-library" class="template-library" aria-labelledby="template-library-heading">
-    <header class="template-library-heading">
-        <div>
-            <span class="tracker-eyebrow">Reusable wording</span>
+<dialog id="template-library-dialog" class="tracker-dialog admin-dialog resume-template-dialog" aria-labelledby="template-library-heading">
+    <div class="resume-template-dialog-shell">
+        <header class="dialog-header">
             <h2 id="template-library-heading">Edit templates</h2>
-            <p>Changes are saved to the two choices at the top of the builder.</p>
+            <button type="button" class="icon-button" data-admin-dialog-close aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+        </header>
+        <div class="resume-template-dialog-tabs" role="tablist" aria-label="Resume templates">
+            {% for preset in resume_presets %}
+            <button type="button" id="template-editor-tab-{{ loop.index0 }}" class="resume-template-dialog-tab" data-template-editor-tab="{{ loop.index0 }}" aria-controls="template-editor-{{ loop.index0 }}" aria-selected="{{ 'true' if loop.first else 'false' }}" role="tab">
+                <span>Template {{ loop.index }}</span>
+                <strong>{{ preset.label }}</strong>
+            </button>
+            {% endfor %}
         </div>
-        <span class="template-library-count">{{ resume_presets|length }} templates</span>
-    </header>
-
-    <div class="preset-editor-list">
         {% for preset in resume_presets %}
         {% set preset_index = loop.index0 %}
-        <details id="template-editor-{{ preset_index }}" class="preset-editor">
-            <summary>
-                <span class="preset-editor-number">{{ loop.index }}</span>
-                <span class="preset-editor-summary">
-                    <strong>{{ preset.label }}</strong>
-                    <small>{{ preset.target_role }} · {{ 'Custom wording' if preset.is_custom else 'Default wording' }}</small>
-                </span>
-                <i class="fas fa-chevron-down preset-editor-chevron" aria-hidden="true"></i>
-            </summary>
-            <form method="post" action="{{ url_for('admin.edit_resume_preset', preset_index=preset_index) }}" class="preset-editor-form">
+        <form id="template-editor-{{ preset_index }}" method="post" action="{{ url_for('admin.edit_resume_preset', preset_index=preset_index) }}" class="resume-template-dialog-form" data-template-editor-panel="{{ preset_index }}" role="tabpanel" aria-labelledby="template-editor-tab-{{ preset_index }}"{% if not loop.first %} hidden{% endif %}>
+            <div class="dialog-body">
+                <div class="resume-template-editor-heading">
+                    <div>
+                        <strong>{{ preset.label }}</strong>
+                        <small>{{ preset.target_role }} · {{ 'Custom wording' if preset.is_custom else 'Default wording' }}</small>
+                    </div>
+                    {% if preset.is_custom %}<span>Edited</span>{% endif %}
+                </div>
                 <div class="preset-editor-grid">
                     <label class="tracker-field">
                         <span>Template name</span>
@@ -156,20 +158,25 @@
                         <textarea name="resume_conclusion" class="admin-input" rows="5" required>{{ preset.resume_conclusion }}</textarea>
                     </label>
                 </div>
-                <footer class="preset-editor-actions">
-                    {% if preset.is_custom %}
-                    <button type="submit" form="reset-preset-{{ preset_index }}" class="tracker-secondary"><i class="fas fa-rotate-left" aria-hidden="true"></i> Reset default</button>
-                    {% endif %}
-                    <button type="submit" class="tracker-primary"><i class="fas fa-floppy-disk" aria-hidden="true"></i> Save template</button>
-                </footer>
-            </form>
-            {% if preset.is_custom %}
-            <form id="reset-preset-{{ preset_index }}" method="post" action="{{ url_for('admin.reset_resume_preset', preset_index=preset_index) }}"></form>
-            {% endif %}
-        </details>
+            </div>
+            <footer class="dialog-actions">
+                {% if preset.is_custom %}
+                <button type="submit" form="reset-preset-{{ preset_index }}" class="tracker-secondary"><i class="fas fa-rotate-left" aria-hidden="true"></i> Reset default</button>
+                {% endif %}
+                <span class="dialog-action-spacer"></span>
+                <button type="button" class="tracker-secondary" data-admin-dialog-close>Cancel</button>
+                <button type="submit" class="tracker-primary"><i class="fas fa-floppy-disk" aria-hidden="true"></i> Save template</button>
+            </footer>
+        </form>
         {% endfor %}
     </div>
-</section>
+</dialog>
+
+{% for preset in resume_presets %}
+    {% if preset.is_custom %}
+    <form id="reset-preset-{{ loop.index0 }}" method="post" action="{{ url_for('admin.reset_resume_preset', preset_index=loop.index0) }}"></form>
+    {% endif %}
+{% endfor %}
 
 <script type="application/json" id="resume-builder-data">{{ resume_presets|tojson }}</script>
 {% endblock %}
