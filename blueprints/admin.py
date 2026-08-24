@@ -1083,13 +1083,13 @@ def _ensure_status_history(applications, now):
 def _job_application_timeline(application):
     events = []
 
-    def add_event(date_value, label, event_type, note=""):
+    def add_event(date_value, display_label, event_type, note=""):
         if not date_value:
             return
         events.append(
             {
                 "date": date_value,
-                "label": label,
+                "label": display_label,
                 "type": event_type,
                 "note": note,
             }
@@ -1105,18 +1105,18 @@ def _job_application_timeline(application):
     for status_event in application.status_events:
         if not status_event.from_stage and status_event.to_stage == "Applied":
             continue
-        label = f"Status changed to {status_event.to_stage}"
-        add_event(status_event.changed_at, label, "status", status_event.note)
+        status_label = f"Status changed to {status_event.to_stage}"
+        add_event(status_event.changed_at, status_label, "status", status_event.note)
 
     for attachment in application.attachments:
         add_event(attachment.uploaded_at, f"Attached {attachment.original_name}", "attachment", attachment.note)
 
     unique_events = {}
-    for event in events:
-        unique_events[(event["date"], event["label"])] = event
+    for timeline_event in events:
+        unique_events[(timeline_event["date"], timeline_event["label"])] = timeline_event
     return sorted(
         unique_events.values(),
-        key=lambda event: _parse_job_datetime(event["date"]) or datetime.max,
+        key=lambda item: _parse_job_datetime(item["date"]) or datetime.max,
     )
 
 
@@ -1142,9 +1142,24 @@ def _job_reminder_state(application, now):
 def _job_filter_options(applications):
     badges = {
         badge.strip()
-        for application in applications
-        for badge in (application.badges or "").split(",")
+        for job_application in applications
+        for badge in (job_application.badges or "").split(",")
         if badge.strip()
+    }
+    return {
+        "companies": sorted(
+            {app.company for app in applications},
+            key=lambda value: str(value).casefold(),
+        ),
+        "sources": sorted(
+            {app.source for app in applications if app.source},
+            key=lambda value: str(value).casefold(),
+        ),
+        "locations": sorted(
+            {app.location for app in applications if app.location},
+            key=lambda value: str(value).casefold(),
+        ),
+        "badges": sorted(badges, key=lambda value: str(value).casefold()),
     }
 
 
@@ -1179,12 +1194,6 @@ def _render_job_application_card(application, message="", is_error=False):
         stage_update_message=message,
         stage_update_error=is_error,
     )
-    return {
-        "companies": sorted({app.company for app in applications}, key=str.casefold),
-        "sources": sorted({app.source for app in applications if app.source}, key=str.casefold),
-        "locations": sorted({app.location for app in applications if app.location}, key=str.casefold),
-        "badges": sorted(badges, key=str.casefold),
-    }
 
 
 @admin_bp.route("/job-tracker")
@@ -1383,7 +1392,7 @@ def delete_job_contact(contact_id: int):
 @admin_bp.route("/job-tracker/<int:app_id>/attachments", methods=["POST"])
 @admin_required
 def add_job_attachment(app_id: int):
-    application = _job_application_or_404(app_id)
+    _job_application_or_404(app_id)
     upload = request.files.get("attachment")
     if not upload or not upload.filename:
         flash("Choose a file to attach.", "error")
@@ -1516,15 +1525,15 @@ def _job_attachment_root(app_id):
 def _job_calendar_data(applications, month_start):
     events_by_date = {}
 
-    def add_event(date_value, application, label, event_type):
+    def add_event(date_value, job_application, display_label, event_type):
         parsed = _parse_job_datetime(date_value)
         if not parsed:
             return
         event_date = parsed.date().isoformat()
         events_by_date.setdefault(event_date, []).append(
             {
-                "application": application,
-                "label": label,
+                "application": job_application,
+                "label": display_label,
                 "type": event_type,
             }
         )
