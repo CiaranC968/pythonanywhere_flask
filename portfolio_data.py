@@ -199,7 +199,9 @@ def _rollback_session():
     try:
         db.session.rollback()
     except SQLAlchemyError:
-        logger.exception("Could not roll back the database session.")
+        logger.exception("Could not roll back the database session. Removing session and disposing engine.")
+        db.session.remove()
+        db.engine.dispose()
 
 
 def _json_items(section):

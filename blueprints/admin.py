@@ -1126,7 +1126,11 @@ def _commit_database_changes():
     try:
         db.session.commit()
     except SQLAlchemyError as exc:
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except SQLAlchemyError:
+            db.session.remove()
+            db.engine.dispose()
         current_app.logger.exception("Could not save admin changes: %s", exc)
         return False
     return True

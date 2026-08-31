@@ -27,6 +27,11 @@ def health():
             'certificates': Certificate.query.filter_by(is_visible=True).count(),
         }
     except SQLAlchemyError:
+        try:
+            db.session.remove()
+            db.engine.dispose()
+        except SQLAlchemyError:
+            pass
         return {
             'status': 'degraded',
             'timestamp': datetime.now().isoformat(),

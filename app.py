@@ -127,6 +127,15 @@ def create_app():
     )
 
     db.init_app(application)
+    
+    @application.teardown_appcontext
+    def cleanup_session(exception=None):
+        try:
+            db.session.remove()
+        except SQLAlchemyError:
+            application.logger.warning("Database connection lost during request; disposing engine.")
+            db.engine.dispose()
+
     with application.app_context():
         try:
             db.create_all()
