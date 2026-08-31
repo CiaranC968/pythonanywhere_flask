@@ -138,18 +138,20 @@
 {%- endmacro %}
 
 {% block content %}
-<div class="mb-8">
-    <a href="{{ url_for('admin.dashboard') if config.singleton else url_for('admin.list_items', section=section) }}" class="text-sm font-bold text-brand-accent">Back</a>
-    <h1 class="mt-2 text-4xl font-black text-warm-900">{{ action }} {{ config.label }}</h1>
-    <p class="mt-2 text-warm-500">Edit the public portfolio with uploads, repeatable content rows, icon picking, and style settings kept out of the main writing flow.</p>
-</div>
+<header class="admin-page-header">
+    <div>
+        <a href="{{ url_for('admin.dashboard') if config.singleton else url_for('admin.list_items', section=section) }}" class="admin-back-link"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back</a>
+        <h1 class="admin-page-title">{{ action }} {{ config.label }}</h1>
+        <p class="admin-page-subtitle">Edit portfolio content, media and presentation settings.</p>
+    </div>
+</header>
 
-<form method="post" enctype="multipart/form-data" class="space-y-6" data-admin-form data-icon-choices='{{ icon_choices | tojson }}'>
+<form method="post" enctype="multipart/form-data" class="admin-editor-form" data-admin-form data-icon-choices='{{ icon_choices | tojson }}'>
     {% if section == 'profile' %}
         <!-- Custom visual layout for Profile to avoid messy tabs -->
         <div class="space-y-8">
             <!-- Card 1: Core Personal Information -->
-            <div class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+            <div class="admin-editor-card rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
                 <div class="mb-5 border-b border-warm-100 pb-3 flex items-center justify-between">
                     <div>
                         <h2 class="text-xl font-black text-warm-900 flex items-center gap-2">
@@ -170,7 +172,7 @@
             </div>
 
             <!-- Card 2: Branding, Avatars & Visuals -->
-            <div class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+            <div class="admin-editor-card rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
                 <div class="mb-5 border-b border-warm-100 pb-3">
                     <h2 class="text-xl font-black text-warm-900 flex items-center gap-2">
                         <i class="fas fa-image text-brand-accent"></i> Visuals & Branding
@@ -184,7 +186,7 @@
             </div>
 
             <!-- Card 3: Contact Details & Social Links -->
-            <div class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
+            <div class="admin-editor-card rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
                 <div class="mb-5 border-b border-warm-100 pb-3">
                     <h2 class="text-xl font-black text-warm-900 flex items-center gap-2">
                         <i class="fas fa-id-card text-brand-accent"></i> Contact & Social Presence
@@ -215,7 +217,7 @@
         </div>
     {% else %}
         <!-- Generic tabs layout (unchanged) -->
-        <div class="sticky top-0 z-20 -mx-1 overflow-x-auto border-b border-warm-200 bg-warm-100/95 px-1 py-3 backdrop-blur" role="tablist" aria-label="{{ config.label }} editor sections">
+        <div class="admin-editor-tabs sticky top-0 z-20 -mx-1 overflow-x-auto border-b border-warm-200 bg-warm-100/95 px-1 py-3 backdrop-blur" role="tablist" aria-label="{{ config.label }} editor sections">
             <div class="flex gap-2">
                 {% for group_label, names in field_groups %}
                 <button type="button"
@@ -230,7 +232,7 @@
         </div>
 
         {% for group_label, names in field_groups %}
-        <section class="admin-tab-panel rounded-2xl border border-warm-200 bg-white p-6 shadow-sm {% if not loop.first %}hidden{% endif %}"
+        <section class="admin-editor-card admin-tab-panel rounded-2xl border border-warm-200 bg-white p-6 shadow-sm {% if not loop.first %}hidden{% endif %}"
                  data-form-panel="{{ loop.index0 }}"
                  role="tabpanel">
             <div class="mb-5 flex items-center justify-between gap-4 border-b border-warm-100 pb-4">
@@ -264,20 +266,20 @@
         {% endfor %}
     {% endif %}
 
-    <div class="flex flex-wrap gap-3 rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-        <button class="rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">{{ action }}</button>
-        <a href="{{ url_for('admin.dashboard') if config.singleton else url_for('admin.list_items', section=section) }}" class="rounded-xl border border-warm-200 px-6 py-3 font-black text-warm-700 hover:border-brand-accent">Cancel</a>
-    </div>
+    <footer class="admin-action-bar">
+        <a href="{{ url_for('admin.dashboard') if config.singleton else url_for('admin.list_items', section=section) }}" class="tracker-secondary">Cancel</a>
+        <button class="tracker-primary"><i class="fas fa-floppy-disk" aria-hidden="true"></i> {{ action }}</button>
+    </footer>
 </form>
 
-<dialog id="iconPicker" class="w-[min(42rem,calc(100vw-2rem))] rounded-2xl border border-warm-200 bg-white p-0 shadow-2xl">
-    <div class="border-b border-warm-100 p-4">
-        <div class="flex items-center justify-between gap-4">
-            <h2 class="text-lg font-black text-warm-900">Choose Icon</h2>
-            <button type="button" class="rounded-lg border border-warm-200 px-3 py-1.5 text-sm font-black text-warm-700" data-close-icon-picker>Close</button>
-        </div>
-        <input type="search" class="admin-input mt-4" placeholder="Search icons..." data-icon-search>
+<dialog id="iconPicker" class="tracker-dialog icon-picker-dialog">
+    <header class="dialog-header">
+        <h2>Choose icon</h2>
+        <button type="button" class="icon-button" data-close-icon-picker aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+    </header>
+    <div class="icon-picker-search">
+        <input type="search" class="admin-input" placeholder="Search icons..." data-icon-search>
     </div>
-    <div class="grid max-h-[60vh] grid-cols-4 gap-3 overflow-y-auto p-4 sm:grid-cols-5 md:grid-cols-6" data-icon-list></div>
+    <div class="icon-picker-grid" data-icon-list></div>
 </dialog>
 {% endblock %}

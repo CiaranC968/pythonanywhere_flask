@@ -1,77 +1,77 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+<header class="admin-page-header">
     <div>
-        <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent">Back to dashboard</a>
-        <h1 class="mt-3 text-4xl font-black text-warm-900">Custom CV Builder</h1>
-        <p class="mt-2 max-w-2xl text-warm-500">Choose the strongest content for a concise one-page A4 CV.</p>
+        <a href="{{ url_for('admin.dashboard') }}" class="admin-back-link"><i class="fas fa-arrow-left" aria-hidden="true"></i> Overview</a>
+        <h1 class="admin-page-title">Custom CV builder</h1>
+        <p class="admin-page-subtitle">Choose the strongest content for a concise one-page A4 CV.</p>
     </div>
-    <a href="{{ url_for('admin.resume_builder') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-800 hover:border-brand-accent">Resume Letter Builder</a>
-</div>
+    <a href="{{ url_for('admin.resume_builder') }}" class="tracker-secondary"><i class="fas fa-file-lines" aria-hidden="true"></i> Resume builder</a>
+</header>
 
-<form method="post" action="{{ url_for('admin.cv_builder_pdf') }}" class="space-y-6" data-document-builder>
-    <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-        <div class="grid gap-4 lg:grid-cols-2">
-            <label class="block">
-                <span class="mb-2 block text-xs font-black uppercase tracking-wider text-warm-500">CV subtitle</span>
+<form method="post" action="{{ url_for('admin.cv_builder_pdf') }}" class="document-builder" data-document-builder>
+    <section class="admin-panel document-builder-intro">
+        <div class="tracker-form-grid">
+            <label class="tracker-field">
+                <span>CV subtitle</span>
                 <input name="header_subtitle" value="{{ profile.cv_subtitle or profile.title }}" class="admin-input">
             </label>
         </div>
     </section>
 
-    <div class="grid gap-5 lg:grid-cols-2">
+    <div class="document-section-grid">
         {% for section in document_sections %}
-        <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-            <div class="flex items-start gap-3">
-                <input id="section-{{ section.key }}" name="sections" value="{{ section.key }}" type="checkbox" checked class="mt-1 h-5 w-5 rounded border-warm-300 text-brand-accent" data-document-section-master="{{ section.key }}">
-                <label for="section-{{ section.key }}" class="grow">
-                    <span class="block text-xl font-black text-warm-900">{{ section.label }}</span>
-                    <span class="mt-1 block text-sm text-warm-500">{{ section.description }}</span>
+        <section class="document-section">
+            <div class="document-section-heading">
+                <input id="section-{{ section.key }}" name="sections" value="{{ section.key }}" type="checkbox" checked data-document-section-master="{{ section.key }}">
+                <label for="section-{{ section.key }}">
+                    <strong>{{ section.label }}</strong>
+                    <small>{{ section.description }}</small>
                 </label>
-                <span class="rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-black text-brand-dark">
+                <span class="document-section-limit">
                     {% if section.max_items %}Max {{ section.max_items }}{% else %}{{ section.item_list|length }}{% endif %}
                 </span>
             </div>
 
-            <div class="mt-5 space-y-3" data-document-section-items="{{ section.key }}" data-document-max="{{ section.max_items or '' }}">
+            <div class="document-option-list" data-document-section-items="{{ section.key }}" data-document-max="{{ section.max_items or '' }}">
                 {% if section.item_list %}
                     {% for item in section.item_list %}
-                    <label class="flex gap-3 rounded-xl border border-warm-200 bg-warm-50 p-3 transition hover:border-brand-accent">
-                        <input name="{{ section.key }}_ids" value="{{ item.id }}" type="checkbox" {% if item.checked %}checked{% endif %} class="mt-1 h-4 w-4 rounded border-warm-300 text-brand-accent" data-document-item="{{ section.key }}">
+                    <label class="document-option">
+                        <input name="{{ section.key }}_ids" value="{{ item.id }}" type="checkbox" {% if item.checked %}checked{% endif %} data-document-item="{{ section.key }}">
                         <span>
-                            <span class="block text-sm font-black text-warm-900">{{ item.label }}</span>
+                            <strong>{{ item.label }}</strong>
                             {% if item.meta %}
-                            <span class="mt-1 block text-xs font-bold text-warm-500">{{ item.meta }}</span>
+                            <small>{{ item.meta }}</small>
                             {% endif %}
                         </span>
                     </label>
                     {% endfor %}
-                    <div class="space-y-2">
-                        <p class="text-xs font-black text-warm-500" data-document-count-message="{{ section.key }}">0 selected</p>
+                    <div class="document-section-feedback">
+                        <p data-document-count-message="{{ section.key }}">0 selected</p>
                         {% if section.max_items %}
-                        <p class="text-xs font-bold text-warm-500" data-document-limit-message="{{ section.key }}">Choose up to {{ section.max_items }}.</p>
+                        <p data-document-limit-message="{{ section.key }}">Choose up to {{ section.max_items }}.</p>
                         {% endif %}
                         {% if section.warning %}
-                        <p class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-800">{{ section.warning }}</p>
+                        <p class="document-section-warning"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> {{ section.warning }}</p>
                         {% endif %}
                     </div>
                 {% else %}
-                    <p class="rounded-xl border border-warm-200 bg-warm-50 p-4 text-sm font-bold text-warm-500">No visible items in this section.</p>
+                    <p class="document-section-empty">No visible items in this section.</p>
                 {% endif %}
             </div>
         </section>
         {% endfor %}
     </div>
 
-    <div class="sticky bottom-4 flex flex-col gap-3 rounded-2xl border border-warm-200 bg-white/95 p-4 shadow-xl backdrop-blur sm:flex-row sm:justify-end">
-        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-warm-200 px-6 py-3 font-black text-warm-700 hover:border-brand-accent">Cancel</a>
-        <button type="submit" name="disposition" value="inline" formtarget="_blank" class="inline-flex items-center justify-center rounded-xl border border-warm-200 bg-white px-6 py-3 font-black text-warm-800 hover:border-brand-accent">
-            Preview Custom CV
+    <footer class="admin-action-bar">
+        <a href="{{ url_for('admin.dashboard') }}" class="tracker-secondary">Cancel</a>
+        <button type="submit" name="disposition" value="inline" formtarget="_blank" class="tracker-secondary">
+            <i class="fas fa-eye" aria-hidden="true"></i> Preview CV
         </button>
-        <button type="submit" name="disposition" value="attachment" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">
-            Download Custom CV
+        <button type="submit" name="disposition" value="attachment" class="tracker-primary">
+            <i class="fas fa-download" aria-hidden="true"></i> Download CV
         </button>
-    </div>
+    </footer>
 </form>
 {% endblock %}

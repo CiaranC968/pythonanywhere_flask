@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% block head %}{% endblock %}
 </head>
-<body class="min-h-dvh">
+<body class="admin-body min-h-dvh" data-admin-page="{{ request.endpoint or 'admin' }}">
+    <a class="admin-skip-link" href="#admin-content">Skip to content</a>
     <header class="admin-header">
         <div class="admin-header-inner">
             <a href="{{ url_for('admin.dashboard') }}" class="admin-brand">
@@ -19,10 +20,10 @@
             </a>
             {% if session.get('admin_authenticated') %}
             <nav class="admin-nav" aria-label="Admin navigation">
-                <a href="{{ url_for('admin.dashboard') }}" {% if request.endpoint == 'admin.dashboard' %}aria-current="page"{% endif %}>Overview</a>
-                <a href="{{ url_for('admin.job_tracker') }}" {% if request.endpoint and request.endpoint in ['admin.job_tracker', 'admin.job_kanban', 'admin.job_calendar', 'admin.job_company'] %}aria-current="page"{% endif %}>Applications</a>
-                <a href="{{ url_for('admin.resume_builder') }}" {% if request.endpoint == 'admin.resume_builder' %}aria-current="page"{% endif %}>Resume builder</a>
-                <a href="{{ url_for('admin.cv_builder') }}" {% if request.endpoint == 'admin.cv_builder' %}aria-current="page"{% endif %}>CV builder</a>
+                <a href="{{ url_for('admin.dashboard') }}" {% if request.endpoint == 'admin.dashboard' %}aria-current="page"{% endif %}><i class="fas fa-border-all" aria-hidden="true"></i><span>Overview</span></a>
+                <a href="{{ url_for('admin.job_tracker') }}" {% if request.endpoint and request.endpoint in ['admin.job_tracker', 'admin.job_kanban', 'admin.job_calendar', 'admin.job_company'] %}aria-current="page"{% endif %}><i class="fas fa-table-columns" aria-hidden="true"></i><span>Applications</span></a>
+                <a href="{{ url_for('admin.resume_builder') }}" {% if request.endpoint == 'admin.resume_builder' %}aria-current="page"{% endif %}><i class="fas fa-file-lines" aria-hidden="true"></i><span>Resume builder</span></a>
+                <a href="{{ url_for('admin.cv_builder') }}" {% if request.endpoint == 'admin.cv_builder' %}aria-current="page"{% endif %}><i class="fas fa-file-circle-check" aria-hidden="true"></i><span>CV builder</span></a>
             </nav>
             <form method="post" action="{{ url_for('admin.logout') }}">
                 <button class="icon-button" title="Log out" aria-label="Log out"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i></button>
@@ -31,13 +32,14 @@
         </div>
     </header>
 
-    <main class="admin-main">
+    <main id="admin-content" class="admin-main">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-            <div class="mb-6 space-y-3">
+            <div class="admin-flashes" role="status" aria-live="polite">
                 {% for category, message in messages %}
-                <div class="rounded-xl border px-4 py-3 text-sm font-semibold {% if category == 'error' %}border-red-200 bg-red-50 text-red-700{% else %}border-green-200 bg-green-50 text-green-700{% endif %}">
-                    {{ message }}
+                <div class="admin-flash admin-flash-{{ 'error' if category == 'error' else 'success' }}">
+                    <i class="fas {{ 'fa-circle-exclamation' if category == 'error' else 'fa-circle-check' }}" aria-hidden="true"></i>
+                    <span>{{ message }}</span>
                 </div>
                 {% endfor %}
             </div>

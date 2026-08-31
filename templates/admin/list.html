@@ -1,67 +1,68 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+<header class="admin-page-header">
     <div>
-        <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent">Back to dashboard</a>
-        <h1 class="mt-2 text-4xl font-black text-warm-900">{{ config.label }}</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="admin-back-link"><i class="fas fa-arrow-left" aria-hidden="true"></i> Overview</a>
+        <h1 class="admin-page-title">{{ config.label }}</h1>
     </div>
-    <a href="{{ url_for('admin.new_item', section=section) }}" class="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-black text-brand-dark shadow-sm hover:opacity-90">Add item</a>
-</div>
+    <a href="{{ url_for('admin.new_item', section=section) }}" class="tracker-primary"><i class="fas fa-plus" aria-hidden="true"></i> Add item</a>
+</header>
 
 {% if section == 'projects' %}
-<div class="mb-4 rounded-2xl border border-warm-200 bg-white p-4 text-sm font-semibold text-warm-600 shadow-sm">
+<div class="admin-inline-notice">
+    <i class="fas fa-grip-vertical" aria-hidden="true"></i>
     Drag visible projects by the handle to change the order on the public Projects section.
 </div>
 {% endif %}
 
-<div class="overflow-hidden rounded-2xl border border-warm-200 bg-white shadow-sm">
-    <table class="w-full text-left text-sm">
-        <thead class="bg-warm-50 text-xs uppercase tracking-wider text-warm-500">
+<div class="admin-table-shell">
+    <table class="admin-table">
+        <thead>
             <tr>
                 {% if section == 'projects' %}
-                <th class="w-12 px-5 py-3">Move</th>
+                <th class="admin-table-move">Move</th>
                 {% endif %}
-                <th class="px-5 py-3">Item</th>
-                <th class="px-5 py-3">Sort</th>
-                <th class="px-5 py-3">Visible</th>
-                <th class="px-5 py-3 text-right">Actions</th>
+                <th>Item</th>
+                <th>Sort</th>
+                <th>Visible</th>
+                <th class="admin-table-actions-heading">Actions</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-warm-100" {% if section == 'projects' %}data-sortable-section="projects" data-sort-url="{{ url_for('admin.reorder_projects') }}"{% endif %}>
+        <tbody {% if section == 'projects' %}data-sortable-section="projects" data-sort-url="{{ url_for('admin.reorder_projects') }}"{% endif %}>
             {% for item in items %}
-             <tr class="cursor-pointer hover:bg-warm-50/50 transition-colors {% if item.is_visible is defined and not item.is_visible %}bg-warm-50 opacity-70{% endif %}"
+             <tr class="admin-table-row{% if item.is_visible is defined and not item.is_visible %} is-archived{% endif %}"
                 data-row-href="{{ url_for('admin.edit_item', section=section, item_id=item.id) }}"
                 {% if section == 'projects' and item.is_visible %}draggable="true" data-sortable-id="{{ item.id }}"{% endif %}>
                 {% if section == 'projects' %}
-                <td class="px-5 py-4 align-middle">
+                <td>
                     {% if item.is_visible %}
-                    <button type="button" class="cursor-grab rounded-lg border border-warm-200 bg-white px-2 py-1.5 text-warm-500 hover:border-brand-accent hover:text-warm-900" data-drag-handle draggable="false" aria-label="Drag {{ item | attr(config.title_field) }}">
+                    <button type="button" class="icon-button admin-drag-handle" data-drag-handle draggable="false" aria-label="Drag {{ item | attr(config.title_field) }}">
                         <i class="fas fa-grip-vertical" aria-hidden="true"></i>
                     </button>
                     {% endif %}
                 </td>
                 {% endif %}
-                <td class="px-5 py-4">
-                    <div class="font-black text-warm-900">{{ item | attr(config.title_field) }}</div>
-                    <div class="font-mono text-xs text-warm-400">{{ item.id }}</div>
+                <td>
+                    <strong class="admin-table-item-title">{{ item | attr(config.title_field) }}</strong>
+                    <code class="admin-table-item-id">{{ item.id }}</code>
                 </td>
-                <td class="px-5 py-4" {% if section == 'projects' and item.is_visible %}data-sort-order-cell{% endif %}>{{ item.sort_order }}</td>
-                <td class="px-5 py-4">
-                    <span class="rounded-full px-3 py-1 text-xs font-black uppercase {% if item.is_visible %}bg-green-100 text-green-700{% else %}bg-warm-200 text-warm-600{% endif %}">
+                <td {% if section == 'projects' and item.is_visible %}data-sort-order-cell{% endif %}>{{ item.sort_order }}</td>
+                <td>
+                    <span class="admin-status-pill {{ 'is-visible' if item.is_visible else 'is-archived' }}">
                         {{ "Visible" if item.is_visible else "Archived" }}
                     </span>
                 </td>
-                <td class="px-5 py-4">
-                    <div class="flex justify-end gap-2">
-                        <a href="{{ url_for('admin.edit_item', section=section, item_id=item.id) }}" class="rounded-lg border border-warm-200 px-3 py-2 font-bold text-warm-700 hover:border-brand-accent">Edit</a>
+                <td>
+                    <div class="admin-row-actions">
+                        <a href="{{ url_for('admin.edit_item', section=section, item_id=item.id) }}" class="admin-row-action"><i class="fas fa-pen" aria-hidden="true"></i> Edit</a>
                         {% if item.is_visible %}
                         <form method="post" action="{{ url_for('admin.delete_item', section=section, item_id=item.id) }}" data-confirm="Archive this item?">
-                            <button class="rounded-lg border border-warm-200 px-3 py-2 font-bold text-warm-700 hover:border-brand-accent">Archive</button>
+                            <button class="admin-row-action"><i class="fas fa-box-archive" aria-hidden="true"></i> Archive</button>
                         </form>
                         {% else %}
                         <form method="post" action="{{ url_for('admin.restore_item', section=section, item_id=item.id) }}">
-                            <button class="rounded-lg border border-green-200 bg-green-50 px-3 py-2 font-bold text-green-700 hover:border-green-300">Restore</button>
+                            <button class="admin-row-action is-positive"><i class="fas fa-rotate-left" aria-hidden="true"></i> Restore</button>
                         </form>
                         {% endif %}
                     </div>
@@ -69,7 +70,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="{{ 5 if section == 'projects' else 4 }}" class="px-5 py-12 text-center text-warm-500">No items yet.</td>
+                <td colspan="{{ 5 if section == 'projects' else 4 }}" class="admin-table-empty">No items yet.</td>
             </tr>
             {% endfor %}
         </tbody>

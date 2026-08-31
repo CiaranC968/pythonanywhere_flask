@@ -1,42 +1,44 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="mb-8">
-    <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-brand-accent">Back to dashboard</a>
-    <h1 class="mt-2 text-4xl font-black text-warm-900">Diagnostics</h1>
-    <p class="mt-2 text-warm-500">Use this page after logging in on PythonAnywhere to confirm which database the app is using.</p>
-</div>
+<header class="admin-page-header">
+    <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="admin-back-link"><i class="fas fa-arrow-left" aria-hidden="true"></i> Overview</a>
+        <h1 class="admin-page-title">Diagnostics</h1>
+        <p class="admin-page-subtitle">Confirm the active database and inspect the available tables.</p>
+    </div>
+</header>
 
-<div class="space-y-5">
-    <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between gap-4">
-            <h2 class="text-xl font-black text-warm-900">Database</h2>
-            <span class="rounded-full px-3 py-1 text-xs font-black uppercase {% if database_status == 'ok' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+<div class="admin-stack">
+    <section class="admin-panel">
+        <header class="admin-section-header">
+            <h2>Database</h2>
+            <span class="admin-status-pill {{ 'is-visible' if database_status == 'ok' else 'is-error' }}">
                 {{ database_status }}
             </span>
-        </div>
-        <dl class="mt-5 space-y-3 text-sm">
+        </header>
+        <dl class="admin-data-list">
             <div>
-                <dt class="font-black text-warm-700">URI</dt>
-                <dd class="mt-1 break-all rounded-xl bg-warm-50 p-3 font-mono text-warm-600">{{ database_uri }}</dd>
+                <dt>URI</dt>
+                <dd class="admin-code-value">{{ database_uri }}</dd>
             </div>
             <div>
-                <dt class="font-black text-warm-700">Engine Options</dt>
-                <dd class="mt-1 rounded-xl bg-warm-50 p-3 font-mono text-warm-600">{{ engine_options }}</dd>
+                <dt>Engine options</dt>
+                <dd class="admin-code-value">{{ engine_options }}</dd>
             </div>
         </dl>
         {% if database_error %}
-        <pre class="mt-4 overflow-x-auto whitespace-pre-wrap rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{{ database_error }}</pre>
+        <pre class="admin-error-output">{{ database_error }}</pre>
         {% endif %}
     </section>
 
-    <section class="rounded-2xl border border-warm-200 bg-white p-6 shadow-sm">
-        <h2 class="text-xl font-black text-warm-900">Tables</h2>
-        <div class="mt-4 flex flex-wrap gap-2">
+    <section class="admin-panel">
+        <header class="admin-section-header"><h2>Tables</h2><span>{{ table_names|length }} found</span></header>
+        <div class="admin-tag-list">
             {% for table_name in table_names %}
-            <span class="rounded-full border border-warm-200 bg-warm-50 px-3 py-1 text-sm font-bold text-warm-700">{{ table_name }}</span>
+            <span>{{ table_name }}</span>
             {% else %}
-            <p class="text-sm text-warm-500">No tables found.</p>
+            <p>No tables found.</p>
             {% endfor %}
         </div>
     </section>

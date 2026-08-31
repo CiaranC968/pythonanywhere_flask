@@ -1,16 +1,14 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<section class="mx-auto max-w-md rounded-2xl border border-warm-200 bg-white p-8 shadow-sm">
-    <h1 class="mb-2 text-3xl font-black text-warm-900">Admin Login</h1>
-    <p class="mb-6 text-sm text-warm-500">Use the password from your PythonAnywhere environment variable.</p>
+<section class="admin-login-panel">
+    <span class="admin-login-icon"><i class="fas fa-lock" aria-hidden="true"></i></span>
+    <h1>Admin login</h1>
+    <p>Use the password configured for this portfolio.</p>
 
-    <form method="post" class="space-y-5">
-        <div>
-            <label for="password" class="mb-2 block text-sm font-bold text-warm-700">Password</label>
-            <input id="password" name="password" type="password" required autofocus class="w-full rounded-xl border border-warm-200 px-4 py-3 outline-none focus:border-brand-accent">
-        </div>
-        <button class="w-full rounded-xl bg-brand-accent px-5 py-3 font-black text-brand-dark shadow-sm hover:opacity-90">Log in</button>
+    <form method="post">
+        <label class="tracker-field" for="password"><span>Password</span><input id="password" name="password" type="password" required autofocus class="admin-input"></label>
+        <button class="tracker-primary"><i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i> Log in</button>
     </form>
 </section>
 {% endblock %}
