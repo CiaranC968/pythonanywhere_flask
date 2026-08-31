@@ -380,9 +380,14 @@
             </header>
             <div class="answer-bank-list">
                 {% for item in answer_bank %}
-                <article class="answer-bank-entry" data-answer-search="{{ (item.category ~ ' ' ~ item.question ~ ' ' ~ item.answer ~ ' ' ~ item.tags)|lower }}">
+                <article class="answer-bank-entry" data-answer-search="{{ (item.category ~ ' ' ~ item.question ~ ' ' ~ (item.situation or '') ~ ' ' ~ (item.task or '') ~ ' ' ~ (item.action or item.answer) ~ ' ' ~ (item.result or '') ~ ' ' ~ item.tags)|lower }}">
                     <header><span>{{ item.category }}</span><h3>{{ item.question }}</h3></header>
-                    <p>{{ item.answer }}</p>
+                    <div class="star-answer">
+                        {% if item.situation %}<p><strong>Situation:</strong> {{ item.situation }}</p>{% endif %}
+                        {% if item.task %}<p><strong>Task:</strong> {{ item.task }}</p>{% endif %}
+                        <p><strong>Action:</strong> {{ item.action if item.action else item.answer }}</p>
+                        {% if item.result %}<p><strong>Result:</strong> {{ item.result }}</p>{% endif %}
+                    </div>
                     <footer>
                         <div>{% for tag in item.tags.split(',') if tag.strip() %}<span class="custom-badge">{{ tag.strip() }}</span>{% endfor %}</div>
                         <div class="answer-bank-actions">
@@ -545,7 +550,12 @@
             <div class="tracker-form-grid">
                 <label class="tracker-field"><span>Category</span><input maxlength="120" name="category" value="General" class="admin-input"></label>
                 <label class="tracker-field tracker-field-wide"><span>Question</span><textarea required name="question" rows="2" class="admin-input"></textarea></label>
-                <label class="tracker-field tracker-field-wide"><span>Answer</span><textarea required name="answer" rows="7" class="admin-input"></textarea></label>
+                <div class="tracker-field-group tracker-field-wide" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <label class="tracker-field"><span>Situation</span><textarea name="situation" rows="4" class="admin-input" placeholder="Set the scene and give necessary context..."></textarea></label>
+                    <label class="tracker-field"><span>Task</span><textarea name="task" rows="4" class="admin-input" placeholder="What was your specific responsibility..."></textarea></label>
+                    <label class="tracker-field"><span>Action</span><textarea required name="action" rows="4" class="admin-input" placeholder="What steps did you take..."></textarea></label>
+                    <label class="tracker-field"><span>Result</span><textarea name="result" rows="4" class="admin-input" placeholder="What was the outcome..."></textarea></label>
+                </div>
                 <label class="tracker-field tracker-field-wide"><span>Tags</span><input maxlength="500" name="tags" class="admin-input" placeholder="Python, teamwork, leadership"></label>
             </div>
         </div>
@@ -561,7 +571,12 @@
             <div class="tracker-form-grid">
                 <label class="tracker-field"><span>Category</span><input maxlength="120" name="category" value="{{ item.category }}" class="admin-input"></label>
                 <label class="tracker-field tracker-field-wide"><span>Question</span><textarea required name="question" rows="2" class="admin-input">{{ item.question }}</textarea></label>
-                <label class="tracker-field tracker-field-wide"><span>Answer</span><textarea required name="answer" rows="7" class="admin-input">{{ item.answer }}</textarea></label>
+                <div class="tracker-field-group tracker-field-wide" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <label class="tracker-field"><span>Situation</span><textarea name="situation" rows="4" class="admin-input">{{ item.situation }}</textarea></label>
+                    <label class="tracker-field"><span>Task</span><textarea name="task" rows="4" class="admin-input">{{ item.task }}</textarea></label>
+                    <label class="tracker-field"><span>Action</span><textarea required name="action" rows="4" class="admin-input">{{ item.action if item.action else item.answer }}</textarea></label>
+                    <label class="tracker-field"><span>Result</span><textarea name="result" rows="4" class="admin-input">{{ item.result }}</textarea></label>
+                </div>
                 <label class="tracker-field tracker-field-wide"><span>Tags</span><input maxlength="500" name="tags" value="{{ item.tags }}" class="admin-input"></label>
             </div>
         </div>
@@ -569,6 +584,32 @@
     </form>
 </dialog>
 {% endfor %}
+
+<dialog id="add-update-dialog" class="tracker-dialog tracker-dialog-small">
+    <form class="tracker-dialog-form" id="add-update-form">
+        <header class="dialog-header">
+            <h2 id="add-update-dialog-title">Add timeline update</h2>
+            <button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </header>
+        <div class="dialog-body">
+            <div class="tracker-form-grid">
+                <input type="hidden" id="add-update-app-id">
+                <label class="tracker-field tracker-field-wide">
+                    <span>Update note</span>
+                    <textarea required name="note" id="add-update-note" rows="3" class="admin-input" placeholder="Got an email..."></textarea>
+                </label>
+                <label class="tracker-field">
+                    <span>Date of update</span>
+                    <input type="date" name="date" id="add-update-date" class="admin-input" required>
+                </label>
+            </div>
+        </div>
+        <footer class="dialog-actions">
+            <button type="button" class="tracker-secondary" data-dialog-close>Cancel</button>
+            <button type="submit" class="tracker-primary">Add update</button>
+        </footer>
+    </form>
+</dialog>
 
 <script id="interview-answer-bank-data" type="application/json">{{ answer_bank_data|tojson }}</script>
 <script id="company-application-history" type="application/json">{{ company_application_history|tojson }}</script>

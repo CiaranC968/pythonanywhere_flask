@@ -27,7 +27,7 @@
         dateFrom: document.getElementById('filter-date-from'),
         dateTo: document.getElementById('filter-date-to')
     };
-    let activeFilter = 'all';
+    let activeFilters = ['all'];
     let lastDialogOpener = null;
 
     function activateTrackerSection(tab, moveFocus = false) {
@@ -70,7 +70,7 @@
 
         document.querySelectorAll('.application-card').forEach((card) => {
             const matchesSearch = matchesQuery(card.dataset.search);
-            const matchesStatus = activeFilter === 'all' || card.dataset.stage === activeFilter;
+            const matchesStatus = activeFilters.includes('all') || activeFilters.includes(card.dataset.stage);
             const matchesCompany = !advancedFilters.company?.value || card.dataset.company === advancedFilters.company.value;
             const matchesSource = !advancedFilters.source?.value || card.dataset.source === advancedFilters.source.value;
             const matchesLocation = !advancedFilters.location?.value || card.dataset.location === advancedFilters.location.value;
@@ -195,8 +195,16 @@
                 if (feedback) feedback.textContent = 'Choose a saved answer first.';
                 return;
             }
+            
+            let formattedAnswer = '';
+            if (savedAnswer.situation) formattedAnswer += `Situation: ${savedAnswer.situation}\n`;
+            if (savedAnswer.task) formattedAnswer += `Task: ${savedAnswer.task}\n`;
+            if (savedAnswer.action || savedAnswer.answer) formattedAnswer += `Action: ${savedAnswer.action || savedAnswer.answer}\n`;
+            if (savedAnswer.result) formattedAnswer += `Result: ${savedAnswer.result}\n`;
+            formattedAnswer = formattedAnswer.trim();
+
             appendPreparationText(form.querySelector('[name="interview_questions"]'), savedAnswer.question);
-            appendPreparationText(form.querySelector('[name="interview_answers"]'), savedAnswer.answer);
+            appendPreparationText(form.querySelector('[name="interview_answers"]'), formattedAnswer);
             if (feedback) feedback.textContent = 'Added to interview preparation.';
             return;
         }
@@ -205,7 +213,15 @@
         if (copyAnswerButton) {
             const savedAnswer = answerBank[copyAnswerButton.dataset.copyAnswer];
             if (!savedAnswer) return;
-            navigator.clipboard.writeText(`${savedAnswer.question}\n\n${savedAnswer.answer}`)
+            
+            let formattedAnswer = '';
+            if (savedAnswer.situation) formattedAnswer += `Situation: ${savedAnswer.situation}\n`;
+            if (savedAnswer.task) formattedAnswer += `Task: ${savedAnswer.task}\n`;
+            if (savedAnswer.action || savedAnswer.answer) formattedAnswer += `Action: ${savedAnswer.action || savedAnswer.answer}\n`;
+            if (savedAnswer.result) formattedAnswer += `Result: ${savedAnswer.result}\n`;
+            formattedAnswer = formattedAnswer.trim();
+            
+            navigator.clipboard.writeText(`${savedAnswer.question}\n\n${formattedAnswer}`)
                 .then(() => {
                     copyAnswerButton.title = 'Copied';
                     window.setTimeout(() => { copyAnswerButton.title = 'Copy answer'; }, 1500);
@@ -216,10 +232,23 @@
 
         const tab = event.target.closest('[data-filter]');
         if (tab) {
-            activeFilter = tab.dataset.filter;
+            const filter = tab.dataset.filter;
+            if (filter === 'all') {
+                activeFilters = ['all'];
+            } else {
+                if (activeFilters.includes('all')) {
+                    activeFilters = [filter];
+                } else if (activeFilters.includes(filter)) {
+                    activeFilters = activeFilters.filter(f => f !== filter);
+                    if (activeFilters.length === 0) activeFilters = ['all'];
+                } else {
+                    activeFilters.push(filter);
+                }
+            }
             document.querySelectorAll('[data-filter]').forEach((item) => {
-                item.classList.toggle('active', item === tab);
-                item.setAttribute('aria-selected', String(item === tab));
+                const isActive = activeFilters.includes(item.dataset.filter);
+                item.classList.toggle('active', isActive);
+                item.setAttribute('aria-selected', String(isActive));
             });
             filterApplications();
             return;
@@ -563,6 +592,13 @@
             return;
         }
 
+        const prepSheetBtn = event.target.closest('[data-context-prep-sheet]');
+        if (prepSheetBtn) {
+            closeApplicationContextMenu();
+            window.open(`/admin/job-tracker/${card.dataset.applicationId}/prep-sheet`, '_blank');
+            return;
+        }
+
         const updateButton = event.target.closest('[data-context-update]');
         if (updateButton) {
             closeApplicationContextMenu();
@@ -635,6 +671,40 @@
     window.addEventListener('blur', () => closeApplicationContextMenu());
     window.addEventListener('resize', () => closeApplicationContextMenu());
     document.addEventListener('scroll', () => closeApplicationContextMenu(), true);
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchTarget = null;
+    
+    document.addEventListener('touchstart', (e) => {
+        const card = e.target.closest('.application-card, .kanban-card');
+        if (!card) return;
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+        touchTarget = card;
+    }, { passive: true });
+    
+    document.addEventListener('touchend', (e) => {
+        if (!touchTarget) return;
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+        
+        const deltaX = touchStartX - touchEndX;
+        const deltaY = Math.abs(touchStartY - touchEndY);
+        
+        // Swipe left threshold (e.g., 50px) and vertical variance limit
+        if (deltaX > 50 && deltaY < 30) {
+            contextApplicationCard = touchTarget;
+            const rect = touchTarget.getBoundingClientRect();
+            openApplicationContextMenu(
+                touchTarget,
+                Math.min(rect.right - 20, window.innerWidth - 200),
+                rect.top + 20
+            );
+        }
+        
+        touchTarget = null;
+    }, { passive: true });
 
     formatDates();
 })();

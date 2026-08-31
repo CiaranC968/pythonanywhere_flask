@@ -168,7 +168,11 @@ class InterviewAnswer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(120), nullable=False, default="General")
     question = db.Column(db.Text, nullable=False)
-    answer = db.Column(db.Text, nullable=False)
+    answer = db.Column(db.Text, nullable=False, default="") # Kept for backwards compatibility/migration
+    situation = db.Column(db.Text, nullable=False, default="")
+    task = db.Column(db.Text, nullable=False, default="")
+    action = db.Column(db.Text, nullable=False, default="")
+    result = db.Column(db.Text, nullable=False, default="")
     tags = db.Column(db.String(500), nullable=False, default="")
     created_at = db.Column(db.String(80), nullable=False)
     updated_at = db.Column(db.String(80), nullable=False)

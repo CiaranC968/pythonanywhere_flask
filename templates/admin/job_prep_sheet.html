@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prep Sheet: {{ app.company }} - {{ app.role }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #111827;
+            line-height: 1.5;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 { font-size: 1.875rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.25rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; margin-top: 2rem; color: #374151; }
+        h3 { font-size: 1.125rem; margin-bottom: 0.25rem; color: #1f2937; }
+        p { margin-top: 0; margin-bottom: 1rem; color: #4b5563; }
+        .meta { color: #6b7280; font-size: 0.875rem; margin-bottom: 2rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .section { margin-bottom: 2rem; }
+        .star-item { margin-bottom: 0.5rem; }
+        .star-item strong { display: block; color: #111827; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .star-item p { margin-bottom: 0; }
+        .answer-block { background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; page-break-inside: avoid; }
+        
+        @media print {
+            body { padding: 0; max-width: 100%; }
+            .no-print { display: none; }
+            h2 { border-bottom: 2px solid #000; color: #000; }
+            h1, h3, p, .meta, .star-item strong { color: #000; }
+            .answer-block { background: transparent; border: 1px solid #e5e7eb; }
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #111827;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-bottom: 2rem;
+        }
+        .btn:hover { background: #374151; }
+    </style>
+</head>
+<body>
+    <button class="btn no-print" onclick="window.print()">Print Prep Sheet</button>
+
+    <h1>{{ app.company }} &ndash; {{ app.role }}</h1>
+    <div class="meta">
+        Stage: {{ app.stage }} | 
+        Applied: {{ app.applied_date }}
+        {% if app.salary %}| Salary: {{ app.salary }}{% endif %}
+        {% if app.location %}| Location: {{ app.location }}{% endif %}
+    </div>
+
+    <div class="grid">
+        <div class="section">
+            <h2>Research & Notes</h2>
+            {% if app.interview_research %}
+                <div style="white-space: pre-wrap;">{{ app.interview_research }}</div>
+            {% else %}
+                <p><em>No research notes added yet.</em></p>
+            {% endif %}
+            
+            {% if app.notes %}
+                <h3 style="margin-top: 1rem;">General Notes</h3>
+                <div style="white-space: pre-wrap;">{{ app.notes }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="section">
+            <h2>Expected Questions</h2>
+            {% if app.interview_questions %}
+                <div style="white-space: pre-wrap;">{{ app.interview_questions }}</div>
+            {% else %}
+                <p><em>No expected questions added yet.</em></p>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if app.interview_talking_points %}
+    <div class="section">
+        <h2>Talking Points & Questions for Them</h2>
+        <div style="white-space: pre-wrap;">{{ app.interview_talking_points }}</div>
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <h2>Relevant Prepared Answers</h2>
+        {% if answers %}
+            {% for item in answers %}
+                <div class="answer-block">
+                    <h3>{{ item.question }}</h3>
+                    <div class="star-item">
+                        {% if item.situation %}<strong>Situation</strong><p>{{ item.situation }}</p>{% endif %}
+                        {% if item.task %}<strong>Task</strong><p>{{ item.task }}</p>{% endif %}
+                        <strong>Action</strong><p>{{ item.action if item.action else item.answer }}</p>
+                        {% if item.result %}<strong>Result</strong><p>{{ item.result }}</p>{% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p><em>No relevant prepared answers found. Add tags to your answer bank to match them to jobs!</em></p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

@@ -143,6 +143,10 @@ def ensure_schema():
             "category": "VARCHAR(120) NOT NULL DEFAULT 'General'",
             "question": "TEXT NULL",
             "answer": "TEXT NULL",
+            "situation": "TEXT NULL",
+            "task": "TEXT NULL",
+            "action": "TEXT NULL",
+            "result": "TEXT NULL",
             "tags": "VARCHAR(500) NOT NULL DEFAULT ''",
             "created_at": "VARCHAR(80) NOT NULL DEFAULT ''",
             "updated_at": "VARCHAR(80) NOT NULL DEFAULT ''",
@@ -213,6 +217,10 @@ def _backfill_schema_defaults(quote):
             "category": "General",
             "question": "",
             "answer": "",
+            "situation": "",
+            "task": "",
+            "action": "",
+            "result": "",
             "tags": "",
             "created_at": "",
             "updated_at": "",
@@ -236,4 +244,16 @@ def _backfill_schema_defaults(quote):
                     f"WHERE {quote(column)} IS NULL"
                 ),
                 {"value": value},
+            )
+            
+    # One-off migration for legacy answers
+    if "interview_answer" in existing_tables:
+        existing_columns = {column["name"] for column in inspector.get_columns("interview_answer")}
+        if "action" in existing_columns and "answer" in existing_columns:
+            db.session.execute(
+                text(
+                    f"UPDATE {quote('interview_answer')} "
+                    f"SET {quote('action')} = {quote('answer')} "
+                    f"WHERE {quote('action')} = '' AND {quote('answer')} != ''"
+                )
             )

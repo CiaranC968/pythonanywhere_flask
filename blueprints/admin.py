@@ -1456,7 +1456,14 @@ def _job_tracker_template_context(applications, now):
         "company_application_history": company_history,
         "answer_bank": answer_bank,
         "answer_bank_data": {
-            item.id: {"question": item.question, "answer": item.answer}
+            item.id: {
+                "question": item.question,
+                "answer": item.answer,
+                "situation": item.situation,
+                "task": item.task,
+                "action": item.action,
+                "result": item.result
+            }
             for item in answer_bank
         },
         "rejection_reasons": JOB_REJECTION_REASONS,
@@ -1506,7 +1513,10 @@ def _interview_answer_form_values():
     return {
         "category": request.form.get("category", "").strip()[:120] or "General",
         "question": request.form.get("question", "").strip(),
-        "answer": request.form.get("answer", "").strip(),
+        "situation": request.form.get("situation", "").strip(),
+        "task": request.form.get("task", "").strip(),
+        "action": request.form.get("action", "").strip(),
+        "result": request.form.get("result", "").strip(),
         "tags": request.form.get("tags", "").strip()[:500],
     }
 
@@ -1515,8 +1525,8 @@ def _interview_answer_form_values():
 @admin_required
 def add_interview_answer():
     values = _interview_answer_form_values()
-    if not values["question"] or not values["answer"]:
-        flash("Question and answer are required.", "error")
+    if not values["question"] or not values["action"]:
+        flash("Question and action are required.", "error")
         return redirect(url_for("admin.job_tracker", section="answer-bank"))
 
     timestamp = datetime.now().isoformat(timespec="minutes")
@@ -1538,8 +1548,8 @@ def edit_interview_answer(answer_id: int):
     if not answer:
         abort(404)
     values = _interview_answer_form_values()
-    if not values["question"] or not values["answer"]:
-        flash("Question and answer are required.", "error")
+    if not values["question"] or not values["action"]:
+        flash("Question and action are required.", "error")
         return redirect(url_for("admin.job_tracker", section="answer-bank"))
 
     for field, value in values.items():
@@ -1626,6 +1636,36 @@ def delete_job_application(app_id: int):
                 current_app.logger.warning("Could not remove job attachment %s: %s", file_path, exc)
         flash("Job application deleted.", "success")
     return redirect(url_for("admin.job_tracker"))
+
+
+@admin_bp.route("/job-tracker/<int:app_id>/prep-sheet")
+@admin_required
+def job_prep_sheet(app_id: int):
+    app = db.session.get(JobApplication, app_id)
+    if not app:
+        abort(404)
+        
+    answer_bank = InterviewAnswer.query.order_by(InterviewAnswer.id.desc()).all()
+    # We could filter answers by tags here, but we'll pass them all and let the template or simple logic decide.
+    # For now, pass all answers and let the template iterate, or pick the best matches.
+    # We will pick the top 5 most relevant by tag matching.
+    
+    app_tags = set(app.badges.lower().split(',')) if app.badges else set()
+    app_tags.update(app.role.lower().split())
+    app_tags.add(app.company.lower())
+    
+    scored_answers = []
+    for answer in answer_bank:
+        tags = set(answer.tags.lower().split(',')) if answer.tags else set()
+        score = len(tags.intersection(app_tags))
+        if not tags: # general questions
+            score = 0.1
+        scored_answers.append((score, answer))
+        
+    scored_answers.sort(key=lambda x: x[0], reverse=True)
+    relevant_answers = [a[1] for a in scored_answers[:10]]
+        
+    return render_template("admin/job_prep_sheet.html", app=app, answers=relevant_answers)
 
 
 @admin_bp.route("/job-tracker/<int:app_id>/reminder", methods=["POST"])
@@ -2112,9 +2152,18 @@ def add_job_timeline_note_ajax(app_id: int):
     
     note = request.form.get("note", "").strip()
     if note:
-        _record_status_event(app, app.stage, app.stage, datetime.now(), note)
+        date_str = request.form.get("date", "").strip()
+        event_time = datetime.now()
+        if date_str:
+            try:
+                parsed_date = datetime.strptime(date_str, "%Y-%m-%d")
+                event_time = datetime.combine(parsed_date.date(), event_time.time())
+            except ValueError:
+                pass
+                
+        _record_status_event(app, app.stage, app.stage, event_time, note)
         sep = "\n\n" if app.notes else ""
-        app.notes = f"{app.notes}{sep}Update: {note}".strip()
+        app.notes = f"{app.notes}{sep}Update ({event_time.strftime('%Y-%m-%d')}): {note}".strip()
         
         if _commit_database_changes():
             return _render_job_application_card(app, message="Update added.")
