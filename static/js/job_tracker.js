@@ -602,38 +602,61 @@
         const updateButton = event.target.closest('[data-context-update]');
         if (updateButton) {
             closeApplicationContextMenu();
-            const detailsElement = card.querySelector('details.application-workspace');
-            if (detailsElement) {
-                detailsElement.open = true;
-                const noteInput = detailsElement.querySelector('form.workspace-inline-form input[name="note"]');
-                if (noteInput) {
-                    noteInput.focus();
+            const dialog = document.getElementById('add-update-dialog');
+            if (dialog) {
+                const title = dialog.querySelector('#add-update-dialog-title');
+                if (title) title.textContent = `Add timeline update for ${card.dataset.role}`;
+                const appIdInput = dialog.querySelector('#add-update-app-id');
+                if (appIdInput) appIdInput.value = card.dataset.applicationId;
+                
+                const noteInput = dialog.querySelector('#add-update-note');
+                if (noteInput) noteInput.value = '';
+                
+                const dateInput = dialog.querySelector('#add-update-date');
+                if (dateInput) {
+                    const today = new Date();
+                    dateInput.value = today.toISOString().split('T')[0];
                 }
-            } else {
-                const note = window.prompt(`Add a timeline update for ${card.dataset.role}:`);
-                if (note && note.trim()) {
-                    fetch(`/admin/job-tracker/${card.dataset.applicationId}/add-note-ajax`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                            'HX-Request': 'true'
-                        },
-                        body: new URLSearchParams({ note: note.trim() })
-                    }).then(async (response) => {
-                        if (response.ok) {
-                            showApplicationContextFeedback('Update added.');
-                            // The card returned is a list card, so for kanban we just need to let the user know it succeeded.
-                            // If they refresh or go to list view, it will be there.
-                        } else {
-                            showApplicationContextFeedback('Could not add update.', true);
-                        }
-                    }).catch(() => {
-                        showApplicationContextFeedback('Could not add update.', true);
-                    });
-                }
+                
+                lastDialogOpener = updateButton;
+                dialog.showModal();
             }
             return;
         }
+    });
+    
+    document.getElementById('add-update-form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const appId = document.getElementById('add-update-app-id').value;
+        const note = document.getElementById('add-update-note').value;
+        const date = document.getElementById('add-update-date').value;
+        
+        fetch(`/admin/job-tracker/${appId}/add-note-ajax`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'HX-Request': 'true'
+            },
+            body: new URLSearchParams({ note: note.trim(), date: date })
+        }).then(async (response) => {
+            if (response.ok) {
+                showApplicationContextFeedback('Update added.');
+                document.getElementById('add-update-dialog')?.close();
+                // Optionally reload or replace card if list view
+                const card = document.querySelector(`.application-card[data-application-id="${appId}"]`);
+                if (card) {
+                    const html = await response.text();
+                    const template = document.createElement('template');
+                    template.innerHTML = html;
+                    card.replaceWith(template.content.firstElementChild);
+                }
+            } else {
+                showApplicationContextFeedback('Could not add update.', true);
+            }
+        }).catch(() => {
+            showApplicationContextFeedback('Could not add update.', true);
+        });
     });
 
     document.addEventListener('pointerdown', (event) => {

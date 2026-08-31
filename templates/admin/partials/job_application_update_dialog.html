@@ -1,0 +1,25 @@
+<dialog id="add-update-dialog" class="tracker-dialog tracker-dialog-small">
+    <form class="tracker-dialog-form" id="add-update-form">
+        <header class="dialog-header">
+            <h2 id="add-update-dialog-title">Add timeline update</h2>
+            <button type="button" class="icon-button" data-dialog-close aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </header>
+        <div class="dialog-body">
+            <div class="tracker-form-grid">
+                <input type="hidden" id="add-update-app-id">
+                <label class="tracker-field tracker-field-wide">
+                    <span>Update note</span>
+                    <textarea required name="note" id="add-update-note" rows="3" class="admin-input" placeholder="Got an email..."></textarea>
+                </label>
+                <label class="tracker-field">
+                    <span>Date of update</span>
+                    <input type="date" name="date" id="add-update-date" class="admin-input" required>
+                </label>
+            </div>
+        </div>
+        <footer class="dialog-actions">
+            <button type="button" class="tracker-secondary" data-dialog-close>Cancel</button>
+            <button type="submit" class="tracker-primary">Add update</button>
+        </footer>
+    </form>
+</dialog>
