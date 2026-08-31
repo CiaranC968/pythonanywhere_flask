@@ -1262,7 +1262,10 @@ def _job_application_timeline(application):
     for status_event in application.status_events:
         if not status_event.from_stage and status_event.to_stage == "Applied":
             continue
-        status_label = f"Status changed to {status_event.to_stage}"
+        if status_event.from_stage == status_event.to_stage:
+            status_label = "Update added"
+        else:
+            status_label = f"Status changed to {status_event.to_stage}"
         add_event(status_event.changed_at, status_label, "status", status_event.note)
 
     for attachment in application.attachments:
@@ -2094,3 +2097,24 @@ def update_job_stage_ajax(app_id: int):
     if _commit_or_flash():
         flash(f"Stage updated to '{stage}'.", "success")
     return redirect(url_for("admin.job_tracker"))
+
+
+@admin_bp.route("/job-tracker/<int:app_id>/add-note-ajax", methods=["POST"])
+@admin_required
+def add_job_timeline_note_ajax(app_id: int):
+    app = db.session.get(JobApplication, app_id)
+    if not app:
+        abort(404)
+    
+    note = request.form.get("note", "").strip()
+    if note:
+        _record_status_event(app, app.stage, app.stage, datetime.now(), note)
+        sep = "\n\n" if app.notes else ""
+        app.notes = f"{app.notes}{sep}Update: {note}".strip()
+        
+        if _commit_database_changes():
+            return _render_job_application_card(app, message="Update added.")
+        else:
+            return _render_job_application_card(app, message="Failed to add update.", is_error=True)
+            
+    return _render_job_application_card(app, message="Update cannot be empty.", is_error=True)

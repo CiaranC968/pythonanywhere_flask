@@ -86,14 +86,16 @@
             hx-swap="outerHTML"
             hx-disabled-elt="find select, find button"
         >
-            <select name="stage" class="admin-input" aria-label="Update status for {{ app.role }}">
+            <select name="stage" class="admin-input" aria-label="Update status for {{ app.role }}" onchange="this.form.requestSubmit()">
                 {% for value, label in job_stages %}
                 <option value="{{ value }}" {% if app.stage == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
-            <button class="icon-button" title="Save status" aria-label="Save status">
-                <i class="fas fa-check" aria-hidden="true"></i>
-            </button>
+            <noscript>
+                <button class="icon-button" title="Save status" aria-label="Save status">
+                    <i class="fas fa-check" aria-hidden="true"></i>
+                </button>
+            </noscript>
         </form>
         <button
             type="button"
@@ -131,6 +133,13 @@
         <div class="application-workspace-grid">
             <section>
                 <h3>Timeline</h3>
+                <form method="post" action="{{ url_for('admin.add_job_timeline_note_ajax', app_id=app.id) }}" class="workspace-inline-form"
+                      hx-post="{{ url_for('admin.add_job_timeline_note_ajax', app_id=app.id) }}"
+                      hx-target="#application-{{ app.id }}"
+                      hx-swap="outerHTML">
+                    <input type="text" name="note" class="admin-input" placeholder="Add an update..." required>
+                    <button class="tracker-secondary">Add</button>
+                </form>
                 <ol class="job-timeline">
                     {% for event in application_timeline %}
                     <li class="timeline-{{ event.type }}">
