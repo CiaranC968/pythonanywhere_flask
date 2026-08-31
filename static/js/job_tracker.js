@@ -560,6 +560,43 @@
             } catch (_error) {
                 showApplicationContextFeedback('Could not copy the application details.', true);
             }
+            return;
+        }
+
+        const updateButton = event.target.closest('[data-context-update]');
+        if (updateButton) {
+            closeApplicationContextMenu();
+            const detailsElement = card.querySelector('details.application-workspace');
+            if (detailsElement) {
+                detailsElement.open = true;
+                const noteInput = detailsElement.querySelector('form.workspace-inline-form input[name="note"]');
+                if (noteInput) {
+                    noteInput.focus();
+                }
+            } else {
+                const note = window.prompt(`Add a timeline update for ${card.dataset.role}:`);
+                if (note && note.trim()) {
+                    fetch(`/admin/job-tracker/${card.dataset.applicationId}/add-note-ajax`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                            'HX-Request': 'true'
+                        },
+                        body: new URLSearchParams({ note: note.trim() })
+                    }).then(async (response) => {
+                        if (response.ok) {
+                            showApplicationContextFeedback('Update added.');
+                            // The card returned is a list card, so for kanban we just need to let the user know it succeeded.
+                            // If they refresh or go to list view, it will be there.
+                        } else {
+                            showApplicationContextFeedback('Could not add update.', true);
+                        }
+                    }).catch(() => {
+                        showApplicationContextFeedback('Could not add update.', true);
+                    });
+                }
+            }
+            return;
         }
     });
 
