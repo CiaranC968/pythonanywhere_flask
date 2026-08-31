@@ -284,6 +284,71 @@
         hidden
     >
     <section class="tracker-insights" aria-label="Job search analytics">
+        <article class="insight-panel" style="grid-column: 1 / -1;">
+            <header class="insight-header">
+                <div><span class="tracker-eyebrow">Visualisation</span><h2>Application Funnel</h2></div>
+            </header>
+            <div id="sankey_chart" style="width: 100%; height: 250px; margin-top: 1rem;"></div>
+            
+            <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+            <script type="text/javascript">
+              google.charts.load('current', {'packages':['sankey']});
+              google.charts.setOnLoadCallback(drawChart);
+
+              function drawChart() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'From');
+                data.addColumn('string', 'To');
+                data.addColumn('number', 'Count');
+                
+                const submitted = {{ tracker_metrics.submitted }};
+                const assessments = {{ tracker_metrics.assessments }};
+                const interviews = {{ tracker_metrics.interviews }};
+                const offers = {{ tracker_metrics.offers }};
+                const jobs = {{ tracker_metrics.jobs }};
+                
+                const progressToStage2 = assessments + interviews; // People who got a call/test
+                const screenedStage1 = Math.max(0, submitted - progressToStage2);
+                
+                const screenedStage2 = Math.max(0, progressToStage2 - offers);
+                
+                const declinedOffers = Math.max(0, offers - jobs);
+
+                const rows = [];
+                if (progressToStage2 > 0) rows.push(['Applications', 'Interviews & Assessments', progressToStage2]);
+                if (screenedStage1 > 0) rows.push(['Applications', 'Screened Out / Ghosted', screenedStage1]);
+                
+                if (offers > 0) rows.push(['Interviews & Assessments', 'Offers', offers]);
+                if (screenedStage2 > 0) rows.push(['Interviews & Assessments', 'Rejected / Ghosted', screenedStage2]);
+                
+                if (jobs > 0) rows.push(['Offers', 'Jobs Secured', jobs]);
+                if (declinedOffers > 0) rows.push(['Offers', 'Declined', declinedOffers]);
+                
+                if (rows.length === 0) {
+                    document.getElementById('sankey_chart').innerHTML = '<p class="workspace-meta">Not enough data to generate funnel yet.</p>';
+                    return;
+                }
+
+                data.addRows(rows);
+
+                var options = {
+                  sankey: {
+                    node: {
+                      colors: ['#4f46e5', '#3b82f6', '#9ca3af', '#10b981', '#ef4444', '#059669', '#f59e0b'],
+                      nodePadding: 30,
+                      label: { fontName: 'Inter', fontSize: 13, color: '#374151' }
+                    },
+                    link: { colorMode: 'gradient' }
+                  }
+                };
+
+                var chart = new google.visualization.Sankey(document.getElementById('sankey_chart'));
+                chart.draw(data, options);
+              }
+              // Redraw on resize
+              window.addEventListener('resize', drawChart);
+            </script>
+        </article>
         <article class="insight-panel">
             <header class="insight-header">
                 <div><span class="tracker-eyebrow">Pipeline</span><h2>Search health</h2></div>
