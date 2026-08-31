@@ -16,6 +16,7 @@
 
     <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
     <link rel="manifest" href="/static/site.webmanifest">
+    <link rel="preload" as="image" href="{{ url_for('static', filename='images/' ~ profile.profile_image) }}" fetchpriority="high">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -82,7 +83,11 @@
             <div class="relative inline-block">
                 <img src="{{ url_for('static', filename='images/' ~ profile.profile_image) }}"
                      class="w-32 h-32 mx-auto mb-4 rounded-2xl border-4 border-warm-100 dark:border-gray-800 object-cover shadow-lg"
-                     alt="{{ profile.full_name }} profile photo">
+                     alt="{{ profile.full_name }} profile photo"
+                     width="128"
+                     height="128"
+                     decoding="async"
+                     fetchpriority="high">
                 <span class="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full" role="img" aria-label="Available for work" title="Available for work"></span>
             </div>
             <h2 class="text-xl font-bold tracking-tight text-warm-900 dark:text-white">{{ profile.full_name }}</h2>

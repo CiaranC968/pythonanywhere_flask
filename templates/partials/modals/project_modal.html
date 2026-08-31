@@ -109,7 +109,8 @@
         <img src="{{ url_for('static', filename='images/projects/' ~ p.image) }}"
              alt="Screenshot of {{ p.title }}"
              class="w-full h-auto"
-             loading="lazy">
+             loading="lazy"
+             decoding="async">
     </figure>
     {% endif %}
 

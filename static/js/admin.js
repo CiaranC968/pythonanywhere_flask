@@ -385,6 +385,20 @@
         }
     }
 
+    function globalSearchLinks() {
+        return [...document.querySelectorAll('#admin-search-results .admin-search-result')];
+    }
+
+    function moveGlobalSearchSelection(direction) {
+        const links = globalSearchLinks();
+        if (!links.length) return;
+        const currentIndex = links.indexOf(document.activeElement);
+        const nextIndex = currentIndex < 0
+            ? (direction > 0 ? 0 : links.length - 1)
+            : (currentIndex + direction + links.length) % links.length;
+        links[nextIndex].focus();
+    }
+
     function openLinkedTemplateEditor() {
         const match = window.location.hash.match(/^#template-editor-(\d+)$/);
         if (!match) return;
@@ -640,6 +654,28 @@
         });
 
         document.addEventListener('keydown', (event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+                event.preventDefault();
+                const opener = document.querySelector('[data-admin-dialog-open="admin-search-dialog"]');
+                showAdminDialog(document.getElementById('admin-search-dialog'), opener);
+                return;
+            }
+
+            const searchDialog = document.getElementById('admin-search-dialog');
+            if (searchDialog?.open && ['ArrowDown', 'ArrowUp'].includes(event.key)) {
+                event.preventDefault();
+                moveGlobalSearchSelection(event.key === 'ArrowDown' ? 1 : -1);
+                return;
+            }
+            if (searchDialog?.open && event.key === 'Enter' && event.target.matches('.admin-search-box input')) {
+                const firstResult = globalSearchLinks()[0];
+                if (firstResult) {
+                    event.preventDefault();
+                    firstResult.click();
+                }
+                return;
+            }
+
             const activeTab = event.target.closest('[data-template-editor-tab]');
             if (!activeTab || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
 

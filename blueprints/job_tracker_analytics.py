@@ -216,6 +216,79 @@ def _weekly_activity(submitted, now):
     return activity
 
 
+def _month_start(value):
+    return value.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+
+def _shift_month(value, offset):
+    month_index = value.year * 12 + value.month - 1 + offset
+    return value.replace(year=month_index // 12, month=month_index % 12 + 1, day=1)
+
+
+def _monthly_activity(submitted, now):
+    current_month = _month_start(now)
+    months = []
+    by_key = {}
+    for month_offset in range(-5, 1):
+        month = _shift_month(current_month, month_offset)
+        item = {
+            "key": month.strftime("%Y-%m"),
+            "label": month.strftime("%b"),
+            "year": month.strftime("%Y"),
+            "applications": 0,
+            "assessments": 0,
+            "interviews": 0,
+            "outcomes": 0,
+        }
+        months.append(item)
+        by_key[item["key"]] = item
+
+    for application in submitted:
+        dates = _application_dates(application)
+        dated_metrics = (
+            (dates["applied"], "applications"),
+            (dates["assessment"], "assessments"),
+            (dates["interview"], "interviews"),
+        )
+        for event_date, metric in dated_metrics:
+            if event_date and (month := by_key.get(event_date.strftime("%Y-%m"))):
+                month[metric] += 1
+
+        if application.stage in {"Rejected", "Offer", "Got Job"}:
+            outcome_date = dates["stage_updated"]
+            if outcome_date and (month := by_key.get(outcome_date.strftime("%Y-%m"))):
+                month["outcomes"] += 1
+
+    for month in months:
+        month["total_activity"] = sum(
+            month[key] for key in ("applications", "assessments", "interviews", "outcomes")
+        )
+    return months
+
+
+def _application_period_comparison(submitted, now):
+    current_start = now - timedelta(days=30)
+    previous_start = now - timedelta(days=60)
+    current = 0
+    previous = 0
+    for application in submitted:
+        applied_at = parse_job_datetime(application.applied_date)
+        if not applied_at:
+            continue
+        if current_start <= applied_at <= now:
+            current += 1
+        elif previous_start <= applied_at < current_start:
+            previous += 1
+
+    change = current - previous
+    return {
+        "current": current,
+        "previous": previous,
+        "change": change,
+        "direction": "up" if change > 0 else "down" if change < 0 else "steady",
+    }
+
+
 def _rejection_reason_stats(submitted):
     counts = {}
     for application in submitted:
@@ -320,6 +393,8 @@ def job_tracker_metrics(applications, now):
 
     company_stats, company_counts_by_id = _finalise_companies(company_groups)
     weekly_activity = _weekly_activity(submitted, now)
+    monthly_activity = _monthly_activity(submitted, now)
+    period_comparison = _application_period_comparison(submitted, now)
     responded = sum(
         app.stage not in {"Applied", "Not Applied Yet"}
         or app.reached_assessment
@@ -375,4 +450,14 @@ def job_tracker_metrics(applications, now):
         "rejection_reason_stats": _rejection_reason_stats(submitted),
         "weekly_activity": weekly_activity,
         "weekly_max": max((week["count"] for week in weekly_activity), default=0),
+        "monthly_activity": monthly_activity,
+        "monthly_max": max((month["total_activity"] for month in monthly_activity), default=0),
+        "period_comparison": period_comparison,
+        "funnel": (
+            {"label": "Applied", "count": submitted_count, "rate": 100 if submitted_count else 0},
+            {"label": "Assessment", "count": assessments, "rate": rate(assessments)},
+            {"label": "Interview", "count": interviews, "rate": rate(interviews)},
+            {"label": "Offer", "count": offers, "rate": rate(offers)},
+            {"label": "Got job", "count": jobs, "rate": rate(jobs)},
+        ),
     }

@@ -5,6 +5,8 @@
         <div class="mb-6">
             <img src="{{ cert.image_path }}"
                  alt="Certificate: {{ cert.title }}"
+                 loading="lazy"
+                 decoding="async"
                  class="h-48 mx-auto rounded-2xl shadow-xl border-4 border-white dark:border-gray-700">
         </div>
         {% endif %}

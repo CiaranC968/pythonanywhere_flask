@@ -29,6 +29,8 @@
                             <div class="w-24 h-24 bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 group-hover:border-brand-accent/30">
                                 <img src="{{ url_for('static', filename='images/' ~ edu.logo) }}"
                                      alt=""
+                                     loading="lazy"
+                                     decoding="async"
                                      class="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
                                      >
                             </div>

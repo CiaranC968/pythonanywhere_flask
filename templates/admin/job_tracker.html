@@ -245,70 +245,20 @@
         hidden
     >
     <section class="tracker-insights" aria-label="Job search analytics">
-        <article class="insight-panel" style="grid-column: 1 / -1;">
+        <article class="insight-panel funnel-panel">
             <header class="insight-header">
-                <div><span class="tracker-eyebrow">Visualisation</span><h2>Application Funnel</h2></div>
+                <div><span class="tracker-eyebrow">Conversion</span><h2>Application funnel</h2></div>
+                <span class="analysis-rate">{{ tracker_metrics.response_rate }}% response rate</span>
             </header>
-            <div id="sankey_chart" style="width: 100%; height: 250px; margin-top: 1rem;"></div>
-            
-            <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-            <script type="text/javascript">
-              google.charts.load('current', {'packages':['sankey']});
-              google.charts.setOnLoadCallback(drawChart);
-
-              function drawChart() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'From');
-                data.addColumn('string', 'To');
-                data.addColumn('number', 'Count');
-                
-                const submitted = {{ tracker_metrics.submitted }};
-                const assessments = {{ tracker_metrics.assessments }};
-                const interviews = {{ tracker_metrics.interviews }};
-                const offers = {{ tracker_metrics.offers }};
-                const jobs = {{ tracker_metrics.jobs }};
-                
-                const progressToStage2 = assessments + interviews; // People who got a call/test
-                const screenedStage1 = Math.max(0, submitted - progressToStage2);
-                
-                const screenedStage2 = Math.max(0, progressToStage2 - offers);
-                
-                const declinedOffers = Math.max(0, offers - jobs);
-
-                const rows = [];
-                if (progressToStage2 > 0) rows.push(['Applications', 'Interviews & Assessments', progressToStage2]);
-                if (screenedStage1 > 0) rows.push(['Applications', 'Screened Out / Ghosted', screenedStage1]);
-                
-                if (offers > 0) rows.push(['Interviews & Assessments', 'Offers', offers]);
-                if (screenedStage2 > 0) rows.push(['Interviews & Assessments', 'Rejected / Ghosted', screenedStage2]);
-                
-                if (jobs > 0) rows.push(['Offers', 'Jobs Secured', jobs]);
-                if (declinedOffers > 0) rows.push(['Offers', 'Declined', declinedOffers]);
-                
-                if (rows.length === 0) {
-                    document.getElementById('sankey_chart').innerHTML = '<p class="workspace-meta">Not enough data to generate funnel yet.</p>';
-                    return;
-                }
-
-                data.addRows(rows);
-
-                var options = {
-                  sankey: {
-                    node: {
-                      colors: ['#4f46e5', '#3b82f6', '#9ca3af', '#10b981', '#ef4444', '#059669', '#f59e0b'],
-                      nodePadding: 30,
-                      label: { fontName: 'Inter', fontSize: 13, color: '#374151' }
-                    },
-                    link: { colorMode: 'gradient' }
-                  }
-                };
-
-                var chart = new google.visualization.Sankey(document.getElementById('sankey_chart'));
-                chart.draw(data, options);
-              }
-              // Redraw on resize
-              window.addEventListener('resize', drawChart);
-            </script>
+            <div class="native-funnel">
+                {% for stage in tracker_metrics.funnel %}
+                <div class="native-funnel-stage">
+                    <div><strong>{{ stage.label }}</strong><span>{{ stage.count }}</span></div>
+                    <progress value="{{ stage.rate }}" max="100" aria-label="{{ stage.label }}: {{ stage.count }}, {{ stage.rate }}% of applications"></progress>
+                    <small>{{ stage.rate }}%</small>
+                </div>
+                {% endfor %}
+            </div>
         </article>
         <article class="insight-panel">
             <header class="insight-header">
@@ -343,6 +293,29 @@
     </section>
 
     <section class="tracker-analysis-grid" aria-label="Application performance">
+        <article class="analysis-panel monthly-analysis">
+            <header class="insight-header">
+                <div><span class="tracker-eyebrow">Six-month trend</span><h2>Application activity</h2></div>
+                {% set comparison = tracker_metrics.period_comparison %}
+                <span class="trend-badge trend-{{ comparison.direction }}">
+                    <i class="fas fa-{{ 'arrow-trend-up' if comparison.direction == 'up' else ('arrow-trend-down' if comparison.direction == 'down' else 'minus') }}" aria-hidden="true"></i>
+                    {{ comparison.current }} last 30 days{% if comparison.change %} · {{ '%+d'|format(comparison.change) }}{% endif %}
+                </span>
+            </header>
+            <div class="monthly-chart" aria-label="Applications, assessments, interviews and outcomes over six months">
+                {% for month in tracker_metrics.monthly_activity %}
+                <div class="monthly-column">
+                    <div class="monthly-bar" style="--activity-height: {{ ((month.total_activity / (tracker_metrics.monthly_max or 1)) * 100)|round|int }}%">
+                        <span aria-hidden="true"></span>
+                        <strong>{{ month.total_activity }}</strong>
+                    </div>
+                    <span>{{ month.label }}</span>
+                    <small>{{ month.applications }}A · {{ month.assessments }}S · {{ month.interviews }}I · {{ month.outcomes }}O</small>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="insight-footnote">A applications · S assessments · I interviews · O recorded outcomes</p>
+        </article>
         <article class="analysis-panel">
             <header class="insight-header">
                 <div><span class="tracker-eyebrow">Activity</span><h2>Applications by week</h2></div>

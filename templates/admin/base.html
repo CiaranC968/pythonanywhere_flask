@@ -25,9 +25,16 @@
                 <a href="{{ url_for('admin.resume_builder') }}" {% if request.endpoint == 'admin.resume_builder' %}aria-current="page"{% endif %}><i class="fas fa-file-lines" aria-hidden="true"></i><span>Resume builder</span></a>
                 <a href="{{ url_for('admin.cv_builder') }}" {% if request.endpoint == 'admin.cv_builder' %}aria-current="page"{% endif %}><i class="fas fa-file-circle-check" aria-hidden="true"></i><span>CV builder</span></a>
             </nav>
-            <form method="post" action="{{ url_for('admin.logout') }}">
-                <button class="icon-button" title="Log out" aria-label="Log out"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i></button>
-            </form>
+            <div class="admin-header-actions">
+                <button type="button" class="admin-search-trigger" data-admin-dialog-open="admin-search-dialog" aria-label="Search admin">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <span>Search</span>
+                    <kbd>⌘K</kbd>
+                </button>
+                <form method="post" action="{{ url_for('admin.logout') }}">
+                    <button class="icon-button" title="Log out" aria-label="Log out"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i></button>
+                </form>
+            </div>
             {% endif %}
         </div>
     </header>
@@ -48,6 +55,36 @@
 
         {% block content %}{% endblock %}
     </main>
+    {% if session.get('admin_authenticated') %}
+    <dialog id="admin-search-dialog" class="tracker-dialog admin-dialog admin-search-dialog" aria-labelledby="admin-search-heading">
+        <header class="dialog-header">
+            <div>
+                <span class="tracker-eyebrow">Quick navigation</span>
+                <h2 id="admin-search-heading">Search admin</h2>
+            </div>
+            <button type="button" class="icon-button" data-admin-dialog-close aria-label="Close search"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+        </header>
+        <div class="admin-search-box" role="search">
+            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+            <input
+                type="search"
+                name="q"
+                class="admin-input"
+                placeholder="Search applications, companies or content"
+                autocomplete="off"
+                autofocus
+                hx-get="{{ url_for('admin.admin_search') }}"
+                hx-target="#admin-search-results"
+                hx-trigger="input changed delay:180ms, search"
+                hx-include="this"
+            >
+        </div>
+        <div id="admin-search-results" class="admin-search-results" aria-live="polite">
+            {% include "admin/partials/global_search_results.html" with context %}
+        </div>
+        <footer class="admin-search-footer"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></footer>
+    </dialog>
+    {% endif %}
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" defer></script>
     <script src="/static/js/admin.js" defer></script>
     {% block scripts %}{% endblock %}

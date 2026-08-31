@@ -14,7 +14,6 @@ from flask import (
     current_app,
     flash,
     jsonify,
-    make_response,
     redirect,
     render_template,
     request,
@@ -30,6 +29,29 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import check_password_hash
 
 from extensions import db
+from blueprints.admin_constants import (
+    DASHBOARD_SECTION_ICONS,
+    JOB_ATTACHMENT_EXTENSIONS,
+    JOB_COOLING_OFF_DAYS,
+    JOB_DATE_FIELDS,
+    JOB_FIELD_LIMITS,
+    JOB_OPTIONAL_FIELDS,
+    JOB_REJECTION_REASONS,
+    JOB_TEXT_FIELDS,
+    JOB_WORK_ARRANGEMENTS,
+    JOB_WORK_ARRANGEMENT_VALUES,
+    RESUME_PRESET_FIELDS,
+    RESUME_PRESET_TARGET,
+)
+from blueprints.admin_documents import (
+    cv_options as _cv_options,
+    document_filename as _document_filename,
+    document_sections as _document_sections,
+    pdf_response as _pdf_response,
+    resume_options as _resume_options,
+    selected_document_portfolio as _selected_document_portfolio,
+)
+from blueprints.admin_search import search_admin_content
 from blueprints.job_tracker_analytics import (
     JOB_ACTIVE_STAGES,
     JOB_INTERVIEW_STAGES,
@@ -56,116 +78,6 @@ from portfolio_data import get_portfolio, get_profile
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-JOB_ATTACHMENT_EXTENSIONS = {".doc", ".docx", ".jpeg", ".jpg", ".pdf", ".png", ".txt"}
-JOB_OPTIONAL_FIELDS = {
-    "stage_updated_at",
-    "interview_date",
-    "assessment_date",
-    "application_deadline",
-    "job_url",
-    "company_url",
-    "company_address",
-    "linkedin_url",
-    "salary",
-    "location",
-    "follow_up_date",
-}
-JOB_TEXT_FIELDS = (
-    "company",
-    "role",
-    "applied_date",
-    "stage_updated_at",
-    "interview_date",
-    "assessment_date",
-    "application_deadline",
-    "badges",
-    "notes",
-    "job_url",
-    "company_url",
-    "company_address",
-    "linkedin_url",
-    "salary",
-    "location",
-    "work_arrangement",
-    "source",
-    "follow_up_date",
-    "reminder_note",
-    "rejection_reason",
-    "rejection_notes",
-    "interview_research",
-    "interview_questions",
-    "interview_answers",
-    "interview_talking_points",
-)
-JOB_FIELD_LIMITS = {
-    "company": 180,
-    "role": 180,
-    "applied_date": 80,
-    "stage_updated_at": 80,
-    "interview_date": 80,
-    "assessment_date": 80,
-    "application_deadline": 80,
-    "badges": 500,
-    "job_url": 500,
-    "company_url": 500,
-    "company_address": 500,
-    "linkedin_url": 500,
-    "salary": 120,
-    "location": 180,
-    "work_arrangement": 40,
-    "source": 120,
-    "follow_up_date": 80,
-    "rejection_reason": 120,
-}
-JOB_DATE_FIELDS = {
-    "applied_date",
-    "stage_updated_at",
-    "interview_date",
-    "assessment_date",
-    "application_deadline",
-    "follow_up_date",
-}
-JOB_REJECTION_REASONS = (
-    "Role filled or hiring paused",
-    "Experience mismatch",
-    "Skills mismatch",
-    "Assessment result",
-    "Interview result",
-    "Location or working arrangement",
-    "Salary or availability",
-    "Eligibility or right to work",
-    "Withdrew application",
-    "No reason given",
-    "Other",
-)
-JOB_WORK_ARRANGEMENTS = (
-    ("", "Not recorded"),
-    ("Remote", "Remote"),
-    ("Hybrid", "Hybrid"),
-    ("Office", "Office-based"),
-    ("Flexible", "Flexible"),
-)
-JOB_WORK_ARRANGEMENT_VALUES = {value for value, _label in JOB_WORK_ARRANGEMENTS}
-JOB_COOLING_OFF_DAYS = 30
-RESUME_PRESET_TARGET = "resume_preset"
-RESUME_PRESET_FIELDS = (
-    "label",
-    "header_subtitle",
-    "target_role",
-    "resume_keywords",
-    "resume_summary",
-    "company_details",
-    "resume_conclusion",
-)
-DASHBOARD_SECTION_ICONS = {
-    "profile": "fa-user",
-    "experience": "fa-briefcase",
-    "education": "fa-graduation-cap",
-    "skills": "fa-code",
-    "projects": "fa-folder-open",
-    "certificates": "fa-award",
-}
-
 from blueprints.admin_config import (
     IMAGE_FIELDS,
     ICON_FIELDS,
@@ -174,7 +86,6 @@ from blueprints.admin_config import (
     ICON_CHOICES,
     STYLE_CHOICES,
     SECTIONS,
-    DOCUMENT_SECTION_CONFIG,
     ALLOWED_RESUME_TEMPLATE_TARGETS,
     RESUME_SENTENCE_TEMPLATES,
     RESUME_ROLE_PRESETS,
@@ -231,6 +142,18 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("admin.login"))
+
+
+@admin_bp.get("/search")
+@admin_required
+def admin_search():
+    query = request.args.get("q", "").strip()[:100]
+    results = search_admin_content(query) if len(query) >= 2 else []
+    return render_template(
+        "admin/partials/global_search_results.html",
+        query=query,
+        results=results,
+    )
 
 
 @admin_bp.route("/")
@@ -692,29 +615,6 @@ def _set_collection_item_visibility(section, config, item, visible):
     return redirect_response
 
 
-def _document_sections(portfolio):
-    sections = []
-    for config in DOCUMENT_SECTION_CONFIG:
-        key = config["key"]
-        max_items = _document_max_items(config)
-        source_items = portfolio.get(key, [])
-        item_list = [
-            {
-                "id": str(getattr(item, "id", "")),
-                "label": _document_item_label(key, item),
-                "meta": _document_item_meta(key, item),
-                "checked": not max_items or index < max_items,
-            }
-            for index, item in enumerate(source_items)
-        ]
-        warning = ""
-        if max_items and len(source_items) > max_items:
-            warning = config.get(
-                "overflow_warning") or f"This section is capped at {max_items} items to protect the PDF layout."
-        sections.append({**config, "item_list": item_list, "warning": warning})
-    return sections
-
-
 def _resume_sentence_templates():
     templates = [{**template, "id": None, "is_custom": False} for template in RESUME_SENTENCE_TEMPLATES]
     custom_templates = _custom_resume_templates()
@@ -812,114 +712,6 @@ def _validated_resume_template_form_values():
 def _apply_resume_template_values(template, values):
     for field, value in values.items():
         setattr(template, field, value)
-
-
-def _document_item_label(section, item):
-    if section == "experience":
-        role = getattr(item, "role", "")
-        company = getattr(item, "company", "")
-        return " - ".join(part for part in [role, company] if part) or getattr(item, "id", "Experience")
-    if section == "education":
-        return getattr(item, "degree", "") or getattr(item, "university", "") or getattr(item, "id", "Education")
-    if section == "certificates":
-        return getattr(item, "title", "") or getattr(item, "issuer", "") or getattr(item, "id", "Certificate")
-    return getattr(item, "title", "") or getattr(item, "id", section.title())
-
-
-def _document_item_meta(section, item):
-    if section == "experience":
-        return " | ".join(part for part in [getattr(item, "period", ""), getattr(item, "location", "")] if part)
-    if section == "projects":
-        return getattr(item, "status", "")
-    if section == "skills":
-        return ", ".join((getattr(item, "tags", None) or [])[:6])
-    if section == "education":
-        return " | ".join(part for part in [getattr(item, "university", ""), getattr(item, "year", "")] if part)
-    if section == "certificates":
-        return " | ".join(part for part in [getattr(item, "issuer", ""), getattr(item, "date", "")] if part)
-    return ""
-
-
-def _selected_document_portfolio(portfolio, include_sections):
-    selected = {}
-    include_sections = set(include_sections)
-    for config in DOCUMENT_SECTION_CONFIG:
-        key = config["key"]
-        if key not in include_sections:
-            selected[key] = []
-            continue
-
-        selected_ids = set(request.form.getlist(f"{key}_ids"))
-        selected[key] = [
-            item
-            for item in portfolio.get(key, [])
-            if str(getattr(item, "id", "")) in selected_ids
-        ]
-        max_items = _document_max_items(config)
-        if max_items:
-            selected[key] = selected[key][:max_items]
-    return selected
-
-
-def _cv_options():
-    return {
-        "header_subtitle": request.form.get("header_subtitle", "").strip(),
-        "document_title": "Custom CV",
-    }
-
-
-def _resume_options():
-    header_subtitle = request.form.get("header_subtitle", "").strip()
-    company_name = request.form.get("company_name", "").strip()
-    target_role = request.form.get("target_role", "").strip()
-
-    if not header_subtitle:
-        header_subtitle = target_role or "Resume Letter"
-
-    def replace_tags(content):
-        if not content:
-            return content
-
-        c_val = company_name if company_name else "your organisation"
-        r_val = target_role if target_role else "the advertised role"
-
-        content = re.sub(re.escape("{company}"), c_val, content, flags=re.IGNORECASE)
-        content = re.sub(re.escape("{role}"), r_val, content, flags=re.IGNORECASE)
-        return content
-
-    return {
-        "header_subtitle": header_subtitle,
-        "company_name": company_name,
-        "target_role": target_role,
-        "summary": replace_tags(request.form.get("resume_summary", "").strip()),
-        "details": replace_tags(request.form.get("company_details", "").strip()),
-        "keywords": request.form.get("resume_keywords", "").strip(),
-        "conclusion": replace_tags(request.form.get("resume_conclusion", "").strip()),
-        "document_title": " | ".join(part for part in ["Resume Letter", company_name] if part),
-    }
-
-
-def _document_filename(full_name, document_type, options, safe_filename):
-    base = safe_filename(full_name)
-    if document_type == "resume":
-        target = options.get("company_name") or options.get("target_role") or "Resume_Letter"
-        return f"{base}_{safe_filename(target)}_Resume_Letter.pdf"
-    return f"{base}_Custom_CV.pdf"
-
-
-def _document_max_items(config: dict) -> int:
-    value = config.get("max_items", 0)
-    return value if isinstance(value, int) else 0
-
-
-def _pdf_response(pdf_bytes, filename):
-    disposition = "inline" if request.form.get("disposition") == "inline" or request.args.get(
-        "disposition") == "inline" else "attachment"
-    response = make_response(pdf_bytes)
-    response.headers["Content-Type"] = "application/pdf"
-    response.headers["Content-Disposition"] = f'{disposition}; filename="{filename}"'
-    response.headers["Cache-Control"] = "no-store"
-    return response
 
 
 def _section_config(section: str):

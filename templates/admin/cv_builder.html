@@ -11,12 +11,16 @@
 </header>
 
 <form method="post" action="{{ url_for('admin.cv_builder_pdf') }}" class="document-builder" data-document-builder>
-    <section class="admin-panel document-builder-intro">
+    <section class="admin-panel document-builder-intro document-builder-summary">
         <div class="tracker-form-grid">
             <label class="tracker-field">
                 <span>CV subtitle</span>
                 <input name="header_subtitle" value="{{ profile.cv_subtitle or profile.title }}" class="admin-input">
             </label>
+        </div>
+        <div class="one-page-lock" role="status">
+            <span><i class="fas fa-file-shield" aria-hidden="true"></i></span>
+            <div><strong>One-page protection is on</strong><small>The PDF is generated only when every selected line fits on one A4 page. Nothing is silently cut off.</small></div>
         </div>
     </section>
 

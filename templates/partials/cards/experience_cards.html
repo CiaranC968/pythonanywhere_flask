@@ -30,6 +30,8 @@
                     {% if exp.logo %}
                     <img src="{{ url_for('static', filename='images/' ~ exp.logo) }}"
                          alt=""
+                         loading="lazy"
+                         decoding="async"
                          class="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300">
                     {% else %}
                     <i class="{{ exp.icon | default('fas fa-building') }} text-3xl md:text-4xl {{ exp.iconColor | default('text-gray-600') }} group-hover:text-brand-dark transition-colors duration-300" aria-hidden="true"></i>

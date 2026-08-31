@@ -267,6 +267,8 @@ DOCUMENT_SECTION_CONFIG = [
         "key": "experience",
         "label": "Experience",
         "description": "Roles, promotions, bullet points, and work history.",
+        "max_items": 3,
+        "overflow_warning": "Choose up to 3 employers. Every role and bullet is checked against the one-page limit.",
     },
     {
         "key": "projects",
@@ -279,16 +281,22 @@ DOCUMENT_SECTION_CONFIG = [
         "key": "skills",
         "label": "Skills",
         "description": "Skill groups used to build the CV skill tags.",
+        "max_items": 3,
+        "overflow_warning": "Choose up to 3 focused skill groups to keep the skills column readable.",
     },
     {
         "key": "education",
         "label": "Education",
         "description": "Degrees, modules, stages, and results.",
+        "max_items": 2,
+        "overflow_warning": "Choose up to 2 education entries so module names are never clipped.",
     },
     {
         "key": "certificates",
         "label": "Certificates",
         "description": "Certificates, issuers, dates, and credentials.",
+        "max_items": 3,
+        "overflow_warning": "Choose up to 3 relevant certificates for the one-page CV.",
     },
 ]
 

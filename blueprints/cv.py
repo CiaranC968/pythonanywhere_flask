@@ -18,6 +18,18 @@ class CVLayoutError(ValueError):
     pass
 
 
+_PDF_PAGE_OBJECT = re.compile(rb"/Type\s*/Page(?=\s|/|>>)")
+
+
+def ensure_single_page_pdf(pdf_bytes):
+    page_count = len(_PDF_PAGE_OBJECT.findall(pdf_bytes))
+    if page_count != 1:
+        raise CVLayoutError(
+            f"The generated CV contained {page_count} pages. Adjust the selected content and try again."
+        )
+    return pdf_bytes
+
+
 @cv_bp.route("/get-cv")
 def get_cv():
     theme_color = request.args.get("theme", "burgundy").strip()
@@ -407,7 +419,7 @@ def build_cv_pdf(profile=None, portfolio=None, include_sections=None, resume_opt
         if not left_story and not right_story:
             pdf.showPage()
             pdf.save()
-            return buffer.getvalue()
+            return ensure_single_page_pdf(buffer.getvalue())
 
     raise CVLayoutError(
         "The selected content does not fit the one-page CV. Remove one or more projects or other items and try again."

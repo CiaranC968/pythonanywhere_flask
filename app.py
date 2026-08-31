@@ -1,6 +1,6 @@
 import os
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta
 from types import SimpleNamespace
 from urllib.parse import quote, quote_plus
 
@@ -105,6 +105,7 @@ def create_app():
     load_dotenv()
     application = Flask(__name__, static_folder="static", static_url_path="/static")
     database_url = build_database_url()
+    debug_assets = os.environ.get("FLASK_DEBUG", "").strip().casefold() in {"1", "true", "yes", "on"}
     secret_key = os.environ.get("SECRET_KEY")
     if not secret_key:
         secret_key = secrets.token_urlsafe(32)
@@ -122,7 +123,8 @@ def create_app():
         ADMIN_PASSWORD=os.environ.get("ADMIN_PASSWORD", ""),
         ADMIN_PASSWORD_HASH=os.environ.get("ADMIN_PASSWORD_HASH", ""),
         JSON_AS_ASCII=False,
-        TEMPLATES_AUTO_RELOAD=True,
+        TEMPLATES_AUTO_RELOAD=debug_assets,
+        SEND_FILE_MAX_AGE_DEFAULT=timedelta(days=1) if not debug_assets else timedelta(0),
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,
     )
 

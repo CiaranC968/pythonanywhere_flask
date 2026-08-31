@@ -21,6 +21,8 @@
                         {% if cert.logo %}
                         <img src="{{ url_for('static', filename='images/' ~ cert.logo) }}"
                              alt=""
+                             loading="lazy"
+                             decoding="async"
                              class="w-8 h-8 object-contain group-hover:brightness-0 transition-all">
                         {% else %}
                         <i class="fas fa-award text-xl text-white group-hover:text-brand-dark transition-colors duration-300" aria-hidden="true"></i>
