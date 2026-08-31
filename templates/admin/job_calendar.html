@@ -15,18 +15,21 @@
         </a>
     </header>
 
-    <nav class="tracker-view-tabs" aria-label="Application views">
-        <a href="{{ url_for('admin.job_tracker') }}">
-            <i class="fas fa-list" aria-hidden="true"></i> List
-        </a>
-        <a href="{{ url_for('admin.job_kanban') }}">
-            <i class="fas fa-table-columns" aria-hidden="true"></i> Kanban
-        </a>
-        <a href="{{ url_for('admin.job_calendar') }}" aria-current="page">
-            <i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar
-        </a>
-    </nav>
+    <aside class="tracker-sidebar">
+        <nav class="tracker-view-tabs" aria-label="Application views">
+            <a href="{{ url_for('admin.job_tracker') }}">
+                <i class="fas fa-list" aria-hidden="true"></i> List
+            </a>
+            <a href="{{ url_for('admin.job_kanban') }}">
+                <i class="fas fa-table-columns" aria-hidden="true"></i> Kanban
+            </a>
+            <a href="{{ url_for('admin.job_calendar') }}" aria-current="page">
+                <i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar
+            </a>
+        </nav>
+    </aside>
 
+    <div class="tracker-main">
     <section class="job-calendar" aria-labelledby="calendar-month">
         <header class="calendar-header">
             <a
@@ -80,5 +83,6 @@
             {% endfor %}
         </div>
     </section>
+    </div> <!-- close tracker-main -->
 </div>
 {% endblock %}

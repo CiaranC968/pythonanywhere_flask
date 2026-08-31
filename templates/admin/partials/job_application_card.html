@@ -42,7 +42,11 @@
             {% endif %}
             {% if app.source %}<span class="custom-badge">{{ app.source }}</span>{% endif %}
             {% for badge in (app.badges or '').split(',') %}
-                {% if badge.strip() %}<span class="custom-badge">{{ badge.strip() }}</span>{% endif %}
+                {% if badge.strip() %}
+                    {% set badge_text = badge.strip() %}
+                    {% set b_color = string_to_color(badge_text) if string_to_color else '#64748b' %}
+                    <span class="custom-badge" style="background-color: {{ b_color }}22; color: {{ b_color }}; border-color: {{ b_color }}44;">{{ badge_text }}</span>
+                {% endif %}
             {% endfor %}
         </div>
     </div>
@@ -60,6 +64,29 @@
         {% if app.application_deadline and app.stage == 'Not Applied Yet' %}
         <span>Deadline <strong class="format-date">{{ app.application_deadline }}</strong></span>
         {% endif %}
+    </div>
+
+    <div class="stage-tracker" aria-hidden="true" title="Current stage: {{ app.stage }}">
+        {% set path_stages = ['Applied', 'Assessment', 'Interview', 'Offer', 'Got Job'] %}
+        {% set current_idx = -1 %}
+        {% if app.stage in path_stages %}
+            {% set current_idx = path_stages.index(app.stage) %}
+        {% elif app.stage in ['Rejected', 'Missed Deadline'] %}
+            {% set current_idx = 5 %} {# Color all rejected or figure it out... actually, if rejected, let's color up to where they reached #}
+            {% if app.reached_interview %}{% set current_idx = 2 %}
+            {% elif app.reached_assessment %}{% set current_idx = 1 %}
+            {% else %}{% set current_idx = 0 %}{% endif %}
+        {% endif %}
+
+        {% for s in path_stages %}
+            {% set step_class = '' %}
+            {% if loop.index0 < current_idx %}
+                {% set step_class = 'completed' %}
+            {% elif loop.index0 == current_idx %}
+                {% set step_class = 'rejected' if app.stage in ['Rejected', 'Missed Deadline'] else 'active' %}
+            {% endif %}
+            <div class="stage-step {{ step_class }}"></div>
+        {% endfor %}
     </div>
 
     <div>

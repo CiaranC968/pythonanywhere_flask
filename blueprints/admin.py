@@ -1429,6 +1429,13 @@ def _job_search_texts(applications):
     return application_search_texts, company_search_texts
 
 
+def _string_to_color(text):
+    colors = ['#0ea5e9', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#64748b']
+    if not text:
+        return colors[0]
+    hashed = sum(ord(c) * i for i, c in enumerate(text, 1))
+    return colors[hashed % len(colors)]
+
 def _job_tracker_template_context(applications, now):
     application_search_texts, company_search_texts = _job_search_texts(applications)
     application_age_states, cooling_warnings, company_history = _job_warning_context(
@@ -1455,6 +1462,7 @@ def _job_tracker_template_context(applications, now):
         "cooling_warnings": cooling_warnings,
         "company_application_history": company_history,
         "answer_bank": answer_bank,
+        "string_to_color": _string_to_color,
         "answer_bank_data": {
             item.id: {
                 "question": item.question,

@@ -194,86 +194,47 @@
         </button>
     </header>
 
-    <nav class="tracker-view-tabs" aria-label="Application views">
-        <a href="{{ url_for('admin.job_tracker') }}" aria-current="page"><i class="fas fa-list" aria-hidden="true"></i> List</a>
-        <a href="{{ url_for('admin.job_kanban') }}"><i class="fas fa-table-columns" aria-hidden="true"></i> Kanban</a>
-        <a href="{{ url_for('admin.job_calendar') }}"><i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar</a>
-    </nav>
+    <aside class="tracker-sidebar">
+        <nav class="tracker-view-tabs" aria-label="Application views">
+            <a href="{{ url_for('admin.job_tracker') }}" aria-current="page"><i class="fas fa-list" aria-hidden="true"></i> List</a>
+            <a href="{{ url_for('admin.job_kanban') }}"><i class="fas fa-table-columns" aria-hidden="true"></i> Kanban</a>
+            <a href="{{ url_for('admin.job_calendar') }}"><i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar</a>
+        </nav>
 
-    <div class="tracker-toolbar tracker-global-search">
-        <label class="tracker-search">
-            <span class="sr-only">Search applications, companies, contacts, notes and preparation</span>
-            <i class="fas fa-search" aria-hidden="true"></i>
-            <input id="job-search" type="search" class="admin-input" placeholder="Search applications, notes and contacts" autocomplete="off">
-        </label>
-        <span id="tracker-result-count" class="tracker-result-count" aria-live="polite">{{ applications|length }} applications</span>
-    </div>
+        <nav class="tracker-section-tabs" aria-label="Job tracker sections" role="tablist">
+            <button type="button" id="tracker-tab-applications" class="tracker-section-tab active" role="tab" aria-selected="true" aria-controls="tracker-panel-applications" data-tracker-section="applications">
+                <i class="fas fa-briefcase" aria-hidden="true"></i> Applications <span>{{ applications|length }}</span>
+            </button>
+            <button type="button" id="tracker-tab-insights" class="tracker-section-tab" role="tab" aria-selected="false" aria-controls="tracker-panel-insights" data-tracker-section="insights" tabindex="-1">
+                <i class="fas fa-chart-line" aria-hidden="true"></i> Insights
+            </button>
+            <button type="button" id="tracker-tab-companies" class="tracker-section-tab" role="tab" aria-selected="false" aria-controls="tracker-panel-companies" data-tracker-section="companies" tabindex="-1">
+                <i class="fas fa-building" aria-hidden="true"></i> Companies <span>{{ tracker_metrics.companies }}</span>
+            </button>
+            <button type="button" id="tracker-tab-answer-bank" class="tracker-section-tab" role="tab" aria-selected="false" aria-controls="tracker-panel-answer-bank" data-tracker-section="answer-bank" tabindex="-1">
+                <i class="fas fa-comments" aria-hidden="true"></i> Answer bank <span>{{ answer_bank|length }}</span>
+            </button>
+        </nav>
+    </aside>
 
-    <section class="metrics-grid" aria-label="Application funnel">
-        <div class="metric"><span class="metric-label">Applications</span><strong class="metric-value">{{ tracker_metrics.submitted }}</strong><span class="metric-note">submitted</span></div>
-        <div class="metric"><span class="metric-label">Companies</span><strong class="metric-value">{{ tracker_metrics.companies }}</strong><span class="metric-note">{{ tracker_metrics.repeat_companies }} applied to more than once</span></div>
-        <div class="metric"><span class="metric-label">Interviews</span><strong class="metric-value">{{ tracker_metrics.interviews }}</strong><span class="metric-note">{{ tracker_metrics.interview_rate }}% reach rate</span></div>
-        <div class="metric"><span class="metric-label">Assessments</span><strong class="metric-value">{{ tracker_metrics.assessments }}</strong><span class="metric-note">{{ tracker_metrics.assessment_rate }}% reach rate</span></div>
-        <div class="metric"><span class="metric-label">Offers</span><strong class="metric-value">{{ tracker_metrics.offers }}</strong><span class="metric-note">{{ tracker_metrics.offer_rate }}% conversion</span></div>
-        <div class="metric"><span class="metric-label">Rejection rate</span><strong class="metric-value">{{ tracker_metrics.rejection_rate }}%</strong><span class="metric-note">{{ tracker_metrics.rejections }} rejected</span></div>
-    </section>
+    <div class="tracker-main">
+        <div class="tracker-toolbar tracker-global-search">
+            <label class="tracker-search">
+                <span class="sr-only">Search applications, companies, contacts, notes and preparation</span>
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input id="job-search" type="search" class="admin-input" placeholder="Search applications, notes and contacts" autocomplete="off">
+            </label>
+            <span id="tracker-result-count" class="tracker-result-count" aria-live="polite">{{ applications|length }} applications</span>
+        </div>
 
-    <nav class="tracker-section-tabs" aria-label="Job tracker sections" role="tablist">
-        <button
-            type="button"
-            id="tracker-tab-applications"
-            class="tracker-section-tab active"
-            role="tab"
-            aria-selected="true"
-            aria-controls="tracker-panel-applications"
-            data-tracker-section="applications"
-        >
-            <i class="fas fa-briefcase" aria-hidden="true"></i>
-            Applications
-            <span>{{ applications|length }}</span>
-        </button>
-        <button
-            type="button"
-            id="tracker-tab-insights"
-            class="tracker-section-tab"
-            role="tab"
-            aria-selected="false"
-            aria-controls="tracker-panel-insights"
-            data-tracker-section="insights"
-            tabindex="-1"
-        >
-            <i class="fas fa-chart-line" aria-hidden="true"></i>
-            Insights
-        </button>
-        <button
-            type="button"
-            id="tracker-tab-companies"
-            class="tracker-section-tab"
-            role="tab"
-            aria-selected="false"
-            aria-controls="tracker-panel-companies"
-            data-tracker-section="companies"
-            tabindex="-1"
-        >
-            <i class="fas fa-building" aria-hidden="true"></i>
-            Companies
-            <span>{{ tracker_metrics.companies }}</span>
-        </button>
-        <button
-            type="button"
-            id="tracker-tab-answer-bank"
-            class="tracker-section-tab"
-            role="tab"
-            aria-selected="false"
-            aria-controls="tracker-panel-answer-bank"
-            data-tracker-section="answer-bank"
-            tabindex="-1"
-        >
-            <i class="fas fa-comments" aria-hidden="true"></i>
-            Answer bank
-            <span>{{ answer_bank|length }}</span>
-        </button>
-    </nav>
+        <section class="metrics-grid" aria-label="Application funnel">
+            <div class="metric"><span class="metric-label">Applications</span><strong class="metric-value">{{ tracker_metrics.submitted }}</strong><span class="metric-note">submitted</span></div>
+            <div class="metric"><span class="metric-label">Companies</span><strong class="metric-value">{{ tracker_metrics.companies }}</strong><span class="metric-note">{{ tracker_metrics.repeat_companies }} applied to more than once</span></div>
+            <div class="metric"><span class="metric-label">Interviews</span><strong class="metric-value">{{ tracker_metrics.interviews }}</strong><span class="metric-note">{{ tracker_metrics.interview_rate }}% reach rate</span></div>
+            <div class="metric"><span class="metric-label">Assessments</span><strong class="metric-value">{{ tracker_metrics.assessments }}</strong><span class="metric-note">{{ tracker_metrics.assessment_rate }}% reach rate</span></div>
+            <div class="metric"><span class="metric-label">Offers</span><strong class="metric-value">{{ tracker_metrics.offers }}</strong><span class="metric-note">{{ tracker_metrics.offer_rate }}% conversion</span></div>
+            <div class="metric"><span class="metric-label">Rejection rate</span><strong class="metric-value">{{ tracker_metrics.rejection_rate }}%</strong><span class="metric-note">{{ tracker_metrics.rejections }} rejected</span></div>
+        </section>
 
     <div
         id="tracker-panel-insights"
@@ -563,12 +524,19 @@
         </div>
     </details>
 
-    <nav class="status-tabs" aria-label="Filter applications by status" role="tablist">
-        <button type="button" class="status-tab active" data-filter="all" role="tab" aria-selected="true">All <span>{{ applications|length }}</span></button>
-        {% for value, label in job_stages %}
-        <button type="button" class="status-tab" data-filter="{{ value }}" role="tab" aria-selected="false">{{ label }} <span>{{ stage_counts.get(value, 0) }}</span></button>
-        {% endfor %}
-    </nav>
+    <div class="applications-list-header">
+        <nav class="status-tabs" aria-label="Filter applications by status" role="tablist">
+            <button type="button" class="status-tab active" data-filter="all" role="tab" aria-selected="true">All <span>{{ applications|length }}</span></button>
+            {% for value, label in job_stages %}
+            <button type="button" class="status-tab" data-filter="{{ value }}" role="tab" aria-selected="false">{{ label }} <span>{{ stage_counts.get(value, 0) }}</span></button>
+            {% endfor %}
+        </nav>
+        
+        <div class="view-toggle" aria-label="Layout view toggle">
+            <button type="button" class="icon-button" aria-pressed="true" aria-label="Card view" data-view-toggle="card"><i class="fas fa-grip" aria-hidden="true"></i></button>
+            <button type="button" class="icon-button" aria-pressed="false" aria-label="Table view" data-view-toggle="table"><i class="fas fa-list-ul" aria-hidden="true"></i></button>
+        </div>
+    </div>
 
     <div id="applications-list" class="applications-list">
         {% for app in applications %}
@@ -586,6 +554,11 @@
         <p>No applications match this view.</p>
     </div>
     </div>
+    
+    <button type="button" class="tracker-fab" aria-label="Add application" data-dialog-open="add-job-dialog">
+        <i class="fas fa-plus" aria-hidden="true"></i>
+    </button>
+    </div> <!-- close tracker-main -->
 </div>
 
 {% include "admin/partials/job_application_context_menu.html" %}
@@ -658,4 +631,5 @@
 
 {% block scripts %}
 <script src="/static/js/job_tracker.js" defer></script>
+<script src="/static/js/table_toggle.js" defer></script>
 {% endblock %}

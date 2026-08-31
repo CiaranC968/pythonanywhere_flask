@@ -13,21 +13,24 @@
         </a>
     </header>
 
-    <nav class="tracker-view-tabs" aria-label="Application views">
-        <a href="{{ url_for('admin.job_tracker') }}">
-            <i class="fas fa-list" aria-hidden="true"></i> List
-        </a>
-        <a href="{{ url_for('admin.job_kanban') }}" aria-current="page">
-            <i class="fas fa-table-columns" aria-hidden="true"></i> Kanban
-        </a>
-        <a href="{{ url_for('admin.job_calendar') }}">
-            <i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar
-        </a>
-    </nav>
+    <aside class="tracker-sidebar">
+        <nav class="tracker-view-tabs" aria-label="Application views">
+            <a href="{{ url_for('admin.job_tracker') }}">
+                <i class="fas fa-list" aria-hidden="true"></i> List
+            </a>
+            <a href="{{ url_for('admin.job_kanban') }}" aria-current="page">
+                <i class="fas fa-table-columns" aria-hidden="true"></i> Kanban
+            </a>
+            <a href="{{ url_for('admin.job_calendar') }}">
+                <i class="fas fa-calendar-days" aria-hidden="true"></i> Calendar
+            </a>
+        </nav>
+    </aside>
 
-    <p id="kanban-announcer" class="kanban-feedback" aria-live="polite" hidden></p>
+    <div class="tracker-main">
+        <p id="kanban-announcer" class="kanban-feedback" aria-live="polite" hidden></p>
 
-    <div class="kanban-toolbar">
+        <div class="kanban-toolbar">
         <span><strong>{{ applications | length }}</strong> applications</span>
         <div class="kanban-scroll-controls" aria-label="Stage navigation">
             <button type="button" data-kanban-scroll="previous" title="Previous stages" aria-label="Previous stages">
@@ -101,6 +104,7 @@
     </div>
     {% include "admin/partials/job_application_context_menu.html" %}
     {% include "admin/partials/job_application_update_dialog.html" %}
+    </div> <!-- close tracker-main -->
 </div>
 {% endblock %}
 
